@@ -1,0 +1,12 @@
+{
+  "name": "web-development",
+  "version": "0.1.0",
+  "description": "Reusable workflows for planning, building, reviewing, and maintaining web applications.",
+  "author": {
+    "name": "Aliaksei Hurynovich",
+    "email": "shagon1k@gmail.com"
+  },
+  "homepage": "https://github.com/Shagon1k/shag-ai-plugins",
+  "repository": "https://github.com/Shagon1k/shag-ai-plugins",
+  "keywords": ["web-app", "frontend", "backend", "development", "architecture"]
+}

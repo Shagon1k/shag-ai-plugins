@@ -1,0 +1,32 @@
+{
+  "name": "shag-ai-plugins",
+  "description": "Reusable AI-agent workflows and project tools by Aliaksei Hurynovich.",
+  "owner": {
+    "name": "Aliaksei Hurynovich",
+    "email": "shagon1k@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "web-development",
+      "source": "./plugins/web-development",
+      "description": "Reusable workflows for planning, building, reviewing, and maintaining web applications.",
+      "author": {
+        "name": "Aliaksei Hurynovich",
+        "email": "shagon1k@gmail.com"
+      },
+      "category": "productivity",
+      "tags": ["web-app", "frontend", "backend", "development", "architecture"]
+    },
+    {
+      "name": "engineering-tools",
+      "source": "./plugins/engineering-tools",
+      "description": "Developer workflows for commits, technical debt, and AI context efficiency.",
+      "author": {
+        "name": "Aliaksei Hurynovich",
+        "email": "shagon1k@gmail.com"
+      },
+      "category": "productivity",
+      "tags": ["developer-tools", "git", "technical-debt", "agent-context"]
+    }
+  ]
+}

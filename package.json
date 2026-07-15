@@ -1,0 +1,19 @@
+{
+  "name": "shag-ai-plugins",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cross-platform marketplace for reusable AI-agent workflows and project tools.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "validate": "node scripts/validate.mjs",
+    "validate:structure": "node scripts/validate-marketplace.mjs",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "web-development",
+  "version": "0.1.0",
+  "description": "Reusable workflows for planning, building, reviewing, and maintaining web applications.",
+  "author": {
+    "name": "Aliaksei Hurynovich",
+    "email": "shagon1k@gmail.com"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Web Development",
+    "shortDescription": "Build and maintain web applications.",
+    "longDescription": "AI-assisted workflows for web application planning, implementation, quality, and maintenance across frontend, backend, architecture, design, and delivery.",
+    "developerName": "Aliaksei Hurynovich",
+    "category": "Productivity",
+    "capabilities": ["Write"],
+    "defaultPrompt": [
+      "Plan and structure this web application project.",
+      "Help me build or improve this web application.",
+      "Review this web application and propose the next steps."
+    ]
+  }
+}

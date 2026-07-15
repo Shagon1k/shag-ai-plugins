@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plan Web App"
+  short_description: "Plan and maintain web app project guidance"
+  default_prompt: "Use $plan-web-app to plan, align, or audit this web app's living project guidance."

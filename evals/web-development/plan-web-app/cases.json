@@ -1,0 +1,56 @@
+{
+  "skill": "plan-web-app",
+  "cases": [
+    {
+      "id": "idea-full-setup",
+      "request": "Use $plan-web-app to prepare project guidance for this new web app. Start from the available product brief and ask only for material gaps before writing.",
+      "files": {
+        "PRODUCT_BRIEF.md": "# QueueLight\n\nQueueLight helps small clinics publish live waiting-time estimates for walk-in patients. The MVP should prove that reception staff can update the queue quickly and patients can check it without an account. Start with one clinic and English only. No code or design assets exist yet."
+      },
+      "expectations": [
+        "Uses full setup mode and classifies the project as Idea",
+        "Asks only blocking or cross-document questions not answered by the brief",
+        "Does not present proposed design or architecture as implemented or accepted",
+        "Does not invent quantitative UX targets or domain constraints from the approved polling interval",
+        "Produces the minimum useful artifact set without empty template sections",
+        "Keeps every baseline web-app consideration with a decision status and reason",
+        "Creates CLAUDE.md as an import of AGENTS.md",
+        "Passes full project-guidance validation"
+      ]
+    },
+    {
+      "id": "existing-partial-alignment",
+      "request": "Use $plan-web-app to align this existing application's project guidance. Preserve useful existing content and identify conflicts before proposing writes.",
+      "files": {
+        "package.json": "{\n  \"scripts\": {\n    \"dev\": \"next dev\",\n    \"build\": \"next build\",\n    \"test\": \"vitest run\"\n  }\n}",
+        "ROADMAP.md": "# Atlas Desk Roadmap\n\n## MVP\n\n- Account login\n- Shared customer notes\n\n## Current phase\n\nImplement customer search.\n",
+        "DESIGN_NOTES.md": "# Design notes\n\nDesktop-first operations UI. Mobile must remain usable for urgent lookup. Loading, empty, error, and permission states are required.\n",
+        "ARCHITECTURE_OLD.md": "# Architecture notes\n\nThe app was expected to use a separate frontend and API, but the repository currently contains one Next.js application.\n"
+      },
+      "expectations": [
+        "Uses full setup/alignment mode and classifies the project as Existing",
+        "Surfaces the architecture conflict instead of silently selecting one source",
+        "Preserves the existing Roadmap scope and current phase unless the developer approves a change",
+        "Uses only commands proven by package.json",
+        "Separates verified current implementation from proposed direction",
+        "Includes strict documentation impact triggers in AGENTS.md",
+        "Passes full project-guidance validation after approved writes"
+      ]
+    },
+    {
+      "id": "focused-design-repair",
+      "request": "Use $plan-web-app to repair DESIGN.md only. Do not create the rest of the default guidance set unless a necessary cross-link requires a small adjacent update.",
+      "files": {
+        "DESIGN.md": "# Mercury Design\n\n## Direction\n\nFast and clean.\n\n## Screens\n\nDashboard and settings.\n",
+        "ui-reference.html": "<main><h1>Dashboard</h1><section aria-label=\"Recent activity\"></section><a href=\"/settings\">Settings</a></main>"
+      },
+      "expectations": [
+        "Uses focused update mode with Design as the selected artifact",
+        "Treats the HTML as evidence for visible structure, not hidden states or production architecture",
+        "Asks only for material design gaps",
+        "Does not create Roadmap, Architecture, AGENTS, ADR, or docs-map files solely to satisfy full mode",
+        "Passes focused project-guidance validation for Design"
+      ]
+    }
+  ]
+}
