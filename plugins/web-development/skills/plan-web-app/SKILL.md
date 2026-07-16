@@ -119,8 +119,23 @@ Ask grouped questions in one message whenever practical. Prioritize choices that
 documents: product boundary, users, deployment target, data sensitivity, auth, design maturity,
 and delivery constraints.
 
+There is no minimum question count: ask zero when reliable sources already cover the material
+decisions. Otherwise target 3-7 atomic questions in the first set, with a soft cap of 10. An
+atomic question asks for one developer decision even when several questions share a topic
+heading; do not hide independent decisions inside one numbered question to satisfy the cap.
+
+If more than 10 material gaps remain, ask the highest-impact blockers first. Offer conservative
+defaults for defaultable gaps and record deferrable gaps instead of extending the interview.
+Ask another set only when the first answers leave or reveal blockers or source conflicts that
+cannot safely be defaulted or deferred.
+
 For each suggested default, state the trade-off briefly. Do not force optional concerns into the
 project simply because a template contains them.
+
+Stop asking when the artifact plan and minimum useful depth for the selected mode/state can be
+produced without invented current state or accepted decisions, and every remaining material gap
+is answered, approved as a default, or explicitly marked provisional/deferred with a revisit
+condition.
 
 ### 5. Confirm the Artifact Plan
 

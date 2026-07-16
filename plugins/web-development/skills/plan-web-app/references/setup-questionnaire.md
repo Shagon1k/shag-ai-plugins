@@ -58,8 +58,27 @@ Ask only when relevant:
 
 ## Question Rules
 
+- Classify each uncovered item before asking:
+
+| Gap type | Action |
+| --- | --- |
+| `Blocking` | Ask now; it prevents a coherent artifact plan or affects multiple outputs. |
+| `Defaultable` | Offer a conservative default with its trade-off. |
+| `Deferrable` | Record it as deferred with an owner or revisit trigger; do not ask now. |
+| `Not applicable` | Skip it; retain only the required Roadmap baseline row with a reason. |
+
 - Do not ask a question already answered by a reliable source.
 - Ask for inaccessible sources before asking the developer to transcribe them.
 - Offer a conservative default when several choices are reasonable; state its trade-off.
 - Do not force optional sophistication into a small app.
 - Keep unanswered relevant items visible as provisional or deferred; never disguise them as done.
+- Count atomic decisions, not topic headings. One numbered question must not contain several
+  independent decisions merely to stay under the budget.
+- Ask zero questions when no material gaps remain. Otherwise target 3-7 atomic questions and use
+  10 as a soft cap for the first set.
+- When the cap would be exceeded, ask the highest-impact blockers first; default or defer the rest.
+  Ask another set only for blockers or source conflicts that remain after the answers are mapped.
+
+Stop when all remaining material gaps are answered, approved as defaults, or explicitly
+provisional/deferred, and the artifact plan can be proposed at the selected mode/state depth
+without inventing current behavior or accepted decisions.

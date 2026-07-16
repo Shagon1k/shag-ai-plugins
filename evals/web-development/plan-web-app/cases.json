@@ -10,6 +10,7 @@
       "expectations": [
         "Uses full setup mode and classifies the project as Idea",
         "Asks only blocking or cross-document questions not answered by the brief",
+        "Targets 3-7 atomic questions, respects the soft cap of 10, and defaults or defers lower-impact gaps",
         "Does not present proposed design or architecture as implemented or accepted",
         "Does not invent quantitative UX targets or domain constraints from the approved polling interval",
         "Produces the minimum useful artifact set without empty template sections",
