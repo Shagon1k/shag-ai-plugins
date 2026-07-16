@@ -12,7 +12,7 @@ const TEST_FILES = SCRIPT_FILES.filter((file) => file.endsWith(".test.mjs"));
 const JSON_FILES = [
   "package.json",
   "package-lock.json",
-  ...fs.globSync("{.agents,.claude-plugin,plugins,evals}/**/*.json", { cwd: ROOT }),
+  ...fs.globSync("{.agents,.claude-plugin,.cursor-plugin,plugins,evals}/**/*.json", { cwd: ROOT }),
 ].sort();
 
 function run(label, args) {

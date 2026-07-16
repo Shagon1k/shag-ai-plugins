@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CODEX_MARKETPLACE = path.join(ROOT, ".agents/plugins/marketplace.json");
 const CLAUDE_MARKETPLACE = path.join(ROOT, ".claude-plugin/marketplace.json");
+const CURSOR_MARKETPLACE = path.join(ROOT, ".cursor-plugin/marketplace.json");
 
 function relative(filePath) {
   return path.relative(ROOT, filePath);
@@ -68,31 +69,35 @@ function main() {
   const errors = [];
   let codex;
   let claude;
+  let cursor;
 
   try {
     codex = loadJson(CODEX_MARKETPLACE);
     claude = loadJson(CLAUDE_MARKETPLACE);
+    cursor = loadJson(CURSOR_MARKETPLACE);
   } catch (error) {
     console.error(`Marketplace validation failed:\n- ${error.message}`);
     return 1;
   }
 
-  if (codex.name !== claude.name) {
-    errors.push("Codex and Claude marketplace names differ");
+  if (new Set([codex.name, claude.name, cursor.name]).size !== 1) {
+    errors.push("Codex, Claude, and Cursor marketplace names differ");
   }
 
   const codexPlugins = pluginEntries(codex);
   const claudePlugins = pluginEntries(claude);
+  const cursorPlugins = pluginEntries(cursor);
   const codexNames = [...codexPlugins.keys()].sort();
   const claudeNames = [...claudePlugins.keys()].sort();
-  if (JSON.stringify(codexNames) !== JSON.stringify(claudeNames)) {
+  const cursorNames = [...cursorPlugins.keys()].sort();
+  if (!sameJson(codexNames, claudeNames) || !sameJson(codexNames, cursorNames)) {
     errors.push(
-      `Codex and Claude plugin sets differ: codex=${JSON.stringify(codexNames)}, ` +
-        `claude=${JSON.stringify(claudeNames)}`,
+      `Platform plugin sets differ: codex=${JSON.stringify(codexNames)}, ` +
+        `claude=${JSON.stringify(claudeNames)}, cursor=${JSON.stringify(cursorNames)}`,
     );
   }
 
-  const pluginNames = [...new Set([...codexNames, ...claudeNames])].sort();
+  const pluginNames = [...new Set([...codexNames, ...claudeNames, ...cursorNames])].sort();
   const pluginDirectories = directoryNames(path.join(ROOT, "plugins"));
   if (!sameJson(pluginDirectories, pluginNames)) {
     errors.push(
@@ -104,22 +109,29 @@ function main() {
   for (const pluginName of pluginNames) {
     const codexEntry = codexPlugins.get(pluginName);
     const claudeEntry = claudePlugins.get(pluginName);
+    const cursorEntry = cursorPlugins.get(pluginName);
     if (codexEntry && !isExpectedCodexSource(codexEntry.source, pluginName)) {
       errors.push(`${pluginName}: invalid Codex marketplace source`);
     }
     if (claudeEntry && claudeEntry.source !== `./plugins/${pluginName}`) {
       errors.push(`${pluginName}: invalid Claude marketplace source`);
     }
+    if (cursorEntry && cursorEntry.source !== `./plugins/${pluginName}`) {
+      errors.push(`${pluginName}: invalid Cursor marketplace source`);
+    }
 
     const pluginRoot = path.join(ROOT, "plugins", pluginName);
     const codexManifestPath = path.join(pluginRoot, ".codex-plugin/plugin.json");
     const claudeManifestPath = path.join(pluginRoot, ".claude-plugin/plugin.json");
+    const cursorManifestPath = path.join(pluginRoot, ".cursor-plugin/plugin.json");
 
     let codexManifest;
     let claudeManifest;
+    let cursorManifest;
     try {
       codexManifest = loadJson(codexManifestPath);
       claudeManifest = loadJson(claudeManifestPath);
+      cursorManifest = loadJson(cursorManifestPath);
     } catch (error) {
       errors.push(error.message);
       continue;
@@ -131,8 +143,20 @@ function main() {
     if (claudeManifest.name !== pluginName) {
       errors.push(`${relative(claudeManifestPath)} name differs from catalog`);
     }
-    if (codexManifest.version !== claudeManifest.version) {
-      errors.push(`${pluginName}: Codex and Claude versions differ`);
+    if (cursorManifest.name !== pluginName) {
+      errors.push(`${relative(cursorManifestPath)} name differs from catalog`);
+    }
+    if (new Set([codexManifest.version, claudeManifest.version, cursorManifest.version]).size !== 1) {
+      errors.push(`${pluginName}: Codex, Claude, and Cursor versions differ`);
+    }
+    if (
+      new Set([codexManifest.description, claudeManifest.description, cursorManifest.description])
+        .size !== 1
+    ) {
+      errors.push(`${pluginName}: platform descriptions differ`);
+    }
+    if (cursorManifest.skills !== "./skills/") {
+      errors.push(`${relative(cursorManifestPath)} must expose ./skills/`);
     }
 
     const skillsRoot = path.join(pluginRoot, "skills");
@@ -167,7 +191,9 @@ function main() {
     return 1;
   }
 
-  console.log(`Marketplace validation passed: ${codex.name} (${codexPlugins.size} plugins)`);
+  console.log(
+    `Marketplace validation passed: ${codex.name} (${codexPlugins.size} plugins, 3 platforms)`,
+  );
   return 0;
 }
 

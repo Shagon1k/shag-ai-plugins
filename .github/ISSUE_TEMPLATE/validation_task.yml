@@ -1,0 +1,62 @@
+name: Validation task
+description: Plan a manual, integration, or real-world verification pass
+title: "[Validation]: "
+labels:
+  - validation
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Briefly describe what needs to be validated and why automated checks are insufficient.
+    validations:
+      required: true
+
+  - type: textarea
+    id: setup
+    attributes:
+      label: Test setup
+      description: Define the product version, environment, fixtures, accounts, or clean-state requirements.
+      placeholder: |
+        - Product/version: ...
+        - Operating system: ...
+        - Starting state: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: scenarios
+    attributes:
+      label: Scenarios
+      description: List the concrete workflows or cases to exercise.
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: success-criteria
+    attributes:
+      label: Success criteria
+      description: List the observable results required to consider the validation successful.
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and follow-up
+      description: Describe what evidence to capture and which docs, tests, or follow-up issues may need updating.
+      placeholder: Logs, screenshots, generated artifacts, discovered friction, or follow-up decisions.
+
+  - type: checkboxes
+    id: existing-issues
+    attributes:
+      label: Existing issues
+      options:
+        - label: I searched for an existing issue covering this validation.
+          required: true
