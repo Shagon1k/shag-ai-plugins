@@ -20,13 +20,13 @@
     {
       "name": "engineering-tools",
       "source": "./plugins/engineering-tools",
-      "description": "Developer workflows for commits, technical debt, and AI context efficiency.",
+      "description": "Developer workflows for change assessment, commits, technical debt, and AI context efficiency.",
       "author": {
         "name": "Aliaksei Hurynovich",
         "email": "shagon1k@gmail.com"
       },
       "category": "productivity",
-      "tags": ["developer-tools", "git", "technical-debt", "agent-context"]
+      "tags": ["developer-tools", "complexity-assessment", "git", "technical-debt", "agent-context"]
     }
   ]
 }

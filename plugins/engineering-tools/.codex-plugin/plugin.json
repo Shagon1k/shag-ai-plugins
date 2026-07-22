@@ -1,7 +1,7 @@
 {
   "name": "engineering-tools",
-  "version": "0.1.0",
-  "description": "Developer workflows for commits, technical debt, and AI context efficiency.",
+  "version": "0.2.0",
+  "description": "Developer workflows for change assessment, commits, technical debt, and AI context efficiency.",
   "author": {
     "name": "Aliaksei Hurynovich",
     "email": "shagon1k@gmail.com"
@@ -9,12 +9,13 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Engineering Tools",
-    "shortDescription": "Maintain codebases and agent workflows.",
-    "longDescription": "Audit technical debt, prepare Conventional Commits, and reduce unnecessary AI-agent context cost with focused developer workflows.",
+    "shortDescription": "Size work and maintain codebase workflows.",
+    "longDescription": "Assess software-change complexity, audit technical debt, prepare Conventional Commits, and reduce unnecessary AI-agent context cost with focused developer workflows.",
     "developerName": "Aliaksei Hurynovich",
     "category": "Productivity",
     "capabilities": ["Write"],
     "defaultPrompt": [
+      "Assess this software change's implementation complexity and recommend the next step.",
       "Audit this codebase for actionable technical debt.",
       "Prepare a Conventional Commit from the staged changes.",
       "Use tokenomy to audit this agent configuration."

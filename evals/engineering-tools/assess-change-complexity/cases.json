@@ -1,0 +1,115 @@
+{
+  "skill": "assess-change-complexity",
+  "execution": {
+    "sandbox": "read-only",
+    "timeoutMs": 300000
+  },
+  "cases": [
+    {
+      "id": "exact-pattern-local-fix",
+      "request": "Use $assess-change-complexity to assess adding trim-and-lowercase normalization to normalizePhone. The acceptance criterion is that it behaves exactly like normalizeEmail before returning. Do not implement it.",
+      "files": {
+        "src/normalize.js": "export function normalizeEmail(value) {\n  return value.trim().toLowerCase();\n}\n\nexport function normalizePhone(value) {\n  return value;\n}\n",
+        "src/normalize.test.js": "import assert from 'node:assert/strict';\nimport test from 'node:test';\nimport { normalizeEmail, normalizePhone } from './normalize.js';\n\ntest('normalizes email', () => {\n  assert.equal(normalizeEmail(' A@B.COM '), 'a@b.com');\n});\n\ntest('returns phone', () => {\n  assert.equal(normalizePhone('123'), '123');\n});\n"
+      },
+      "expectations": [
+        "Rates confidence High because the requirement and exact local precedent are present",
+        "Produces an XS final size with no driver guardrail",
+        "Uses the exact normalizeEmail precedent as evidence instead of generic assumptions",
+        "Recommends implementation or a lightweight plan without forcing discovery",
+        "Does not modify the fixture"
+      ]
+    },
+    {
+      "id": "familiar-full-stack-change",
+      "request": "Use $assess-change-complexity to assess adding optional displayName editing to the existing profile page. Follow the existing bio field from UI form through API, service, and relational persistence. Add a nullable display_name column with an online additive migration. Acceptance criteria: trim input, allow 2-50 characters, treat an empty value as clearing the column to null, and keep existing API clients backward compatible. Do not implement it.",
+      "files": {
+        "src/profile-form.js": "export const profileFields = ['bio'];\nexport function submitProfile(api, values) { return api.patch('/profile', values); }\n",
+        "src/profile-route.js": "export async function patchProfile(request, userId, profileService) {\n  const { bio } = await request.json();\n  return profileService.update(userId, { bio });\n}\n",
+        "src/profile-service.js": "export function createProfileService(repository) {\n  return { update: (userId, patch) => repository.updateProfile(userId, patch) };\n}\n",
+        "src/profile-repository.js": "export function createProfileRepository(db) {\n  return {\n    updateProfile(userId, { bio }) {\n      return db.query('UPDATE users SET bio = $1 WHERE id = $2', [bio || null, userId]);\n    },\n  };\n}\n",
+        "db/schema.sql": "CREATE TABLE users (\n  id BIGINT PRIMARY KEY,\n  bio TEXT NULL\n);\n",
+        "db/migrations/001_add_bio.sql": "ALTER TABLE users ADD COLUMN bio TEXT NULL;\n",
+        "src/profile-form.test.js": "// Existing UI, route, service, and repository tests cover the bio field.\n"
+      },
+      "expectations": [
+        "Recognizes a familiar but substantial vertical change with High confidence",
+        "Produces a final size in the M band without a guardrail increase",
+        "Treats file and layer count as breadth evidence rather than separate dimensions",
+        "Recommends proceeding to a detailed plan and does not force brainstorming solely because it is full-stack",
+        "Includes the specified additive migration and clearing semantics without inventing destructive migration risk"
+      ]
+    },
+    {
+      "id": "concentrated-financial-risk",
+      "request": "Use $assess-change-complexity to assess replacing the equality check in authorizeWireTransfer with the existing constantTimeEqual helper. This is a one-function change with an exact precedent and no data migration, but a false authorization can directly release customer funds. Do not implement it.",
+      "files": {
+        "src/wire-transfer.js": "import { constantTimeEqual } from './security.js';\n\nexport function authorizeWireTransfer(provided, expected) {\n  return provided === expected;\n}\n",
+        "src/security.js": "export function constantTimeEqual(left, right) {\n  if (left.length !== right.length) return false;\n  let mismatch = 0;\n  for (let index = 0; index < left.length; index += 1) mismatch |= left.charCodeAt(index) ^ right.charCodeAt(index);\n  return mismatch === 0;\n}\n"
+      },
+      "expectations": [
+        "Keeps breadth and novelty low while rating financial operational risk XXL",
+        "Shows a low baseline total but applies the one-XXL driver floor",
+        "Produces final size L rather than allowing the concentrated risk to average down to S",
+        "Recommends a relevant security or financial-risk review without claiming the codebase is secure",
+        "Reports the guardrail explicitly"
+      ]
+    },
+    {
+      "id": "destructive-data-migration",
+      "request": "Use $assess-change-complexity to assess replacing plaintext customer_reference with a one-way hash for 50 million rows. The old value will be deleted, three services deploy independently, reads must remain available, and rollback after cutover cannot reconstruct the plaintext. Do not plan or implement it.",
+      "files": {
+        "ARCHITECTURE.md": "# Customer reference flow\n\nServices `accounts`, `billing`, and `support` read `customer_reference` from the shared customer database. They deploy independently.\n",
+        "migrations/README.md": "Production migrations are online and require a backfill, compatibility window, observed cutover, and explicit rollback decision.\n"
+      },
+      "expectations": [
+        "Identifies destructive data change, operational risk, and coordinated delivery as multiple XL-or-higher drivers",
+        "Applies an XL or XXL driver floor when it exceeds the baseline",
+        "Recommends decomposition plus migration, compatibility, cutover, and rollback strategy",
+        "Does not route directly to an ordinary implementation plan",
+        "Does not pretend irreversible deletion has a straightforward rollback"
+      ]
+    },
+    {
+      "id": "unclear-notification-provider",
+      "request": "Use $assess-change-complexity to assess adding customer notifications. Product has not decided between email, SMS, or both; no provider is selected; delivery guarantees, consent rules, volume, and supported countries are TBD. Do not implement it.",
+      "files": {
+        "PRODUCT_NOTES.md": "# Notifications\n\nNotify customers about important account events. Channel and provider TBD.\n"
+      },
+      "expectations": [
+        "Rates assessment confidence Low rather than inflating all numeric dimensions",
+        "Lists the few unresolved facts most likely to change the implementation shape",
+        "Uses scenarios or a provisional range instead of false precision",
+        "Routes to clarification or discovery before planning regardless of provisional size",
+        "Does not invent providers, file counts, consent rules, or delivery guarantees"
+      ]
+    },
+    {
+      "id": "project-calibration-comparison",
+      "request": "Use $assess-change-complexity to assess adding an optional timezone field to the existing user preferences endpoint and form. Follow the locale field pattern. No migration is required. Use applicable project calibration if present, but do not update it or implement the feature.",
+      "files": {
+        "src/preferences.js": "export const preferenceFields = ['locale'];\nexport function patchPreferences(store, patch) { return store.merge('preferences', patch); }\n",
+        "_docs/complexity-calibration.md": "# Complexity calibration\n\n## Scope\n- Team/repositories: this repository\n- Last reviewed: 2026-07-10\n\n## Completed changes\n\n### 2026-07-08 — Add optional locale preference\n- Reference: PR-42\n- Initial assessment: S, 12/36, High confidence; familiar UI/API/store path\n- Actual change surface: form, endpoint, store merge, and tests; no migration\n- Unexpected work: none\n- Outcome: completed without redesign or splitting\n- Timing: omitted\n- Calibration note: optional preference fields following the established merge path are representative S changes\n"
+      },
+      "expectations": [
+        "Reads and cites the applicable locale calibration entry",
+        "Reports the fixed-rubric assessment before or alongside the local comparison",
+        "Uses calibration as supporting evidence without silently changing thresholds",
+        "Does not infer duration because the calibration entry omits timing",
+        "Does not modify or duplicate the calibration entry"
+      ]
+    },
+    {
+      "id": "unsupported-calendar-commitment",
+      "request": "Use $assess-change-complexity to tell me the exact number of developer-days and guaranteed delivery date for adding SSO. We have no selected identity provider, architecture notes, acceptance criteria, or historical delivery data.",
+      "files": {},
+      "expectations": [
+        "Explains that the skill does not turn complexity into an exact calendar commitment without team calibration",
+        "Rates confidence Low and identifies the missing decisions",
+        "May provide provisional complexity scenarios but does not fabricate an exact duration or date",
+        "Routes to discovery and requirements clarification",
+        "Keeps business urgency separate from implementation complexity"
+      ]
+    }
+  ]
+}

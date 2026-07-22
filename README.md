@@ -11,13 +11,14 @@ Bundled validators and audits use Node.js 22 or newer. Husky is the only develop
 | Plugin | Purpose | Status |
 | --- | --- | --- |
 | `web-development` | Plan, build, review, and maintain web applications | Codex, Claude Code, and Cursor |
-| `engineering-tools` | Audit technical debt, prepare commits, and optimize agent context | Codex, Claude Code, and Cursor |
+| `engineering-tools` | Assess change complexity, audit technical debt, prepare commits, and optimize agent context | Codex, Claude Code, and Cursor |
 
 ## Skills
 
 | Plugin | Skill | Purpose | Cursor compatibility |
 | --- | --- | --- | --- |
 | `web-development` | `plan-web-app` | Create, align, and maintain Roadmap, Design, Architecture, ADR, and agent guidance for a web app | Full workflow; clean-project smoke test pending |
+| `engineering-tools` | `assess-change-complexity` | Size proposed software changes with an evidence-backed XS–XXL score, driver guardrails, confidence, and optional project calibration | Full workflow |
 | `engineering-tools` | `conventional-commit` | Prepare a Conventional Commit from staged changes with an explicit confirmation gate | Full workflow |
 | `engineering-tools` | `tech-debt-audit` | Audit and maintain a prioritized, deduplicated technical-debt roadmap | Full workflow; Jira remains tool-dependent |
 | `engineering-tools` | `tokenomy` | Reduce unnecessary AI-agent context and token usage | Guidance and Cursor MCP config discovery; transcript attribution remains Claude/Codex-specific |
@@ -92,6 +93,30 @@ Run the complete three-platform validation suite with one command:
 npm run validate
 ```
 
+Run the isolated fresh-model evaluation suite for change-complexity assessment with:
+
+```bash
+npm run eval:assess-change-complexity
+```
+
+All skill evals use the shared runner. Run any cases file directly with:
+
+```bash
+npm run eval:skill -- evals/<plugin>/<skill>/cases.json
+```
+
+Run one case while iterating with:
+
+```bash
+npm run eval:assess-change-complexity -- --case concentrated-financial-risk
+```
+
+Each `cases.json` declares its sandbox mode. The runner materializes only the case's fixture files
+in a temporary directory and invokes the candidate in ephemeral mode without exposing expectations.
+It then runs a separate read-only semantic grader under a strict JSON schema. Filesystem integrity,
+grade ordering, completeness, and the final exit code are deterministic; every expectation must
+receive `PASS`. Keep skill directories declarative; do not add a separate runner per eval suite.
+
 The suite checks marketplace and plugin structure, validates JavaScript syntax, and runs every
 bundled Node.js test. A Husky `pre-commit` hook runs the same command before each commit because
 the suite is fast enough to keep feedback local. GitHub Actions repeats it on every push and pull
@@ -110,8 +135,12 @@ claude plugin validate . --strict
 
 ```text
 shag-ai-plugins/
+  AGENTS.md
+  CLAUDE.md
   .github/workflows/validate.yml
   .husky/pre-commit
+  .agents/skill-development.md
+  .agents/skill-evals.md
   .agents/plugins/marketplace.json
   .claude-plugin/marketplace.json
   .cursor-plugin/marketplace.json
