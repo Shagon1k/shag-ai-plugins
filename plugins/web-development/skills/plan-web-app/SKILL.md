@@ -14,6 +14,8 @@ Read these resources when their step begins:
 
 - `references/artifact-ownership.md`: read before choosing outputs or resolving overlap.
 - `references/setup-questionnaire.md`: read after source inspection; ask only uncovered items.
+- `references/phase-planning.md`: read before creating or materially restructuring a multi-phase
+  delivery plan.
 - `references/validation-checklist.md`: read before final validation.
 - `assets/*.template.md`: use as scaffolds, not text to copy blindly.
 - `scripts/validate-project-guidance.mjs`: run after generating or aligning the documents.
@@ -153,6 +155,9 @@ outputs were explicitly requested, a concise confirmation is enough.
 
 ### 6. Render and Align the Documents
 
+Before creating or materially restructuring a multi-phase delivery plan, read
+`references/phase-planning.md`.
+
 Use the templates as section checklists and formatting scaffolds. Apply these rules:
 
 1. Fill from verified sources first, approved answers second, and explicit provisional choices
@@ -177,6 +182,22 @@ Use the templates as section checklists and formatting scaffolds. Apply these ru
    affected documentation part of the same implementation task.
 11. Keep the final documents useful at their current maturity. Do not preserve empty scaffolding
    for hypothetical future complexity.
+12. Give each delivery phase one independently verifiable outcome, visible dependencies, explicit
+    exclusions, and evidence requirements. Split phases that bundle separable outcomes or cannot be
+    reviewed coherently.
+13. In every multi-phase Roadmap, state the progressive-elaboration policy: make the active or next
+    phase implementation-ready, while keeping later phases precise enough for sequencing without
+    inventing task-level detail.
+14. For roadmaps longer than six delivery phases, propose a human verification and stabilization
+    checkpoint after every five to six delivery phases, or record why another cadence is safer. These
+    checkpoints supplement rather than replace ordinary tests and acceptance checks.
+15. In every multi-phase Roadmap, state the temporary phase-document lifecycle: create one when the
+    active phase needs transient implementation detail, link it from the docs map while active,
+    consolidate durable facts into canonical guidance, and remove the temporary document and link
+    when the phase closes. Do not create the file before that detail is needed.
+16. When production deployment is in scope, keep release readiness, final human acceptance, and
+    production deployment as three distinct acceptance boundaries; do not combine readiness evidence
+    with the human go/no-go decision.
 
 ### 7. Validate
 

@@ -56,6 +56,23 @@
         "Does not create Roadmap, Architecture, AGENTS, ADR, or docs-map files solely to satisfy full mode",
         "Passes focused project-guidance validation for Design"
       ]
+    },
+    {
+      "id": "long-roadmap-restructure",
+      "request": "Use $plan-web-app to update ROADMAP.md in place. All listed capabilities are approved MVP scope, but the current phases are too broad. Split them into a credible implementation sequence, add recurring human verification and bug-fixing gates, and make the phase descriptions useful without pretending we already know file-level implementation details. This restructuring is approved; preserve the product scope and do not create the rest of the default guidance set.",
+      "files": {
+        "ROADMAP.md": "# FilmCircle Roadmap\n\n## Product contract\n\nRegistered users form private clubs, nominate and select films, record group watch sessions, rate watched films, and build shared and personal history. All capabilities below are MVP.\n\n## Current phase plan\n\n### Phase 0 — Setup\nRepository setup, design system, public site, authentication, and club roles.\n\n### Phase 1 — Core product\nClub invitations, film-provider search, session creation, nominations, voting, watching, ratings, history, and personal library.\n\n### Phase 2 — Finish\nStatistics, achievements, notifications, profile/privacy/export/deletion, subscriptions, app administration, PWA/mobile, security, monitoring, SEO, and production deployment.\n\n## Progress\n\nNo application implementation has started.\n"
+      },
+      "expectations": [
+        "Uses focused update mode and preserves every approved MVP capability without creating unrelated guidance artifacts",
+        "Replaces the oversized activity buckets with dependency-ordered delivery phases that each have one independently verifiable outcome",
+        "Gives delivery phases visible dependencies, capability-level scope, acceptance checks, evidence requirements, deliverables, and explicit exclusions",
+        "Introduces human verification and bug-fixing checkpoints after each five-to-six-phase delivery block and states that they supplement normal phase tests",
+        "Defines severity-based checkpoint exit criteria so release-blocking findings cannot be carried into the next delivery block",
+        "Separates release readiness, final human acceptance, and production deployment into distinct acceptance boundaries",
+        "Uses progressive elaboration and a linked temporary active-phase document lifecycle without inventing future file, endpoint, or schema details",
+        "Does not mark unimplemented work complete or invent unsupported numeric product constraints"
+      ]
     }
   ]
 }

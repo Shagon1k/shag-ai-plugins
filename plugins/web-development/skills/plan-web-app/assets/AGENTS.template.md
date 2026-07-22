@@ -147,6 +147,20 @@ Documentation lifecycle:
 | Per-phase / temporary notes | `<PHASE_DOC_PATTERN>` |
 | Agent rules | `AGENTS.md`, `<RULES_DIR>` |
 
+Phase workflow:
+
+- Treat each Roadmap delivery phase as one independently verifiable outcome with explicit acceptance
+  and evidence requirements.
+- When the active phase needs task-level detail, create `<PHASE_DOC_PATTERN>` and link it from
+  `<DOCS_MAP_PATH>`. Keep transient tasks, verification matrices, and working notes there; do not make
+  it a second Roadmap, Design, Architecture, or ADR source.
+- At phase completion, record evidence, consolidate durable information into its canonical owner,
+  remove the temporary phase document, and update the docs map.
+- Follow the Roadmap's human verification cadence. Stabilization checkpoints review completed slices
+  together and do not replace per-phase tests, acceptance checks, or evidence.
+- Do not continue past a stabilization checkpoint with unresolved Blocker or Major findings. Defer
+  lower-severity findings only with an explicit rationale and revisit target.
+
 - When a reusable pattern emerges, propose adding it to the relevant `AGENTS.md` or rule file and
   wait for approval.
 

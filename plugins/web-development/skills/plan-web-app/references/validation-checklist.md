@@ -50,6 +50,24 @@ checklist covers meaning and consistency.
 - Non-applicable template rows were removed; deferred relevant concerns remain visible.
 - Every baseline web-app consideration remains visible, including justified `Not applicable` rows.
 
+## Phase Plan
+
+- Every delivery phase has one independently verifiable outcome, visible dependencies, an acceptance
+  boundary, required evidence, deliverables, and explicit exclusions.
+- Phases that bundle separable outcomes, unrelated journeys, or independently failing integrations
+  were split; tightly coupled work was not fragmented merely to increase phase count.
+- The sequence follows real dependencies and exposes high-risk assumptions before dependent polish.
+- The active or next phase is implementation-ready; later phases are specific enough for sequencing
+  without speculative endpoint, file, or task inventories.
+- A roadmap longer than six delivery phases proposes human verification and stabilization after every
+  five to six delivery phases, or records why a different cadence is safer.
+- Stabilization checkpoints exercise completed slices together, track findings by severity, define
+  exit criteria, and supplement rather than replace normal tests and phase acceptance.
+- Release readiness, final human acceptance, and production deployment have distinct acceptance
+  boundaries when production deployment is in scope.
+- Temporary phase documents are linked while active, do not replace canonical guidance, and have a
+  consolidation/removal rule for phase completion.
+
 ## Cleanup and Evidence
 
 - All `Template Setup` sections and template-only comments are removed.

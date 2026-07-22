@@ -179,10 +179,18 @@ This table owns route scope. Keep detailed layout, interaction, and responsive b
 ## 11. Phase Plan
 > Breaks the roadmap into executable slices with acceptance checks and evidence requirements.
 
-> Each phase needs acceptance criteria before work starts and evidence before completion is claimed.
+> Give each delivery phase one independently verifiable outcome. State that the active or next phase
+> is elaborated to implementation-ready detail while later phases stay at sequencing detail without
+> invented low-level work. State the temporary active-phase document lifecycle below. For roadmaps
+> longer than six delivery phases, consider a human verification and stabilization checkpoint after
+> every five to six delivery phases. Checkpoints supplement normal phase testing. When production
+> deployment is in scope, keep release readiness, final human acceptance, and deployment as three
+> distinct acceptance boundaries.
 
 ### Phase 0 — <Name> <status>
 **Goal:** <single outcome>
+
+**Dependencies:** <earlier phases, decisions, providers, or `None`>
 
 **Scope:**
 - [ ] <task>
@@ -198,6 +206,33 @@ This table owns route scope. Keep detailed layout, interaction, and responsive b
 **Deliverables:** <code/docs/config/user-facing change>
 
 **Out of scope:** <explicit exclusions>
+
+Phase-document lifecycle: when the active phase needs task-level detail, create a temporary document
+such as `_docs/phase-N-short-name.md` and link it from the docs map. At completion, move durable facts
+to their canonical documents, record evidence above, and remove both the temporary document and its
+docs-map link. Do not create temporary documents for future phases before that detail is needed.
+
+### Phase <N> — Human Verification & Bug Fixing <status>
+**Goal:** Verify the completed delivery slice as an integrated experience and resolve release-blocking
+quality issues.
+
+**Dependencies:** <preceding delivery phases>
+
+**Scope:**
+- [ ] Exercise completed user journeys, roles, states, responsive behavior, and relevant operational
+      paths.
+- [ ] Record findings in a severity-labelled issue register and fix/re-verify every Blocker and Major.
+- [ ] Record an explicit disposition and revisit target for accepted lower-severity findings.
+
+**Acceptance Check:**
+- [ ] Planned human review is complete and evidence is captured.
+- [ ] No unresolved Blocker or Major finding remains.
+
+**Evidence:** <issue register, screenshots, test output, review notes, or logs>
+
+**Deliverables:** <fixes, verification record, and aligned durable documentation>
+
+**Out of scope:** <later capabilities not included in the completed slice>
 
 ## 12. Decision Log
 > Keeps unresolved and intentionally deferred decisions in one place without mixing their states.
