@@ -9,6 +9,9 @@
   },
   "scripts": {
     "prepare": "husky",
+    "eval:skill": "node scripts/run-skill-evals.mjs",
+    "eval:assess-change-complexity": "node scripts/run-skill-evals.mjs evals/engineering-tools/assess-change-complexity/cases.json",
+    "eval:plan-web-app": "node scripts/run-skill-evals.mjs evals/web-development/plan-web-app/cases.json",
     "validate": "node scripts/validate.mjs",
     "validate:structure": "node scripts/validate-marketplace.mjs",
     "test": "node --test"

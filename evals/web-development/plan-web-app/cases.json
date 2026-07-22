@@ -1,5 +1,9 @@
 {
   "skill": "plan-web-app",
+  "execution": {
+    "sandbox": "workspace-write",
+    "timeoutMs": 300000
+  },
   "cases": [
     {
       "id": "idea-full-setup",

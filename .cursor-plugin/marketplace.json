@@ -16,7 +16,7 @@
     {
       "name": "engineering-tools",
       "source": "./plugins/engineering-tools",
-      "description": "Developer workflows for commits, technical debt, and AI context efficiency."
+      "description": "Developer workflows for change assessment, commits, technical debt, and AI context efficiency."
     }
   ]
 }

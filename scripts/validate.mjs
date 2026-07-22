@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const SCRIPT_FILES = fs.globSync("{scripts,plugins}/**/*.mjs", { cwd: ROOT }).sort();
+const SCRIPT_FILES = fs.globSync("{scripts,plugins,evals}/**/*.mjs", { cwd: ROOT }).sort();
 const TEST_FILES = SCRIPT_FILES.filter((file) => file.endsWith(".test.mjs"));
 const JSON_FILES = [
   "package.json",
