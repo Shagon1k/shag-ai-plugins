@@ -9,13 +9,13 @@
     {
       "name": "web-development",
       "source": "./plugins/web-development",
-      "description": "Reusable workflows for planning, building, reviewing, and maintaining web applications.",
+      "description": "Reusable workflows for planning, building, reviewing, and maintaining web applications, including optional GitHub work tracking.",
       "author": {
         "name": "Aliaksei Hurynovich",
         "email": "shagon1k@gmail.com"
       },
       "category": "productivity",
-      "tags": ["web-app", "frontend", "backend", "development", "architecture"]
+      "tags": ["web-app", "frontend", "backend", "development", "architecture", "github", "project-management"]
     },
     {
       "name": "engineering-tools",

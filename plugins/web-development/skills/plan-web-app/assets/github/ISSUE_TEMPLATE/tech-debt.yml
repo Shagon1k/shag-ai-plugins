@@ -1,0 +1,50 @@
+name: Technical debt
+description: Record actionable maintainability or engineering debt
+title: ""
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Debt
+      description: Describe the concrete maintainability, reliability, performance, or delivery problem.
+    validations:
+      required: true
+  - type: textarea
+    id: location
+    attributes:
+      label: Location
+      description: Point to the affected files, modules, services, or repository-wide concern.
+      placeholder: path/to/file.ext:line or project-wide location
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Explain the current cost or risk and why this should be scheduled.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-change
+    attributes:
+      label: Proposed change
+      description: Describe the smallest actionable improvement without prescribing unnecessary detail.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: Define evidence that proves the debt was reduced without changing required behavior.
+      placeholder: |
+        - [ ] ...
+        - [ ] Existing behavior remains verified.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and references
+      description: Link related Issues, incidents, measurements, decisions, or blocked work.
+    validations:
+      required: false

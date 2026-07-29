@@ -11,7 +11,7 @@
     {
       "name": "web-development",
       "source": "./plugins/web-development",
-      "description": "Reusable workflows for planning, building, reviewing, and maintaining web applications."
+      "description": "Reusable workflows for planning, building, reviewing, and maintaining web applications, including optional GitHub work tracking."
     },
     {
       "name": "engineering-tools",

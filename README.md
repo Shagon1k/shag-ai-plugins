@@ -17,7 +17,7 @@ Bundled validators and audits use Node.js 22 or newer. Husky is the only develop
 
 | Plugin | Skill | Purpose | Cursor compatibility |
 | --- | --- | --- | --- |
-| `web-development` | `plan-web-app` | Create, align, and maintain Roadmap, Design, Architecture, ADR, and agent guidance for a web app | Full workflow; clean-project smoke test pending |
+| `web-development` | `plan-web-app` | Create, align, and maintain web-app guidance with optional GitHub Issue/PR templates and a Project board | Full workflow; clean-project smoke test pending |
 | `engineering-tools` | `assess-change-complexity` | Size proposed software changes with an evidence-backed XS–XXL score, driver guardrails, confidence, and optional project calibration | Full workflow |
 | `engineering-tools` | `conventional-commit` | Prepare a Conventional Commit from staged changes with an explicit confirmation gate | Full workflow |
 | `engineering-tools` | `tech-debt-audit` | Audit and maintain a prioritized, deduplicated technical-debt roadmap | Full workflow; Jira remains tool-dependent |

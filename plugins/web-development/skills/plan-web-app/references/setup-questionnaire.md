@@ -45,6 +45,19 @@ material questions. Combine them into one grouped message when practical.
 - What Git/branch/commit policy applies? Must commits always require explicit approval?
 - Where should durable docs, temporary phase notes, environment docs, and decisions live?
 
+## Optional GitHub Work Tracking
+
+When the repository is hosted on GitHub, read `github-workflow.md` and ask one profile question:
+
+- `Skip`: leave GitHub templates, Projects, and work-tracking rules unchanged.
+- `Standard`: apply the baseline Issue forms, pull request template, Board, fields, and ownership
+  rules without another questionnaire.
+- `Customize`: ask only for deviations through the mini-questionnaire in that reference.
+
+Default to `Skip` when unanswered. Do not infer permission to mutate GitHub from the existence of a
+remote. For an existing GitHub setup, inspect current templates and linked Projects before asking
+the profile question.
+
 ## Conditional Checks
 
 Ask only when relevant:

@@ -25,6 +25,7 @@ Complete this section before using the file as project instructions, then delete
 | `<DESIGN_PATH>` | `DESIGN.md` |
 | `<ARCHITECTURE_PATH>` | `ARCHITECTURE.md` |
 | `<ADR_PATH>` | `_docs/decisions/README.md` |
+| Optional GitHub work tracking | Insert `GITHUB_WORK_TRACKING.template.md` only when the developer selected it |
 
 Remove every template-only instruction, unresolved placeholder, table row, and rule that does not apply to the project. Use `N/A` only while setting up; do not leave it in the final `AGENTS.md`.
 
@@ -122,14 +123,16 @@ contracts.
 
 | Artifact | Owns | Review and update when the task... |
 | --- | --- | --- |
-| `<ROADMAP_PATH>` | product scope, phases, progress/evidence, open and deferred work | changes scope or priority; starts, completes, blocks, or reschedules planned work; resolves or creates a Decision Log item |
+| `<ROADMAP_PATH>` | product scope, phases, progress/evidence, open and deferred work | changes Roadmap-owned scope or priority; starts, completes, blocks, or reschedules planned work; resolves or creates a Decision Log item |
 | `<DESIGN_PATH>` | experience direction, user flows, foundations, screens/states, components, design QA | changes visible behavior, interaction, content, responsive/accessibility behavior, design foundations, or implementation/QA status |
 | `<ARCHITECTURE_PATH>` | current/proposed structure, boundaries, data ownership, interfaces, runtime, delivery and operations | changes a boundary, dependency direction, data/interface contract, integration, environment, deployment, security, reliability, or operational guarantee |
 | `<ADR_PATH>` | durable rationale for significant technical choices | accepts, rejects, supersedes, or materially revisits a choice with meaningful alternatives or long-term consequences |
 
 After implementation, perform the impact check against every row above:
 
-1. Update every affected artifact in the same task without waiting for a separate documentation request.
+1. Update every affected artifact in the same task without waiting for a separate documentation
+   request, except where an enabled Work Tracking section explicitly reserves an artifact for direct
+   developer requests.
 2. Mark Roadmap work complete only with the evidence required by its acceptance check.
 3. Describe verified implementation as current and unimplemented direction as proposed; never
    make documentation look more certain than the evidence.
@@ -137,7 +140,11 @@ After implementation, perform the impact check against every row above:
    not require an ADR.
 5. If no artifact is affected, report `Documentation impact: none` with one short reason.
 
-A task is not complete until this impact check and all required documentation updates are done.
+A task is not complete until this impact check and all updates required by the applicable ownership
+rules are done.
+
+When GitHub work tracking is enabled, its Work Tracking section defines whether an Issue or the
+Roadmap owns new work. Do not duplicate routine Issue state in project guidance.
 
 Documentation lifecycle:
 

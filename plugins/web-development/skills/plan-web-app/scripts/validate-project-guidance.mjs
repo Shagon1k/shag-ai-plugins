@@ -14,6 +14,15 @@ const DEFAULT_DOCS = {
   "docs-map": "_docs/README.md",
   adr: "_docs/decisions/README.md",
 };
+const DEFAULT_GITHUB = {
+  "issue-templates": [
+    ".github/ISSUE_TEMPLATE/task.yml",
+    ".github/ISSUE_TEMPLATE/bug.yml",
+    ".github/ISSUE_TEMPLATE/tech-debt.yml",
+  ],
+  "issue-config": ".github/ISSUE_TEMPLATE/config.yml",
+  "pr-template": ".github/pull_request_template.md",
+};
 const LABELS = {
   agents: "agents",
   claude: "Claude adapter",
@@ -68,12 +77,45 @@ function expandHome(value) {
 
 function parseArgs(argv) {
   const configured = { ...DEFAULT_DOCS };
+  const github = {
+    enabled: false,
+    allowBlankIssues: false,
+    "issue-templates": [...DEFAULT_GITHUB["issue-templates"]],
+    "issue-config": DEFAULT_GITHUB["issue-config"],
+    "pr-template": DEFAULT_GITHUB["pr-template"],
+  };
   let projectRoot;
   let only;
 
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
-    if (argument === "--only") {
+    if (argument === "--github") {
+      github.enabled = true;
+    } else if (argument === "--allow-blank-issues") {
+      github.enabled = true;
+      github.allowBlankIssues = true;
+    } else if (argument === "--issue-templates") {
+      const value = argv[index + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error("--issue-templates requires a comma-separated list");
+      }
+      const paths = value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+      if (paths.length === 0) {
+        throw new Error("--issue-templates requires at least one path");
+      }
+      github.enabled = true;
+      github["issue-templates"] = paths;
+      index += 1;
+    } else if (argument === "--issue-config" || argument === "--pr-template") {
+      const value = argv[index + 1];
+      if (!value || value.startsWith("--")) throw new Error(`${argument} requires a path`);
+      github.enabled = true;
+      github[argument.slice(2)] = value;
+      index += 1;
+    } else if (argument === "--only") {
       const value = argv[index + 1];
       if (!value || value.startsWith("--")) throw new Error("--only requires a comma-separated list");
       const names = value
@@ -101,10 +143,11 @@ function parseArgs(argv) {
 
   if (!projectRoot) {
     throw new Error(
-      "usage: validate-project-guidance.mjs <project-root> [--only design,roadmap] [options]",
+      "usage: validate-project-guidance.mjs <project-root> [--only design,roadmap] " +
+        "[--github] [--allow-blank-issues] [options]",
     );
   }
-  return { projectRoot, configured, only };
+  return { projectRoot, configured, github, only };
 }
 
 function isFile(filePath) {
@@ -145,6 +188,38 @@ function markdownTargets(filePath) {
   );
 }
 
+function topLevelYamlValue(text, key) {
+  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return text.match(new RegExp(`^${escaped}:\\s*(.+)$`, "m"))?.[1]?.trim();
+}
+
+function hasTopLevelYamlKey(text, key) {
+  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`^${escaped}:(?:\\s|$)`, "m").test(text);
+}
+
+function validateIssueForm(filePath, relative, errors) {
+  const content = fs.readFileSync(filePath, "utf8");
+  for (const key of ["name", "description", "body"]) {
+    if (!hasTopLevelYamlKey(content, key)) {
+      errors.push(`${relative}: missing top-level Issue form key: ${key}`);
+    }
+  }
+
+  const ids = [...content.matchAll(/^\s+id:\s*([^\s#]+)\s*$/gm)].map((match) => match[1]);
+  if (ids.length === 0) errors.push(`${relative}: Issue form has no input ids`);
+
+  const duplicateIds = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))].sort();
+  if (duplicateIds.length > 0) {
+    errors.push(`${relative}: duplicate Issue form ids: ${duplicateIds.join(", ")}`);
+  }
+
+  const invalidIds = ids.filter((id) => !/^[a-zA-Z0-9_-]+$/.test(id));
+  if (invalidIds.length > 0) {
+    errors.push(`${relative}: invalid Issue form ids: ${invalidIds.join(", ")}`);
+  }
+}
+
 function relativeImport(fromFile, toFile) {
   return path.relative(path.dirname(fromFile), toFile).split(path.sep).join("/");
 }
@@ -165,6 +240,13 @@ function main() {
       resolveProjectPath(root, rawPath),
     ]),
   );
+  const githubPaths = {
+    "issue-templates": args.github["issue-templates"].map((rawPath) =>
+      resolveProjectPath(root, rawPath),
+    ),
+    "issue-config": resolveProjectPath(root, args.github["issue-config"]),
+    "pr-template": resolveProjectPath(root, args.github["pr-template"]),
+  };
   const selected = args.only ?? new Set(Object.keys(DEFAULT_DOCS));
   const fullSetup = args.only === undefined;
   const errors = [];
@@ -175,8 +257,22 @@ function main() {
     }
   }
 
+  const githubRequired = args.github.enabled
+    ? [
+        ...githubPaths["issue-templates"],
+        githubPaths["issue-config"],
+        githubPaths["pr-template"],
+      ]
+    : [];
+  for (const filePath of githubRequired) {
+    if (!isFile(filePath)) {
+      errors.push(`missing required GitHub workflow file: ${path.relative(root, filePath)}`);
+    }
+  }
+
   const selectedExisting = [...selected].map((name) => paths[name]).filter(isFile);
-  for (const filePath of selectedExisting) {
+  const githubExisting = githubRequired.filter(isFile);
+  for (const filePath of [...selectedExisting, ...githubExisting]) {
     const text = fs.readFileSync(filePath, "utf8");
     const relative = path.relative(root, filePath);
 
@@ -232,6 +328,60 @@ function main() {
     }
   }
 
+  if (args.github.enabled) {
+    if (!isFile(paths.agents)) {
+      errors.push(`missing required agents for GitHub work tracking: ${args.configured.agents}`);
+    } else {
+      const content = fs.readFileSync(paths.agents, "utf8");
+      const requiredPatterns = [
+        ["Work Tracking section", /## Work Tracking/],
+        ["GitHub Issue ownership", /GitHub Issues/],
+        ["Project Status and Priority ownership", /Status[\s\S]{0,80}Priority|Priority[\s\S]{0,80}Status/],
+        ["explicit Issue creation rule", /routine implementation request/i],
+        ["explicit Roadmap update rule", /ROADMAP\.md[\s\S]{0,160}explicit developer request/i],
+      ];
+      for (const [label, pattern] of requiredPatterns) {
+        if (!pattern.test(content)) {
+          errors.push(`${args.configured.agents}: missing ${label}`);
+        }
+      }
+    }
+
+    for (const filePath of githubPaths["issue-templates"]) {
+      if (isFile(filePath)) validateIssueForm(filePath, path.relative(root, filePath), errors);
+    }
+
+    if (isFile(githubPaths["issue-config"])) {
+      const content = fs.readFileSync(githubPaths["issue-config"], "utf8");
+      const blankIssues = topLevelYamlValue(content, "blank_issues_enabled");
+      if (!["true", "false"].includes(blankIssues)) {
+        errors.push(
+          `${args.github["issue-config"]}: blank_issues_enabled must be true or false`,
+        );
+      } else if (!args.github.allowBlankIssues && blankIssues !== "false") {
+        errors.push(
+          `${args.github["issue-config"]}: blank_issues_enabled must be false for this profile`,
+        );
+      }
+    }
+
+    if (isFile(githubPaths["pr-template"])) {
+      const content = fs.readFileSync(githubPaths["pr-template"], "utf8");
+      const requiredPatterns = [
+        ["Summary section", /^## Summary\s*$/m],
+        ["Related issue section", /^## Related issue\s*$/m],
+        ["Issue closing keyword", /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#/i],
+        ["Verification section", /^## Verification\s*$/m],
+        ["Documentation impact section", /^## Documentation impact\s*$/m],
+      ];
+      for (const [label, pattern] of requiredPatterns) {
+        if (!pattern.test(content)) {
+          errors.push(`${args.github["pr-template"]}: missing ${label}`);
+        }
+      }
+    }
+  }
+
   if (fullSetup || selected.has("claude")) {
     if (isFile(paths.claude) && isFile(paths.agents)) {
       const expectedImport = `@${relativeImport(paths.claude, paths.agents)}`;
@@ -255,7 +405,8 @@ function main() {
 
   const mode = fullSetup ? "full setup" : "focused update";
   console.log(
-    `Project guidance validation passed: ${selectedExisting.length} documents checked (${mode})`,
+    `Project guidance validation passed: ${selectedExisting.length + githubExisting.length} ` +
+      `files checked (${mode}${args.github.enabled ? ", GitHub workflow" : ""})`,
   );
   return 0;
 }

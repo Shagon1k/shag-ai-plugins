@@ -73,6 +73,42 @@
         "Uses progressive elaboration and a linked temporary active-phase document lifecycle without inventing future file, endpoint, or schema details",
         "Does not mark unimplemented work complete or invent unsupported numeric product constraints"
       ]
+    },
+    {
+      "id": "github-standard-setup",
+      "request": "Use $plan-web-app for a full setup of this GitHub-hosted greenfield web app. Apply the Standard GitHub work-tracking profile; do not ask customization questions. You are approved to create or align the local guidance and .github files. Create the remote GitHub Project only if an authenticated GitHub capability is actually available; otherwise finish the local setup and name the exact remote remainder without fabricating a URL or state. Mark unspecified product decisions provisional or deferred instead of blocking the setup.",
+      "files": {
+        "PRODUCT_BRIEF.md": "# Patchbay\n\nPatchbay helps small software teams publish short maintenance windows and let customers subscribe to updates. The MVP proves that an operator can publish a window and a visitor can view it without an account. Operator authentication is required. English-only responsive web UI. The repository will be hosted at github.com/example/patchbay.",
+        "package.json": "{\n  \"scripts\": {\n    \"dev\": \"next dev\",\n    \"build\": \"next build\",\n    \"test\": \"vitest run\",\n    \"lint\": \"eslint .\"\n  }\n}"
+      },
+      "expectations": [
+        "Uses full setup mode, classifies the project as Greenfield, and applies Standard without a GitHub customization questionnaire",
+        "Creates task.yml, bug.yml, tech-debt.yml, config.yml, and pull_request_template.md under the standard .github paths",
+        "Disables blank Issues and keeps the Issue forms free of invented labels, assignees, organization issue types, or Project identifiers",
+        "Adds an English Work Tracking contract to AGENTS.md that requires explicit Issue-creation requests and does not treat routine implementation requests as authorization",
+        "Makes GitHub Issues canonical for executable work, the linked Project canonical for Status and Priority, and ROADMAP.md direct-request-only for updates",
+        "Uses a Board with Backlog, In progress, Done, and Won't do plus Priority P0-P3, defaults agent-created Issues to Backlog and P2, and auto-adds Issues but not pull requests",
+        "Does not claim a remote Project URL, fields, view, or workflow were created without read-back evidence",
+        "Passes full project-guidance validation with the GitHub workflow enabled"
+      ]
+    },
+    {
+      "id": "github-customize-mini-quiz",
+      "request": "Use $plan-web-app to add GitHub work tracking to this already documented GitHub project. I choose Customize, but I have not named any deviations yet. Ask the mini-quiz before changing local templates or remote GitHub state. Do not reopen unrelated product, design, architecture, or delivery decisions.",
+      "files": {
+        "AGENTS.md": "# Beacon\n\n## Project Documentation\n\nCurrent guidance is indexed in `_docs/README.md`.\n",
+        "ROADMAP.md": "# Beacon Roadmap\n\nThe approved MVP and phase plan are current.\n",
+        "DESIGN.md": "# Beacon Design\n\nThe approved design direction is current.\n",
+        "ARCHITECTURE.md": "# Beacon Architecture\n\nThe implemented architecture is current.\n",
+        "REPOSITORY.md": "# Repository\n\nGitHub repository: github.com/example/beacon\nNo Issue templates or linked Project exist yet.\n"
+      },
+      "expectations": [
+        "Uses focused update mode and preserves the existing project guidance",
+        "Explains that Customize changes only deviations from the Standard profile",
+        "Asks one grouped gap-only mini-questionnaire about GitHub templates, Board, fields, defaults, auto-add, or ownership exceptions",
+        "States the Standard answer beside each relevant choice and does not re-interview product, design, architecture, or delivery",
+        "Does not write local GitHub files or mutate remote GitHub state before the custom profile is confirmed"
+      ]
     }
   ]
 }

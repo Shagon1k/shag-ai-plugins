@@ -1,8 +1,8 @@
 {
   "name": "web-development",
   "displayName": "Web Development",
-  "version": "0.1.1",
-  "description": "Reusable workflows for planning, building, reviewing, and maintaining web applications.",
+  "version": "0.2.0",
+  "description": "Reusable workflows for planning, building, reviewing, and maintaining web applications, including optional GitHub work tracking.",
   "author": {
     "name": "Aliaksei Hurynovich",
     "email": "shagon1k@gmail.com"
@@ -10,8 +10,8 @@
   "homepage": "https://github.com/Shagon1k/shag-ai-plugins",
   "repository": "https://github.com/Shagon1k/shag-ai-plugins",
   "license": "MIT",
-  "keywords": ["web-app", "frontend", "backend", "development", "architecture"],
+  "keywords": ["web-app", "frontend", "backend", "development", "architecture", "github", "project-management"],
   "category": "developer-tools",
-  "tags": ["web-app", "planning", "architecture", "design"],
+  "tags": ["web-app", "planning", "architecture", "design", "github", "project-management"],
   "skills": "./skills/"
 }
