@@ -41,6 +41,26 @@ checklist covers meaning and consistency.
 - CLAUDE imports the final AGENTS path instead of duplicating its shared rules.
 - Every linked local path resolves or is explicitly marked as future work in the Decision Log.
 
+## Optional GitHub Work Tracking
+
+Check this section only when `Standard` or `Customize` was selected:
+
+- Existing Issue forms, pull request templates, and suitable Projects were inspected before writes.
+- The selected profile and every approved deviation match the rendered local files and remote state.
+- `AGENTS.md` makes GitHub Issues canonical for executable tasks and the linked Project canonical
+  for operational Status and Priority.
+- `AGENTS.md` prohibits implicit Issue creation from a routine implementation request.
+- `AGENTS.md` keeps routine Issues out of the Roadmap and requires an explicit developer request to
+  update `ROADMAP.md`.
+- The Project uses the approved Board, Status values, Priority values, defaults, and Issue-only
+  auto-add filter, or the completion report names the exact unconfigured remainder.
+- Agent-created Issues receive the approved default Status and Priority. Auto-added Issues from
+  other authors are not claimed to have a default Priority without supporting automation.
+- Pull requests link their Issue and capture verification plus documentation impact.
+- A Project URL, field, view, workflow, Issue, or pull request is never reported as created or
+  configured without read-back evidence.
+- Local template validation passes with `--github` and the final paths.
+
 ## Coverage
 
 - Product contract, MVP boundary, baseline web concerns, and acceptance evidence are addressed.

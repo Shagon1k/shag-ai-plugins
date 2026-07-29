@@ -18,6 +18,9 @@ delete the entire section.
 4. Mark uncertain direction explicitly instead of inventing precision.
 5. Keep product/delivery intent here. Link technical detail to `<ARCHITECTURE_PATH>`, UX detail
    to `<DESIGN_PATH>`, and significant technical rationale to `<ADR_PATH>`.
+6. When GitHub work tracking is enabled, keep executable tasks, bugs, technical debt, Status, and
+   Priority in Issues and the linked Project. Do not mirror routine Issues here. Update this Roadmap
+   only on an explicit developer request.
 
 | Related artifact | Project path |
 | --- | --- |

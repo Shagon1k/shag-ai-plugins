@@ -1,6 +1,6 @@
 ---
 name: plan-web-app
-description: Plan, align, or audit living project guidance for web apps through source-first discovery and gap-only questions. Use when starting a web app, onboarding an existing codebase, creating or repairing ROADMAP.md, DESIGN.md, ARCHITECTURE.md, AGENTS.md, CLAUDE.md, architecture decisions, or establishing coherent AI-ready project context.
+description: Plan, align, or audit living project guidance for web apps through source-first discovery and gap-only questions, with optional GitHub Issue and pull request templates plus a simple GitHub Project. Use when starting a web app, onboarding an existing codebase, creating or repairing ROADMAP.md, DESIGN.md, ARCHITECTURE.md, AGENTS.md, CLAUDE.md, architecture decisions, GitHub work tracking, or coherent AI-ready project context.
 ---
 
 # Plan Web App
@@ -14,10 +14,12 @@ Read these resources when their step begins:
 
 - `references/artifact-ownership.md`: read before choosing outputs or resolving overlap.
 - `references/setup-questionnaire.md`: read after source inspection; ask only uncovered items.
+- `references/github-workflow.md`: read when a GitHub repository may use optional work tracking.
 - `references/phase-planning.md`: read before creating or materially restructuring a multi-phase
   delivery plan.
 - `references/validation-checklist.md`: read before final validation.
 - `assets/*.template.md`: use as scaffolds, not text to copy blindly.
+- `assets/github/`: use as the standard GitHub template pack; customize only after developer choice.
 - `scripts/validate-project-guidance.mjs`: run after generating or aligning the documents.
 
 ## Output Contract
@@ -45,6 +47,23 @@ Generate `CLAUDE.md` as the relative import of the final `AGENTS.md` path, norma
 
 Preserve any existing Claude-specific instructions below that import. Do not duplicate the
 contents of `AGENTS.md` in `CLAUDE.md`.
+
+Optional GitHub outputs:
+
+| Output | Standard asset / configuration | Purpose |
+| --- | --- | --- |
+| `.github/ISSUE_TEMPLATE/task.yml` | `assets/github/ISSUE_TEMPLATE/task.yml` | Executable product or engineering work |
+| `.github/ISSUE_TEMPLATE/bug.yml` | `assets/github/ISSUE_TEMPLATE/bug.yml` | Reproducible incorrect behavior |
+| `.github/ISSUE_TEMPLATE/tech-debt.yml` | `assets/github/ISSUE_TEMPLATE/tech-debt.yml` | Actionable engineering debt |
+| `.github/ISSUE_TEMPLATE/config.yml` | `assets/github/ISSUE_TEMPLATE/config.yml` | Structured Issue intake without blank Issues |
+| `.github/pull_request_template.md` | `assets/github/pull_request_template.md` | Review, linkage, verification, and documentation impact |
+| GitHub Project | Board with `Status` and `Priority` | Operational backlog and delivery state |
+| `AGENTS.md` Work Tracking section | `assets/GITHUB_WORK_TRACKING.template.md` | Issue, Project, pull request, and Roadmap ownership rules |
+
+Do not create these optional outputs merely because a GitHub remote exists. In full setup, offer
+`Skip`, `Standard`, or `Customize`; default to `Skip` when unanswered. `Standard` applies the
+documented baseline without more questions. `Customize` runs a short gap-only mini-questionnaire,
+and the developer may request it later as a focused update.
 
 ## Run Modes and Output Depth
 
@@ -78,9 +97,10 @@ decisions recorded yet` note instead of inventing a decision.
 1. Inspect the target root and `git status --short` when Git exists.
 2. Classify the run mode and project state as defined above.
 3. Identify existing target documents and unrelated user changes.
-4. Never overwrite an existing document blindly. Propose whether to preserve, merge, rename,
+4. Detect whether the repository is hosted on GitHub, but do not infer opt-in from the remote alone.
+5. Never overwrite an existing document blindly. Propose whether to preserve, merge, rename,
    or replace it, and get approval before a substantial replacement.
-5. Keep this skill focused on project guidance. Do not scaffold application code, install
+6. Keep this skill focused on project guidance. Do not scaffold application code, install
    dependencies, provision infrastructure, or deploy unless the user separately requests it.
 
 ### 2. Collect Existing Sources First
@@ -104,6 +124,10 @@ Do not ask the developer to repeat facts already supported by a source. Never re
 Read `references/artifact-ownership.md` and map each established fact to one canonical output.
 Read `references/setup-questionnaire.md`, skip answered and non-applicable questions, then
 collect only material gaps.
+
+When a GitHub remote exists or the developer asks for GitHub work tracking, read
+`references/github-workflow.md`. In full setup, include its single profile choice in the gap set.
+Do not ask the Customize mini-questionnaire unless the developer selects it.
 
 Treat these as valid answers:
 
@@ -149,6 +173,7 @@ Before substantial writes, summarize:
 - provisional and deferred decisions;
 - custom paths;
 - sections intentionally omitted.
+- optional GitHub profile, local files, and every proposed remote mutation.
 
 Proceed after the developer confirms the plan. For a trivial greenfield planning run where all default
 outputs were explicitly requested, a concise confirmation is enough.
@@ -198,8 +223,20 @@ Use the templates as section checklists and formatting scaffolds. Apply these ru
 16. When production deployment is in scope, keep release readiness, final human acceptance, and
     production deployment as three distinct acceptance boundaries; do not combine readiness evidence
     with the human go/no-go decision.
+17. When GitHub work tracking is selected, render the approved local template pack and insert the
+    resolved Work Tracking section into `AGENTS.md`. Keep routine Issues out of `ROADMAP.md`.
 
-### 7. Validate
+### 7. Provision Opt-In GitHub Work Tracking
+
+Skip this step unless the developer selected `Standard` or `Customize`.
+
+Follow `references/github-workflow.md`. Reconcile local templates and remote Project state before
+creating anything. Treat the confirmed artifact plan as the approval gate for its named remote
+mutations; request new approval if the target or effect changes. Create or align the Project only
+through available authenticated GitHub capabilities, then read back the Project URL, fields, Board,
+and auto-add workflow. Report unsupported or manual steps instead of fabricating completion.
+
+### 8. Validate
 
 Read `references/validation-checklist.md` and perform its semantic checks.
 
@@ -216,6 +253,12 @@ node <skill-root>/scripts/validate-project-guidance.mjs <project-root> \
   --only design,roadmap
 ```
 
+For the standard GitHub profile:
+
+```bash
+node <skill-root>/scripts/validate-project-guidance.mjs <project-root> --github
+```
+
 For custom locations:
 
 ```bash
@@ -229,10 +272,14 @@ node <skill-root>/scripts/validate-project-guidance.mjs <project-root> \
   --adr <relative-path>
 ```
 
+For customized GitHub template locations, add `--github` plus `--issue-templates`,
+`--issue-config`, and `--pr-template` with the final relative paths. Add
+`--allow-blank-issues` only when the approved custom profile enables them.
+
 Fix failures before completion. If a check cannot run, name the missing evidence instead of
 claiming success.
 
-### 8. Report
+### 9. Report
 
 Report:
 
@@ -242,6 +289,7 @@ Report:
 - validation commands and results;
 - provisional/deferred items requiring future attention;
 - existing project material preserved unchanged.
+- selected GitHub profile, local template paths, verified Project URL/state, and any manual remainder.
 
 ## Guardrails
 
@@ -251,5 +299,7 @@ Report:
 - Never place secrets, credentials, or production identifiers in generated documents.
 - Do not rewrite accepted ADR history; supersede it with a new record.
 - Do not commit, install, deploy, or mutate external systems without explicit authorization.
+- Do not create Issues from routine implementation requests; require an explicit request to add,
+  record, or track the task.
 - Keep the shared workflow platform-neutral. Product-specific UI metadata belongs in adapter
   files such as `agents/openai.yaml`, not in generated project guidance.

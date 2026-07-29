@@ -12,6 +12,9 @@ const VALIDATOR = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
   "validate-project-guidance.mjs",
 );
+const SKILL_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const GITHUB_ASSET_ROOT = path.join(SKILL_ROOT, "assets/github");
+const WORK_TRACKING_ASSET = path.join(SKILL_ROOT, "assets/GITHUB_WORK_TRACKING.template.md");
 
 function fixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "plan-web-app-"));
@@ -39,7 +42,27 @@ function fixture() {
         "- [Architecture](../ARCHITECTURE.md)\n- [Decisions](decisions/README.md)\n",
     );
   };
-  return { root, write, run, createValidDefault };
+  const createValidGithub = () => {
+    const workTracking = fs
+      .readFileSync(WORK_TRACKING_ASSET, "utf8")
+      .replace("<GITHUB_PROJECT_NAME>", "Example Delivery")
+      .replace("<GITHUB_PROJECT_URL>", "https://github.com/users/example/projects/1");
+    fs.appendFileSync(path.join(root, "AGENTS.md"), `\n${workTracking}`, "utf8");
+
+    for (const relative of [
+      "ISSUE_TEMPLATE/task.yml",
+      "ISSUE_TEMPLATE/bug.yml",
+      "ISSUE_TEMPLATE/tech-debt.yml",
+      "ISSUE_TEMPLATE/config.yml",
+      "pull_request_template.md",
+    ]) {
+      write(
+        path.join(".github", relative),
+        fs.readFileSync(path.join(GITHUB_ASSET_ROOT, relative), "utf8"),
+      );
+    }
+  };
+  return { root, write, run, createValidDefault, createValidGithub };
 }
 
 test("valid default guidance passes", (t) => {
@@ -189,4 +212,104 @@ test("focused validation checks selected docs-map relationships", (t) => {
   assert.equal(result.status, 1);
   assert.match(result.stderr, /does not link to ROADMAP\.md/);
   assert.doesNotMatch(result.stderr, /missing required architecture/);
+});
+
+test("standard GitHub workflow passes with bundled templates", (t) => {
+  const context = fixture();
+  t.after(() => fs.rmSync(context.root, { recursive: true, force: true }));
+  context.createValidDefault();
+  context.createValidGithub();
+
+  const result = context.run("--github");
+
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stdout, /GitHub workflow/);
+});
+
+test("standard GitHub workflow requires the technical-debt form", (t) => {
+  const context = fixture();
+  t.after(() => fs.rmSync(context.root, { recursive: true, force: true }));
+  context.createValidDefault();
+  context.createValidGithub();
+  fs.rmSync(path.join(context.root, ".github/ISSUE_TEMPLATE/tech-debt.yml"));
+
+  const result = context.run("--github");
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /missing required GitHub workflow file.*tech-debt\.yml/);
+});
+
+test("GitHub workflow rejects blank Issues", (t) => {
+  const context = fixture();
+  t.after(() => fs.rmSync(context.root, { recursive: true, force: true }));
+  context.createValidDefault();
+  context.createValidGithub();
+  context.write(".github/ISSUE_TEMPLATE/config.yml", "blank_issues_enabled: true\n");
+
+  const result = context.run("--github");
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /blank_issues_enabled must be false/);
+});
+
+test("custom GitHub workflow may explicitly allow blank Issues", (t) => {
+  const context = fixture();
+  t.after(() => fs.rmSync(context.root, { recursive: true, force: true }));
+  context.createValidDefault();
+  context.createValidGithub();
+  context.write(".github/ISSUE_TEMPLATE/config.yml", "blank_issues_enabled: true\n");
+
+  const result = context.run("--github", "--allow-blank-issues");
+
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test("GitHub workflow requires explicit work-tracking ownership rules", (t) => {
+  const context = fixture();
+  t.after(() => fs.rmSync(context.root, { recursive: true, force: true }));
+  context.createValidDefault();
+  context.createValidGithub();
+  context.write(
+    "AGENTS.md",
+    "# Agents\n\n[Documentation map](_docs/README.md)\n\n" +
+      "## Project Documentation\n\nReport `Documentation impact: none` when no artifact changes.\n",
+  );
+
+  const result = context.run("--github");
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /missing Work Tracking section/);
+  assert.match(result.stderr, /missing explicit Issue creation rule/);
+  assert.match(result.stderr, /missing explicit Roadmap update rule/);
+});
+
+test("custom GitHub template paths pass when configured", (t) => {
+  const context = fixture();
+  t.after(() => fs.rmSync(context.root, { recursive: true, force: true }));
+  context.createValidDefault();
+  context.createValidGithub();
+  context.write(
+    ".github/ISSUE_TEMPLATE/work-item.yml",
+    fs.readFileSync(path.join(GITHUB_ASSET_ROOT, "ISSUE_TEMPLATE/task.yml"), "utf8"),
+  );
+  context.write(
+    ".github/ISSUE_TEMPLATE/settings.yml",
+    fs.readFileSync(path.join(GITHUB_ASSET_ROOT, "ISSUE_TEMPLATE/config.yml"), "utf8"),
+  );
+  context.write(
+    ".github/PULL_REQUEST_TEMPLATE/default.md",
+    fs.readFileSync(path.join(GITHUB_ASSET_ROOT, "pull_request_template.md"), "utf8"),
+  );
+
+  const result = context.run(
+    "--github",
+    "--issue-templates",
+    ".github/ISSUE_TEMPLATE/work-item.yml",
+    "--issue-config",
+    ".github/ISSUE_TEMPLATE/settings.yml",
+    "--pr-template",
+    ".github/PULL_REQUEST_TEMPLATE/default.md",
+  );
+
+  assert.equal(result.status, 0, result.stdout + result.stderr);
 });
