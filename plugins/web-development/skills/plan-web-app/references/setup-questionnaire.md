@@ -25,7 +25,15 @@ material questions. Combine them into one grouped message when practical.
 - What data is stored, who owns it, and how sensitive is it?
 - Does the app need authentication, roles, tenant boundaries, billing, uploads, or admin access?
 - Which APIs, events, jobs, webhooks, real-time channels, or external providers are needed?
-- What reliability, scale, performance, backup, rollback, and observability expectations matter?
+- Before the first production MVP launch, who owns deployment, which release revision and smoke
+  evidence are required, and how is rollback verified?
+- What backup destination and retention apply, when will restore be drilled, and how are regional or
+  account-loss risks decided separately?
+- Which proxy/client-identity, abuse-limit, graceful-drain, UAT, canonical-host, crawler-cache, and
+  production-validation concerns apply at the edge and public surface?
+- Which compliance work ships technically, which needs external legal action, and is each item a
+  launch gate or a post-launch follow-up?
+- What other reliability, scale, performance, and observability expectations matter?
 - Which choices have meaningful alternatives and should become ADRs?
 
 ## Design

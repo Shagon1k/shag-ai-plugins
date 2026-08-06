@@ -222,7 +222,9 @@ Use the templates as section checklists and formatting scaffolds. Apply these ru
     when the phase closes. Do not create the file before that detail is needed.
 16. When production deployment is in scope, keep release readiness, final human acceptance, and
     production deployment as three distinct acceptance boundaries; do not combine readiness evidence
-    with the human go/no-go decision.
+    with the human go/no-go decision. Before the first production MVP launch, resolve the Roadmap's
+    Pre-MVP Production Readiness topics with named owners and evidence, or record a specific
+    deferred disposition and revisit trigger.
 17. When GitHub work tracking is selected, render the approved local template pack and insert the
     resolved Work Tracking section into `AGENTS.md`. Keep routine Issues out of `ROADMAP.md`.
 
