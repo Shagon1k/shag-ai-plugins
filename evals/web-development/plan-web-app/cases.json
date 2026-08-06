@@ -19,6 +19,7 @@
         "Does not invent quantitative UX targets or domain constraints from the approved polling interval",
         "Produces the minimum useful artifact set without empty template sections",
         "Keeps every baseline web-app consideration with a decision status and reason",
+        "Keeps the five Pre-MVP Production Readiness topics visible with a status, owner, and evidence or revisit trigger",
         "Creates CLAUDE.md as an import of AGENTS.md",
         "Passes full project-guidance validation"
       ]

@@ -30,7 +30,8 @@ delete the entire section.
 
 Remove this setup section, unresolved placeholders, examples, and non-applicable rows from
 the final `ROADMAP.md`. Preserve every Baseline Web App Consideration row, including items marked
-`Not applicable`, so the decision remains visible. Preserve relevant unknowns in the Decision Log.
+`Not applicable`, so the decision remains visible. Preserve every Pre-MVP Production Readiness row
+with its status and evidence or revisit trigger. Preserve relevant unknowns in the Decision Log.
 
 ## 1. Project Contract
 > Defines what the product is, who it serves, what MVP proves, and what is intentionally out.
@@ -103,7 +104,19 @@ the final `ROADMAP.md`. Preserve every Baseline Web App Consideration row, inclu
 | PWA / installability | Does the app need offline support, installability, push notifications, or app-like shell behavior? | Needs decision |  |
 | Environments & Production Deploy | What are dev/UAT/prod profiles, env vars, migrations, deploy triggers, rollback, and smoke checks? | Needs decision |  |
 
-## 5. Business, Product & Monetization Rules
+## 5. Pre-MVP Production Readiness
+> Resolve these topics before the first production MVP launch. A `Deferred` item needs an explicit
+> owner and revisit trigger; do not use it to bypass a launch-critical risk.
+
+| Topic | Required decision and evidence | Status | Owner | Decision / evidence / revisit trigger |
+| --- | --- | --- | --- | --- |
+| Deploy ownership | Name one deployment owner; record the exact release revision, readiness and smoke evidence, and tested rollback path. | Needs decision |  |  |
+| Data durability | Record backup destination and retention, a restore drill, and a separate decision for regional or account loss. | Needs decision |  |  |
+| Edge reliability | Verify client identity behind proxies, abuse limits, graceful connection or workload drain, and a real UAT drill. | Needs decision |  |  |
+| Public surface | Decide the canonical host and cover SEO, PWA, and social/OG assets as applicable; validate production behavior and external crawler caches. | Needs decision |  |  |
+| Compliance boundary | Separate what ships technically from required external legal action, then explicitly decide `Launch gate` or `Post-launch follow-up`. | Needs decision |  |  |
+
+## 6. Business, Product & Monetization Rules
 > Captures rules that shape behavior, access, limits, pricing, and policy beyond pure data structure.
 
 | Rule | Rationale | Enforcement |
@@ -115,7 +128,7 @@ the final `ROADMAP.md`. Preserve every Baseline Web App Consideration row, inclu
 | --- | --- | --- |
 | <limit> | <value> | <value> |
 
-## 6. Glossary
+## 7. Glossary
 > Canonical vocabulary for domain concepts; prevents naming drift across code, docs, API, and UI.
 
 > Names carry meaning. Use the same concept names across code, docs, API, and UI.
@@ -124,7 +137,7 @@ the final `ROADMAP.md`. Preserve every Baseline Web App Consideration row, inclu
 | --- | --- | --- |
 | <Term> | <definition> | <code/docs/API/UI name> |
 
-## 7. Domain Model & State
+## 8. Domain Model & State
 > Describes the main entities, ownership boundaries, constraints, and lifecycle/state transitions.
 
 Keep this at product-planning level. Link exact schemas, storage decisions, and implemented
@@ -141,7 +154,7 @@ stateDiagram-v2
   [*] --> <State>
 ```
 
-## 8. Navigation & Route Map
+## 9. Navigation & Route Map
 > Defines the main navigation model, entry points, route ownership, and user landing behavior.
 
 This table owns route scope. Keep detailed layout, interaction, and responsive behavior in
@@ -159,7 +172,7 @@ This table owns route scope. Keep detailed layout, interaction, and responsive b
 | --- | --- |
 | `/` | <landing / app entry> |
 
-## 9. Architecture Decisions
+## 10. Architecture Decisions
 > Summarizes technical direction needed for planning. Current structure belongs in
 > `<ARCHITECTURE_PATH>`; durable rationale belongs in `<ADR_PATH>`.
 
@@ -171,7 +184,7 @@ This table owns route scope. Keep detailed layout, interaction, and responsive b
 | Jobs / async | <queue, scheduler, workers, or none> | Proposed / Active | <reference> |
 | Storage | <object storage, CDN, uploads, or none> | Proposed / Active | <reference> |
 
-## 10. External Integrations
+## 11. External Integrations
 > Tracks provider scope and planning status. Keep exact data exchange, failure handling,
 > configuration, and trust boundaries in `<ARCHITECTURE_PATH>`.
 
@@ -179,7 +192,7 @@ This table owns route scope. Keep detailed layout, interaction, and responsive b
 | --- | --- | --- | --- |
 | <Provider or undecided capability> | <why needed> | Planned / Deferred / Active | <reference> |
 
-## 11. Phase Plan
+## 12. Phase Plan
 > Breaks the roadmap into executable slices with acceptance checks and evidence requirements.
 
 > Give each delivery phase one independently verifiable outcome. State that the active or next phase
@@ -188,7 +201,8 @@ This table owns route scope. Keep detailed layout, interaction, and responsive b
 > longer than six delivery phases, consider a human verification and stabilization checkpoint after
 > every five to six delivery phases. Checkpoints supplement normal phase testing. When production
 > deployment is in scope, keep release readiness, final human acceptance, and deployment as three
-> distinct acceptance boundaries.
+> distinct acceptance boundaries. Before the first production MVP launch, resolve the Pre-MVP
+> Production Readiness table with owners and evidence, or record a specific deferred disposition.
 
 ### Phase 0 — <Name> <status>
 **Goal:** <single outcome>
@@ -237,7 +251,7 @@ quality issues.
 
 **Out of scope:** <later capabilities not included in the completed slice>
 
-## 12. Decision Log
+## 13. Decision Log
 > Keeps unresolved and intentionally deferred decisions in one place without mixing their states.
 
 ### Open Questions
@@ -254,14 +268,14 @@ quality issues.
 | --- | --- | --- | --- | --- |
 | 1 | <item> | <why it exists> | <accepted approach for now> | <when> |
 
-## 13. Post-MVP Backlog
+## 14. Post-MVP Backlog
 > Stores valuable but unscheduled work without pretending it is part of MVP scope.
 
 | Item | Value | Dependencies | Priority |
 | --- | --- | --- | --- |
 | <feature> | <why it matters> | <what must exist first> | High / Medium / Low |
 
-## 14. Progress Tracking
+## 15. Progress Tracking
 > Summarizes phase status and links each completion claim to evidence.
 
 | Phase | Status | Evidence | Notes |
