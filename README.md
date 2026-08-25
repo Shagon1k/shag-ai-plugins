@@ -8,22 +8,22 @@ adapters.
 
 | Plugin | Purpose | Status |
 | --- | --- | --- |
-| `web-development` | Plan, build, review, and maintain web applications | Codex, Claude Code, and Cursor |
-| `engineering-tools` | Assess changes, maintain engineering workflows, and improve technical documentation | Codex, Claude Code, and Cursor |
-| `ai-quality` | Improve AI-agent context efficiency and output quality | Codex, Claude Code, and Cursor |
+| `web-development` | Plan, build, review, and maintain web applications |
+| `engineering-tools` | Assess changes, maintain engineering workflows, and improve technical documentation |
+| `ai-quality` | Improve AI-agent context efficiency and output quality |
 
 ## Skills
 
-| Plugin | Skill | Purpose | Cursor compatibility |
-| --- | --- | --- | --- |
-| `web-development` | `plan-web-app` | Create, align, and maintain web-app guidance with optional GitHub Issue/PR templates and a Project board | Full workflow; clean-project smoke test pending |
-| `engineering-tools` | `assess-change-complexity` | Size proposed software changes with an evidence-backed XS–XXL score, driver guardrails, confidence, and optional project calibration | Full workflow |
-| `engineering-tools` | `conventional-commit` | Prepare a Conventional Commit from staged changes with an explicit confirmation gate | Full workflow |
-| `engineering-tools` | `tech-debt-audit` | Audit and maintain a prioritized, deduplicated technical-debt roadmap | Full workflow; Jira remains tool-dependent |
-| `engineering-tools` | `technical-writing` | Write and review purpose-driven, clear, and precise engineering documentation | Full workflow |
-| `ai-quality` | `tokenomy` | Reduce unnecessary AI-agent context and token usage | Guidance and Cursor MCP config discovery; transcript attribution remains Claude/Codex-specific |
-| `ai-quality` | `unslop` | Apply a natural prose-quality pass by default while preserving meaning, facts, and structured content | Full workflow |
-| `ai-quality` | `bro` | Restate the immediately previous response in plain, concise human language | User-invoked only |
+| Plugin | Skill | Purpose |
+| --- | --- | --- |
+| `web-development` | `plan-web-app` | Create, align, and maintain web-app guidance with optional GitHub Issue/PR templates and a Project board |
+| `engineering-tools` | `assess-change-complexity` | Size proposed software changes with an evidence-backed XS–XXL score, driver guardrails, confidence, and optional project calibration |
+| `engineering-tools` | `conventional-commit` | Prepare a Conventional Commit from staged changes with an explicit confirmation gate |
+| `engineering-tools` | `tech-debt-audit` | Audit and maintain a prioritized, deduplicated technical-debt roadmap |
+| `engineering-tools` | `technical-writing` | Write and review purpose-driven, clear, and precise engineering documentation |
+| `ai-quality` | `tokenomy` | Reduce unnecessary AI-agent context and token usage |
+| `ai-quality` | `unslop` | Apply a natural prose-quality pass by default while preserving meaning, facts, and structured content |
+| `ai-quality` | `bro` | Restate the immediately previous response in plain, concise human language |
 
 ## Platform Support
 
