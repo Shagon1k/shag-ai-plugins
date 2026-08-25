@@ -2,3 +2,5 @@ interface:
   display_name: "Assess Change Complexity"
   short_description: "Size software changes with evidence and confidence"
   default_prompt: "Use $assess-change-complexity to assess this software change, explain its drivers and confidence, and recommend the next step."
+policy:
+  allow_implicit_invocation: true

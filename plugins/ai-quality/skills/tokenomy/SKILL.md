@@ -1,6 +1,8 @@
 ---
 name: tokenomy
 description: Token-efficiency playbook for AI agents. Use when trimming or restructuring CLAUDE.md, AGENTS.md, or agent rule files; authoring compact agent-facing documentation; or auditing context and configured-tool overhead. The keyword "tokenomy" always triggers this skill. Not for human-facing prose or work where brevity would reduce correctness.
+user-invocable: true
+disable-model-invocation: false
 ---
 
 # Tokenomy

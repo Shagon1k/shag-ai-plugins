@@ -1,0 +1,6 @@
+interface:
+  display_name: "Unslop"
+  short_description: "Apply a natural prose-quality pass by default"
+  default_prompt: "Use $unslop as the default quality pass for all suitable prose in this response."
+policy:
+  allow_implicit_invocation: true

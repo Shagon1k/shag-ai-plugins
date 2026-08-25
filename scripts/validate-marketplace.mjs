@@ -40,16 +40,17 @@ function directoryNames(directory) {
     .sort();
 }
 
-function frontmatterName(skillPath) {
+function frontmatterFields(skillPath) {
   const lines = fs.readFileSync(skillPath, "utf8").split(/\r?\n/);
-  if (lines[0] !== "---") return undefined;
+  if (lines[0] !== "---") return new Map();
   const closingDelimiter = lines.indexOf("---", 1);
-  if (closingDelimiter === -1) return undefined;
-  const nameLine = lines.slice(1, closingDelimiter).find((line) => line.startsWith("name:"));
-  return nameLine
-    ?.slice("name:".length)
-    .trim()
-    .replace(/^(["'])(.*)\1$/, "$2");
+  if (closingDelimiter === -1) return new Map();
+  return new Map(
+    lines.slice(1, closingDelimiter).flatMap((line) => {
+      const match = line.match(/^([a-z][a-z0-9-]*):\s*(.*?)\s*$/);
+      return match ? [[match[1], match[2].replace(/^(["'])(.*)\1$/, "$2")]] : [];
+    }),
+  );
 }
 
 function sameJson(left, right) {
@@ -174,13 +175,33 @@ function main() {
         errors.push(`${relative(skillRoot)}: missing SKILL.md`);
         continue;
       }
-      if (frontmatterName(skillPath) !== skillName) {
+      const fields = frontmatterFields(skillPath);
+      if (fields.get("name") !== skillName) {
         errors.push(`${relative(skillPath)} name differs from directory`);
+      }
+      if (fields.get("user-invocable") !== "true") {
+        errors.push(`${relative(skillPath)} must set user-invocable: true`);
+      }
+      const disableModelInvocation = fields.get("disable-model-invocation");
+      if (!new Set(["true", "false"]).has(disableModelInvocation)) {
+        errors.push(`${relative(skillPath)} must set disable-model-invocation explicitly`);
       }
       if (!fs.existsSync(agentMetadataPath)) {
         errors.push(`${relative(skillRoot)}: missing agents/openai.yaml`);
-      } else if (!fs.readFileSync(agentMetadataPath, "utf8").includes(`$${skillName}`)) {
-        errors.push(`${relative(agentMetadataPath)} must reference $${skillName}`);
+      } else {
+        const agentMetadata = fs.readFileSync(agentMetadataPath, "utf8");
+        if (!agentMetadata.includes(`$${skillName}`)) {
+          errors.push(`${relative(agentMetadataPath)} must reference $${skillName}`);
+        }
+        const implicitInvocation = agentMetadata.match(
+          /^\s*allow_implicit_invocation:\s*(true|false)\s*$/m,
+        )?.[1];
+        if (
+          disableModelInvocation &&
+          implicitInvocation !== String(disableModelInvocation === "false")
+        ) {
+          errors.push(`${relative(agentMetadataPath)} invocation policy differs from SKILL.md`);
+        }
       }
     }
   }

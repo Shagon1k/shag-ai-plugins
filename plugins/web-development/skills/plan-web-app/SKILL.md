@@ -1,6 +1,8 @@
 ---
 name: plan-web-app
 description: Plan, align, or audit living project guidance for web apps through source-first discovery and gap-only questions, with optional GitHub Issue and pull request templates plus a simple GitHub Project. Use when starting a web app, onboarding an existing codebase, creating or repairing ROADMAP.md, DESIGN.md, ARCHITECTURE.md, AGENTS.md, CLAUDE.md, architecture decisions, GitHub work tracking, or coherent AI-ready project context.
+user-invocable: true
+disable-model-invocation: false
 ---
 
 # Plan Web App

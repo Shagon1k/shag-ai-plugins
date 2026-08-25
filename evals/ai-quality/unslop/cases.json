@@ -1,0 +1,86 @@
+{
+  "skill": "unslop",
+  "execution": {
+    "sandbox": "read-only",
+    "timeoutMs": 300000
+  },
+  "cases": [
+    {
+      "id": "promotional-product-copy",
+      "request": "Revise this paragraph for publication:\n\nIn today's rapidly evolving digital landscape, Acme's groundbreaking dashboard serves as a testament to our commitment to innovation. It not only streamlines reporting, but also empowers teams to unlock actionable insights, fostering collaboration and driving success. The dashboard imports CSV files, flags rows with missing account IDs, and exports a review queue.",
+      "files": {},
+      "expectations": [
+        "Leads with or centers the concrete CSV import, missing-account-ID flagging, and review-queue export behavior",
+        "Removes the promotional and generic AI-style framing",
+        "Does not invent performance numbers, customer outcomes, features, or personal experience",
+        "Returns the revision without unnecessary process commentary"
+      ]
+    },
+    {
+      "id": "preserve-certainty-and-quote",
+      "request": "Unslop this release note without changing facts or the quote:\n\nWe are thrilled to announce a pivotal update. The migration may take up to 20 minutes for workspaces with more than 100,000 records, highlighting the importance of planning accordingly. During that time, exports are disabled. Maya said, \"Do not refresh the page until the status reads Complete.\"",
+      "files": {},
+      "expectations": [
+        "Preserves the conditional 20-minute estimate, the 100,000-record threshold, and the fact that exports are disabled during migration",
+        "Preserves Maya's quotation verbatim",
+        "Removes celebratory puffery and the superficial highlighting phrase",
+        "Does not strengthen the estimate into a guarantee or add operational advice not present in the source"
+      ]
+    },
+    {
+      "id": "technical-prose-keeps-terms",
+      "request": "Use $unslop on this API documentation. Keep the identifiers exact:\n\nThe parseConfig() method serves as a robust mechanism for ensuring that config.yaml is parsed by the loader. Additionally, INVALID_SCHEMA is returned in the event that the schema check is not passed. This provides developers with a seamless and intuitive experience.",
+      "files": {},
+      "expectations": [
+        "Keeps parseConfig(), config.yaml, and INVALID_SCHEMA exactly spelled",
+        "States concretely that the loader parses the file and returns INVALID_SCHEMA when schema validation fails",
+        "Removes vague claims about robustness and developer experience",
+        "Does not add behavior, implementation details, or error semantics absent from the source"
+      ]
+    },
+    {
+      "id": "borderline-intentional-voice",
+      "request": "Give this a light $unslop edit. Keep the dry tone and intentional repetition:\n\nThe build failed at 2:03. It failed again at 2:11. By 2:19, nobody was calling it intermittent. The logs, in their infinite generosity, contained one line: connection reset.",
+      "files": {},
+      "expectations": [
+        "Preserves the three times, the sequence of failures, and the connection reset detail",
+        "Preserves the dry humor and intentional repetition rather than flattening the passage into neutral corporate prose",
+        "Makes at most light changes consistent with the requested edit strength",
+        "Does not treat repetition, a colon, or personality as automatic defects"
+      ]
+    },
+    {
+      "id": "no-fabricated-soul",
+      "request": "Use $unslop to make this sound human:\n\nThe committee reviewed the proposal. Two members supported it, three opposed it, and one abstained. The proposal did not pass.",
+      "files": {},
+      "expectations": [
+        "Preserves the vote counts and the outcome",
+        "Does not invent motives, reactions, quotes, atmosphere, or first-person experience",
+        "Keeps the naturally plain source concise instead of forcing slang or stylistic messiness",
+        "Returns only the revised text or leaves the already-natural text substantially unchanged"
+      ]
+    },
+    {
+      "id": "protect-mixed-content",
+      "request": "Use $unslop on the prose in this documentation excerpt. Do not change the code or JSON:\n\nThis powerful endpoint seamlessly enables users to fetch a profile.\n\n```js\nconst profile = await client.getProfile({ userId: \"u_123\" });\n```\n\nIt returns the following payload:\n\n```json\n{\"id\":\"u_123\",\"status\":\"active\"}\n```",
+      "files": {},
+      "expectations": [
+        "Revises the promotional prose into a direct description of fetching a profile",
+        "Preserves the JavaScript code block exactly, including the identifier and string quoting",
+        "Preserves the JSON code block exactly without reformatting it",
+        "Does not add unsupported endpoint behavior or user benefits"
+      ]
+    },
+    {
+      "id": "wordy-repetitive-update",
+      "request": "Revise this update:\n\nAt its core, the rollout could potentially result in an improvement to response times. It is worth noting that the team conducted an evaluation of 200 requests. The team recorded median latency of 180 ms. The team recorded p95 latency of 420 ms. These measurements show response-time measurements from the evaluation, which is important because they measure response times.",
+      "files": {},
+      "expectations": [
+        "Preserves the uncertainty about whether the rollout improves response times rather than turning it into a proven benefit",
+        "Preserves the sample size of 200 requests and the median and p95 latency values of 180 ms and 420 ms",
+        "Removes stock framing and meta-signposting and replaces the noun-heavy evaluation phrase with direct wording",
+        "Fixes the repeated sentence openings and removes the final over-explanation without inventing a comparison or baseline"
+      ]
+    }
+  ]
+}

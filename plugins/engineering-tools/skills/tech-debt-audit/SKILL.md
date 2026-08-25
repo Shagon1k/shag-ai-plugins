@@ -1,6 +1,8 @@
 ---
 name: tech-debt-audit
 description: Audit a codebase for actionable technical debt and maintain a deduplicated roadmap. Use when the user asks to find code smells, maintainability risks, refactoring priorities, or update an existing technical-debt backlog. Supports optional Jira ticket creation only with explicit approval. Not a substitute for a dedicated security or dependency-vulnerability audit.
+user-invocable: true
+disable-model-invocation: false
 ---
 
 # Tech Debt Audit
