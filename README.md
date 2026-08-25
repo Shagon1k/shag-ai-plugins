@@ -6,8 +6,8 @@ adapters.
 
 ## Plugins
 
-| Plugin | Purpose | Status |
-| --- | --- | --- |
+| Plugin | Purpose |
+| --- | --- |
 | `web-development` | Plan, build, review, and maintain web applications |
 | `engineering-tools` | Assess changes, maintain engineering workflows, and improve technical documentation |
 | `ai-quality` | Improve AI-agent context efficiency and output quality |
