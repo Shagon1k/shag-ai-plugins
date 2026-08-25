@@ -1,0 +1,42 @@
+{
+  "skill": "bro",
+  "execution": {
+    "sandbox": "read-only",
+    "timeoutMs": 300000
+  },
+  "cases": [
+    {
+      "id": "plain-language-restatement",
+      "request": "Your previous response was:\n\nThe deployment pipeline exhibits nondeterministic behavior due to an implicit dependency on mutable ambient state. We should hermetically isolate the build and pin all transitive dependencies before attempting further remediation.\n\n$bro",
+      "files": {},
+      "expectations": [
+        "Restates the cause as the build depending on outside state that can change",
+        "Keeps both recommended actions: isolate the build and pin indirect dependencies",
+        "Uses plain, concise language without unexplained jargon",
+        "Returns only the restatement without an apology, preamble, or mention of the skill"
+      ]
+    },
+    {
+      "id": "preserve-uncertainty-and-details",
+      "request": "Use $bro on your last response:\n\nThe migration may take up to 20 minutes for workspaces above 100,000 records. During that interval, exports are unavailable. This is an estimate, not a service-level guarantee.",
+      "files": {},
+      "expectations": [
+        "Preserves the conditional 20-minute estimate and 100,000-record threshold",
+        "Preserves that exports are unavailable during the migration",
+        "Keeps the caveat that the timing is an estimate rather than a guarantee",
+        "Does not add advice, certainty, or facts absent from the source"
+      ]
+    },
+    {
+      "id": "preserve-code-and-identifiers",
+      "request": "Your previous response was:\n\nThe remediation entails invoking `parseConfig()` before `startServer()`; otherwise, `INVALID_SCHEMA` can be emitted after the listener binds to port 8080.\n\n$bro",
+      "files": {},
+      "expectations": [
+        "Explains the required call order in plain language",
+        "Preserves `parseConfig()`, `startServer()`, `INVALID_SCHEMA`, and port 8080 exactly",
+        "Preserves the possibility rather than claiming the error always occurs",
+        "Returns only a concise restatement"
+      ]
+    }
+  ]
+}

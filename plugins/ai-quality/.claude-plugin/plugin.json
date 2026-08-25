@@ -1,0 +1,12 @@
+{
+  "name": "ai-quality",
+  "version": "0.2.0",
+  "description": "AI-quality workflows for efficient context, natural output, and plain-language restatements.",
+  "author": {
+    "name": "Aliaksei Hurynovich",
+    "email": "shagon1k@gmail.com"
+  },
+  "homepage": "https://github.com/Shagon1k/shag-ai-plugins",
+  "repository": "https://github.com/Shagon1k/shag-ai-plugins",
+  "keywords": ["ai-quality", "agent-context", "token-efficiency", "writing", "plain-language"]
+}

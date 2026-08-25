@@ -16,7 +16,12 @@
     {
       "name": "engineering-tools",
       "source": "./plugins/engineering-tools",
-      "description": "Developer workflows for change assessment, commits, technical debt, and AI context efficiency."
+      "description": "Developer workflows for change assessment, commits, technical debt, and technical writing."
+    },
+    {
+      "name": "ai-quality",
+      "source": "./plugins/ai-quality",
+      "description": "AI-quality workflows for efficient context, natural output, and plain-language restatements."
     }
   ]
 }

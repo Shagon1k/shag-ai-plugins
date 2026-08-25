@@ -15,8 +15,9 @@ audience: ai
 ## Build
 
 - Name the directory and frontmatter `name` identically using lowercase hyphen-case.
-- Put only `name` and `description` in `SKILL.md` frontmatter. Make the description state what the
-  skill does, when it triggers, and important exclusions.
+- Put `name`, `description`, `user-invocable`, and `disable-model-invocation` in `SKILL.md`
+  frontmatter. Make the description state what the skill does, when it triggers, and important
+  exclusions. Keep both invocation booleans explicit for every skill.
 - Keep `SKILL.md` procedural, imperative, and under 500 lines. Move detailed rubrics, examples, or
   schemas into one-hop `references/` files.
 - Add `scripts/` only for repeated deterministic work; test every added script.
@@ -29,6 +30,8 @@ audience: ai
 
 - Keep the shared workflow independent of platform-only tool names. Describe capabilities or use
   conditional instructions when integrations differ.
+- Mirror `disable-model-invocation` in `agents/openai.yaml` as
+  `policy.allow_implicit_invocation`, using the opposite boolean value.
 - Keep the three plugin manifest versions and descriptions aligned.
 - When adding a public skill, bump the plugin minor version and update descriptions, keywords,
   default prompts, and the root README where the plugin's advertised scope changes.

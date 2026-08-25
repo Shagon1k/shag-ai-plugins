@@ -1,0 +1,56 @@
+{
+  "skill": "technical-writing",
+  "execution": {
+    "sandbox": "read-only",
+    "timeoutMs": 300000
+  },
+  "cases": [
+    {
+      "id": "rewrite-procedure",
+      "request": "Rewrite this runbook step. Keep every identifier and fact exact:\n\nConfiguration of retry behavior is performed through `worker.yaml`. It is important to note that operators should only run `queuectl retry --all` after setting `paused: true`, because otherwise new jobs could potentially enter the queue while failed jobs are being retried. The command may take up to 10 minutes for queues above 50,000 jobs.",
+      "files": {},
+      "expectations": [
+        "Preserves `worker.yaml`, `queuectl retry --all`, `paused: true`, the 10-minute estimate, and the 50,000-job condition exactly",
+        "Puts the prerequisite to set `paused: true` before the retry command",
+        "Preserves uncertainty about new jobs entering the queue and the command duration",
+        "Uses direct commands, plain words, and no unnecessary framing",
+        "Returns a concise runbook-style revision without process commentary"
+      ]
+    },
+    {
+      "id": "separate-document-modes",
+      "request": "Review this proposed page outline and rewrite it into a clearer documentation structure:\n\n# Getting started\n1. Install Quill.\n2. Run `quill init`.\n3. The `--cache-size` option accepts 64–1024 MB and defaults to 256 MB.\n4. Quill uses a local cache because remote cache latency made interactive commands inconsistent in our tests. Redis and Memcached were considered but rejected because they added an operational dependency.\n5. Run `quill serve` and expect `Ready on :8080`.\n6. `--cache-size=0` disables the cache.\n\nKeep all facts. Explain how you would divide the material and show the resulting outline.",
+      "files": {},
+      "expectations": [
+        "Identifies the installation and first successful run as tutorial material",
+        "Moves the flag range, default, and zero behavior into reference material",
+        "Moves the cache rationale and rejected alternatives into explanation material",
+        "Preserves `quill init`, `quill serve`, `Ready on :8080`, all cache values, and both rejected alternatives",
+        "Keeps the modes connected without treating brief supporting details as forbidden"
+      ]
+    },
+    {
+      "id": "reference-stays-reference",
+      "request": "Edit this API reference entry for clarity without turning it into a tutorial:\n\n`parse(input, strict)`\n\nThis method is utilized for the performance of parsing the provided input. `strict` defaults to false. When strict is true, `INVALID_TOKEN` can be returned in the event that an unknown token is encountered. The input is not modified. Thread safety has not been verified.",
+      "files": {},
+      "expectations": [
+        "Keeps the result as factual reference material rather than procedural instructions",
+        "Preserves the exact signature, default value, error identifier, input immutability, and unverified thread-safety status",
+        "Does not turn the possible `INVALID_TOKEN` result into a guarantee",
+        "Replaces noun-heavy and inflated wording with direct technical prose",
+        "Does not invent parameter types, return values, examples, or guarantees"
+      ]
+    },
+    {
+      "id": "natural-rhythm-borderline",
+      "request": "Use $technical-writing for a light edit of this explanation. Preserve its judgment and rhythm:\n\nWe kept the write path synchronous for one reason: a successful response must mean the data is durable. An asynchronous queue improved median latency in the prototype, but it also created a state where the API had accepted a write that could still be lost. That trade was not worth the smaller number on the dashboard.",
+      "files": {},
+      "expectations": [
+        "Preserves the durability rationale, prototype latency result, loss risk, and the author's judgment",
+        "Keeps this as explanation rather than converting it into steps or neutral reference prose",
+        "Preserves natural variation in sentence length and the deliberate concluding emphasis",
+        "Makes at most light changes and does not invent measurements or alternatives"
+      ]
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 ---
 name: conventional-commit
 description: Prepare and create a Conventional Commit from staged changes. Use when the user asks to commit, generate a commit message, or validate staged commit scope. Detects related unstaged work, handles repositories without prior commits, and always requires explicit confirmation before running git commit.
+user-invocable: true
+disable-model-invocation: false
 ---
 
 # Conventional Commit

@@ -2,3 +2,5 @@ interface:
   display_name: "Tech Debt Audit"
   short_description: "Maintain an actionable technical-debt roadmap"
   default_prompt: "Use $tech-debt-audit to audit this codebase and update its technical-debt roadmap."
+policy:
+  allow_implicit_invocation: true

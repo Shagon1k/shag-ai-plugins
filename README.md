@@ -4,14 +4,13 @@
 The same plugin implementation supports Codex, Claude Code, and Cursor through thin platform
 adapters.
 
-Bundled validators and audits use Node.js 22 or newer. Husky is the only development dependency.
-
 ## Plugins
 
 | Plugin | Purpose | Status |
 | --- | --- | --- |
 | `web-development` | Plan, build, review, and maintain web applications | Codex, Claude Code, and Cursor |
-| `engineering-tools` | Assess change complexity, audit technical debt, prepare commits, and optimize agent context | Codex, Claude Code, and Cursor |
+| `engineering-tools` | Assess changes, maintain engineering workflows, and improve technical documentation | Codex, Claude Code, and Cursor |
+| `ai-quality` | Improve AI-agent context efficiency and output quality | Codex, Claude Code, and Cursor |
 
 ## Skills
 
@@ -21,7 +20,10 @@ Bundled validators and audits use Node.js 22 or newer. Husky is the only develop
 | `engineering-tools` | `assess-change-complexity` | Size proposed software changes with an evidence-backed XS–XXL score, driver guardrails, confidence, and optional project calibration | Full workflow |
 | `engineering-tools` | `conventional-commit` | Prepare a Conventional Commit from staged changes with an explicit confirmation gate | Full workflow |
 | `engineering-tools` | `tech-debt-audit` | Audit and maintain a prioritized, deduplicated technical-debt roadmap | Full workflow; Jira remains tool-dependent |
-| `engineering-tools` | `tokenomy` | Reduce unnecessary AI-agent context and token usage | Guidance and Cursor MCP config discovery; transcript attribution remains Claude/Codex-specific |
+| `engineering-tools` | `technical-writing` | Write and review purpose-driven, clear, and precise engineering documentation | Full workflow |
+| `ai-quality` | `tokenomy` | Reduce unnecessary AI-agent context and token usage | Guidance and Cursor MCP config discovery; transcript attribution remains Claude/Codex-specific |
+| `ai-quality` | `unslop` | Apply a natural prose-quality pass by default while preserving meaning, facts, and structured content | Full workflow |
+| `ai-quality` | `bro` | Restate the immediately previous response in plain, concise human language | User-invoked only |
 
 ## Platform Support
 
@@ -38,11 +40,6 @@ Platform packaging remains intentionally thin:
 There is no shared marketplace manifest across the three clients. Keep platform-specific tool
 names and UI metadata out of the shared skill workflow so adapters remain packaging-only.
 
-Cursor plugins can also contain commands, agents, rules, hooks, and MCP server definitions. These
-plugins expose only skills because the current workflows do not require Cursor-specific runtime
-components. They can be distributed locally, through a team marketplace, or through the public
-Cursor Marketplace after review.
-
 ## Install
 
 Add the marketplace and install the plugin separately in each client:
@@ -52,11 +49,13 @@ Add the marketplace and install the plugin separately in each client:
 codex plugin marketplace add Shagon1k/shag-ai-plugins
 codex plugin add web-development@shag-ai-plugins
 codex plugin add engineering-tools@shag-ai-plugins
+codex plugin add ai-quality@shag-ai-plugins
 
 # Claude Code
 claude plugin marketplace add Shagon1k/shag-ai-plugins
 claude plugin install web-development@shag-ai-plugins
 claude plugin install engineering-tools@shag-ai-plugins
+claude plugin install ai-quality@shag-ai-plugins
 ```
 
 For local development, replace `Shagon1k/shag-ai-plugins` with the absolute path to this
@@ -70,14 +69,8 @@ directory and reload Cursor:
 mkdir -p ~/.cursor/plugins/local
 ln -s /absolute/path/to/shag-ai-plugins/plugins/web-development ~/.cursor/plugins/local/web-development
 ln -s /absolute/path/to/shag-ai-plugins/plugins/engineering-tools ~/.cursor/plugins/local/engineering-tools
+ln -s /absolute/path/to/shag-ai-plugins/plugins/ai-quality ~/.cursor/plugins/local/ai-quality
 ```
-
-On Windows, copy the plugin directories instead of creating symbolic links. Each installed plugin
-must contain `.cursor-plugin/plugin.json` at its root.
-
-For a symlinked local install, update the repository and reload Cursor. For a copied install,
-replace the copied plugin directory before reloading. After public marketplace publication, install
-and update the plugins from Cursor's Customize view or with `/add-plugin`.
 
 ## Validate
 

@@ -2,3 +2,5 @@ interface:
   display_name: "Tokenomy"
   short_description: "Reduce unnecessary AI-agent context cost"
   default_prompt: "Use $tokenomy to audit and improve this agent-facing context for token efficiency."
+policy:
+  allow_implicit_invocation: true

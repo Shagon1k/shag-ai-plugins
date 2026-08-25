@@ -1,6 +1,8 @@
 ---
 name: assess-change-complexity
 description: Assess proposed software changes—including features, stories, tickets, refactors, migrations, and integrations—with an evidence-backed XS–XXL implementation-complexity score, driver guardrails, and a separate confidence rating. Use when the user asks to size or estimate engineering work, compare alternatives, identify complexity drivers or unknowns, decide whether work is ready to plan, calibrate assessments against completed work, or split an oversized change. Not a calendar-time or effort commitment.
+user-invocable: true
+disable-model-invocation: false
 ---
 
 # Assess Change Complexity
