@@ -21,6 +21,9 @@ enabled. Preserve meaning and voice.
   wording unless the user explicitly asks to rewrite it.
 - **Restraint.** Keep deliberate repetition, jargon, formatting, humor, dialect, and punctuation
   when they serve the writing. Do not swap one artificial style for another.
+- **Voice samples.** When the user provides their own writing sample, match its sentence length,
+  diction, punctuation, paragraph openings, and transitions. Treat it as style evidence; do not
+  copy its claims or quirks mechanically.
 - **Delivery.** Return the requested answer, not a separate editing report. Explain changes only
   when asked.
 
@@ -53,15 +56,16 @@ Treat these patterns as signals, not a word blacklist. Fix them only when they w
 - **Stock framing.** Cut "at its core," "in today's world," "when it comes to," and "the reality
   is." Start with the point.
 - **Meta-signposting.** Remove "it is worth noting," "the key takeaway," and "as mentioned above"
-  when the sentence works without them.
+  when the sentence works without them. Cut "Interestingly," "Importantly," and "Let's dive in"
+  when they only announce the topic or tell the reader how to react.
 - **Excessive hedging.** Reduce stacked qualifiers such as "could potentially" or "it may be argued
   that." Keep uncertainty the evidence requires.
 - **Nominalizations.** Turn noun-heavy phrases into verbs: "conduct an evaluation of" becomes
   "evaluate."
 - **Fancy verbs.** Prefer "is," "has," "uses," and "helps" over "serves as," "boasts,"
   "utilizes," and "facilitates."
-- **Chatbot talk.** Cut "Of course," "Great question," "I hope this helps," and routine offers to
-  do more work.
+- **Chatbot talk.** Cut "Of course," "Great question," "I hope this helps," routine offers to do
+  more work, and unsolicited reassurance such as "And that's okay" or "you're not alone."
 
 ### Vague language
 
@@ -74,7 +78,8 @@ Treat these patterns as signals, not a word blacklist. Fix them only when they w
 - **Weak modifiers.** Cut intensifiers and adverbs that prop up a vague verb. Keep them when they
   change the meaning.
 - **Hidden mechanisms.** Translate metaphorical nouns such as "substrate," "surface," and
-  "flywheel" when they obscure what the system does. Keep precise terms the audience uses.
+  "flywheel" when they obscure what the system does. Cut decorative metaphors that the next
+  sentence must translate back into literal terms. Keep precise terms the audience uses.
 - **Dangling effects.** Expand "highlighting" or "ensuring" into a supported causal claim, or
   delete it. Do not preserve the emptiness as "plan accordingly" or "showing its value."
 
@@ -84,11 +89,14 @@ Treat these patterns as signals, not a word blacklist. Fix them only when they w
   matters.
 - **False shape.** Remove forced trios, meaningless "from X to Y" ranges, and predictable "despite
   challenges" turns.
+- **Rhetorical setup.** Replace a question immediately answered by the author with the answer
+  itself, unless the question creates real tension or invites the reader to think.
 - **Repeated syntax.** Vary consecutive sentences or paragraphs that open with the same structure.
   Keep parallelism when it is deliberate.
 - **Over-explanation.** Stop once the fact and its useful implication are clear. Cut restatements
   that add no condition, evidence, decision, or action.
 - **Tiny sections.** Combine one-sentence sections when ordinary paragraphs would read better.
+  Delete the warm-up sentence after a heading when it merely restates the heading.
 - **Inline labels.** Remove labels that repeat the sentence, such as "Performance: Performance
   improved." Keep labels that help readers scan distinct items.
 - **Punctuation tics.** Use colons, parentheses, dashes, headings, and bold text for function. Do
@@ -102,6 +110,8 @@ Treat these patterns as signals, not a word blacklist. Fix them only when they w
   irrelevant, or deliberately backgrounded.
 - **Synonym cycling.** Use one term for one concept. Normal repetition is clearer than decorative
   variation.
+- **Slogan fragments.** Fold clipped tails such as "no guessing" and recurring punch-line endings
+  into a complete sentence, or cut them. Keep intentional fragments that fit the author's voice.
 - **Fake casualness.** Do not inject fragments, contractions, jokes, first person, or slang that
   clashes with the author or audience.
 
