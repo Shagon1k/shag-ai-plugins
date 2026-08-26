@@ -81,6 +81,30 @@
         "Removes stock framing and meta-signposting and replaces the noun-heavy evaluation phrase with direct wording",
         "Fixes the repeated sentence openings and removes the final over-explanation without inventing a comparison or baseline"
       ]
+    },
+    {
+      "id": "match-provided-voice",
+      "request": "Use $unslop to rewrite the draft in the style of my sample. Preserve the draft's facts.\n\nMy writing sample:\n\nRetries are useful until they aren't. Three attempts is usually enough. After that, the logs matter more than another try.\n\nDraft:\n\nAcme's groundbreaking import workflow serves as a testament to our commitment to seamless operations. It imports CSV files, flags rows that are missing account IDs, and sends those flagged rows to a review queue, empowering teams to drive better outcomes.",
+      "files": {},
+      "expectations": [
+        "Preserves the CSV import, missing-account-ID flagging, and review-queue facts",
+        "Matches the sample's compact, direct diction and naturally varied sentence rhythm",
+        "Removes promotional claims about groundbreaking work, commitment, seamlessness, empowerment, and outcomes",
+        "Does not copy retry-related claims or phrases from the sample into the rewrite",
+        "Does not invent first-person experience, opinions, measurements, or product behavior"
+      ]
+    },
+    {
+      "id": "remove-scripted-rhetoric",
+      "request": "Revise this documentation paragraph while keeping its concrete behavior:\n\n## Reliability\n\nReliability matters.\n\nInterestingly, what makes the worker reliable? The answer is retries. The worker retries each failed job twice and records each failure in `retry.log`, no guessing. If your queue does not have monitoring yet, that's okay. You're not alone.",
+      "files": {},
+      "expectations": [
+        "Preserves that the worker retries each failed job twice and records each failure in `retry.log`",
+        "Removes the heading warm-up, the reaction-setting opener, and the immediately answered rhetorical question",
+        "Rewrites or removes the clipped 'no guessing' tail instead of preserving it as a slogan",
+        "Removes the unsolicited reassurance without inventing monitoring guidance or reader circumstances",
+        "Keeps the useful heading or otherwise returns a clean documentation passage without process commentary"
+      ]
     }
   ]
 }
