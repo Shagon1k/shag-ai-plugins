@@ -9,7 +9,7 @@ adapters.
 | Plugin | Purpose |
 | --- | --- |
 | `web-development` | Plan, build, review, and maintain web applications |
-| `engineering-tools` | Assess changes, maintain engineering workflows, and improve technical documentation |
+| `engineering-tools` | Assess changes, simplify code, maintain engineering workflows, and improve technical documentation |
 | `ai-quality` | Improve AI-agent context efficiency and output quality |
 
 ## Skills
@@ -18,6 +18,7 @@ adapters.
 | --- | --- | --- |
 | `web-development` | `plan-web-app` | Create, align, and maintain web-app guidance with optional GitHub Issue/PR templates and a Project board |
 | `engineering-tools` | `assess-change-complexity` | Size proposed software changes with an evidence-backed XS–XXL score, driver guardrails, confidence, and optional project calibration |
+| `engineering-tools` | `simplify-code` | Simplify code during implementation, on request, or in code review while preserving behavior and avoiding overengineering |
 | `engineering-tools` | `conventional-commit` | Prepare a Conventional Commit from staged changes with an explicit confirmation gate |
 | `engineering-tools` | `tech-debt-audit` | Audit and maintain a prioritized, deduplicated technical-debt roadmap |
 | `engineering-tools` | `technical-writing` | Write and review purpose-driven, clear, and precise engineering documentation |
@@ -154,4 +155,8 @@ shag-ai-plugins/
 
 ## License
 
-[MIT](LICENSE), Copyright (c) 2026 Aliaksei Hurynovich
+[MIT](LICENSE), Copyright (c) 2026 Aliaksei Hurynovich, except where noted.
+
+The `simplify-code` skill adapts Anthropic's code-simplifier and is distributed under
+[Apache-2.0](plugins/engineering-tools/skills/simplify-code/LICENSE). Its source attribution and
+modification notice are included in the skill.

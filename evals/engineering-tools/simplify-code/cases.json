@@ -1,0 +1,82 @@
+{
+  "skill": "simplify-code",
+  "execution": {
+    "sandbox": "workspace-write",
+    "timeoutMs": 300000
+  },
+  "cases": [
+    {
+      "id": "direct-simplification-preserves-effects",
+      "request": "Use $simplify-code to simplify checkout.py while preserving its behavior.",
+      "files": {
+        "checkout.py": "def finalize(order, authorize, save, emit):\n    if order[\"status\"] == \"draft\":\n        if authorize(order[\"owner\"]):\n            saved = save(order)\n            emit(\"saved\", saved[\"id\"])\n            return saved\n        else:\n            raise PermissionError(\"denied\")\n    else:\n        raise ValueError(\"not draft\")\n",
+        "shipping.py": "def shipping_cost(total):\n    if total >= 50:\n        return 0\n    else:\n        if total >= 20:\n            return 5\n        else:\n            return 10\n"
+      },
+      "expectations": [
+        "Edits checkout.py to reduce unnecessary nesting without introducing new layers, configuration, or dependencies.",
+        "Preserves the exported function signature and returns the exact object returned by save.",
+        "For non-draft orders, raises ValueError('not draft') without calling authorize, save, or emit; for denied draft orders, raises PermissionError('denied') without calling save or emit.",
+        "Preserves the success-path ordering and arguments: authorize(order['owner']), save(order), then emit('saved', saved['id']); does not swallow their exceptions or add retries.",
+        "Leaves shipping.py unchanged."
+      ]
+    },
+    {
+      "id": "review-without-edits",
+      "request": "You are the AI reviewer for a change containing order-label.mjs. Review it for unnecessary complexity. Return findings in a table with Location, Finding, and Suggested simplification columns. Do not implement fixes.",
+      "files": {
+        "order-label.mjs": "const formatters = {\n  plain: {\n    format(order) {\n      return `${order.id}: ${order.total}`;\n    },\n  },\n};\n\nfunction createFormatter(name) {\n  return formatters[name];\n}\n\nexport function labelOrder(order) {\n  const formatter = createFormatter('plain');\n  return formatter.format(order);\n}\n",
+        "README.md": "# Order labels\n\nThe module exposes labelOrder(order) for internal order records. The label format is fixed. No formatter registration or configuration is exposed.\n"
+      },
+      "expectations": [
+        "Leaves every fixture file unchanged and creates no new files.",
+        "Identifies the formatter lookup or factory as unnecessary indirection for the current fixed format, cites its location, and explains the maintenance or comprehension cost.",
+        "Suggests a direct implementation that preserves labelOrder and its output without adding a new pattern, dependency, or hypothetical fallback.",
+        "Uses the requested table format and presents simplification as a maintainability improvement, without inventing an existing functional defect."
+      ]
+    },
+    {
+      "id": "implementation-without-speculative-handling",
+      "request": "Implement event_label(event) in labels.py. It should return the level's value, a colon and space, then the message; for example INFO: Ready. Keep the implementation consistent with this project.",
+      "files": {
+        "README.md": "# Internal event labels\n\nEvent objects come from the validated event store. The store guarantees a Level enum and a string message. Empty messages are valid. Event labeling is internal presentation code.\n",
+        "events.py": "from dataclasses import dataclass\nfrom enum import Enum\n\n\nclass Level(Enum):\n    INFO = \"INFO\"\n    WARNING = \"WARNING\"\n    ERROR = \"ERROR\"\n\n\n@dataclass(frozen=True)\nclass Event:\n    level: Level\n    message: str\n",
+        "labels.py": "from events import Event\n\n\ndef event_label(event: Event) -> str:\n    raise NotImplementedError\n"
+      },
+      "expectations": [
+        "Implements event_label with the requested exact formatting, including the trailing space for an empty message.",
+        "Uses the established Event contract instead of adding runtime type checks, missing-field fallbacks, exception suppression, or default levels for excluded states.",
+        "Keeps the implementation direct, without adding a formatter registry, class hierarchy, extra configuration, or dependencies.",
+        "Preserves events.py and does not add unrelated features."
+      ]
+    },
+    {
+      "id": "clear-boundary-validation-needs-no-cleanup",
+      "request": "Review reservations.py for worthwhile simplifications. Report actionable findings only; do not edit files.",
+      "files": {
+        "README.md": "# Reservations endpoint\n\nreserve_count is called with an untrusted value extracted from an incoming JSON request. The API accepts positive integers only. It rejects booleans, floats, strings, zero, and negative numbers with ValueError('count must be a positive integer').\n",
+        "reservations.py": "def _is_positive_integer(value):\n    # bool is a subclass of int, but the API does not accept booleans.\n    return type(value) is int and value > 0\n\n\ndef reserve_count(value):\n    if not _is_positive_integer(value):\n        raise ValueError(\"count must be a positive integer\")\n    return {\"count\": value}\n"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Does not recommend weakening the required boundary validation, changing error behavior, or accepting booleans as integers.",
+        "Does not insist on removing the helper just because it has one caller or deleting the comment explaining the boolean constraint.",
+        "Reports no actionable simplification findings rather than manufacturing style changes, additional abstractions, or defensive handling."
+      ]
+    },
+    {
+      "id": "uncertain-external-extension-use",
+      "request": "Review dispatch.py for overengineering. Could we replace the registry with a direct call to send_email? Give your recommendation without changing files.",
+      "files": {
+        "README.md": "# Message dispatch\n\nIntegration builds can load handlers from external Python packages. Deployment configuration and those packages are managed outside this checkout. The register_handler function is exported to integrations.\n",
+        "dispatch.py": "from email_sender import send_email\n\n_handlers = {\"email\": send_email}\n\n\ndef register_handler(kind, handler):\n    _handlers[kind] = handler\n\n\ndef dispatch(kind, payload):\n    return _handlers[kind](payload)\n",
+        "email_sender.py": "def send_email(payload):\n    return {\"channel\": \"email\", \"payload\": payload}\n"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Explains that a direct send_email call would remove the integration registration behavior and change dispatch semantics.",
+        "Makes the uncertainty about external consumers or deployment configuration explicit rather than treating the one visible handler as proof that the registry is unused.",
+        "Recommends retaining the supported extension behavior unless external usage and requirements are resolved; does not invent new plugins or expand the architecture."
+      ]
+    }
+  ]
+}
