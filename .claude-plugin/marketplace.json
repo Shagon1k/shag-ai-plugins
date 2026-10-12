@@ -20,13 +20,13 @@
     {
       "name": "engineering-tools",
       "source": "./plugins/engineering-tools",
-      "description": "Developer workflows for change assessment, commits, technical debt, and technical writing.",
+      "description": "Developer workflows for change assessment, code simplification, commits, technical debt, and technical writing.",
       "author": {
         "name": "Aliaksei Hurynovich",
         "email": "shagon1k@gmail.com"
       },
       "category": "productivity",
-      "tags": ["developer-tools", "complexity-assessment", "git", "technical-debt", "technical-writing", "documentation"]
+      "tags": ["developer-tools", "complexity-assessment", "code-simplification", "code-review", "git", "technical-debt", "technical-writing", "documentation"]
     },
     {
       "name": "ai-quality",

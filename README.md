@@ -9,7 +9,7 @@ adapters.
 | Plugin | Purpose | Status |
 | --- | --- | --- |
 | `web-development` | Plan, build, review, and maintain web applications | Codex, Claude Code, and Cursor |
-| `engineering-tools` | Assess changes, maintain engineering workflows, and improve technical documentation | Codex, Claude Code, and Cursor |
+| `engineering-tools` | Assess changes, simplify code, maintain engineering workflows, and improve technical documentation | Codex, Claude Code, and Cursor |
 | `ai-quality` | Improve AI-agent context efficiency and output quality | Codex, Claude Code, and Cursor |
 
 ## Skills
@@ -18,6 +18,7 @@ adapters.
 | --- | --- | --- | --- |
 | `web-development` | `plan-web-app` | Create, align, and maintain web-app guidance with optional GitHub Issue/PR templates and a Project board | Full workflow; clean-project smoke test pending |
 | `engineering-tools` | `assess-change-complexity` | Size proposed software changes with an evidence-backed XS–XXL score, driver guardrails, confidence, and optional project calibration | Full workflow |
+| `engineering-tools` | `simplify-code` | Simplify code during implementation, on request, or in code review while preserving behavior and avoiding overengineering | Shared workflow; Cursor smoke test pending |
 | `engineering-tools` | `conventional-commit` | Prepare a Conventional Commit from staged changes with an explicit confirmation gate | Full workflow |
 | `engineering-tools` | `tech-debt-audit` | Audit and maintain a prioritized, deduplicated technical-debt roadmap | Full workflow; Jira remains tool-dependent |
 | `engineering-tools` | `technical-writing` | Write and review purpose-driven, clear, and precise engineering documentation | Full workflow |
@@ -154,4 +155,8 @@ shag-ai-plugins/
 
 ## License
 
-[MIT](LICENSE), Copyright (c) 2026 Aliaksei Hurynovich
+[MIT](LICENSE), Copyright (c) 2026 Aliaksei Hurynovich, except where noted.
+
+The `simplify-code` skill adapts Anthropic's code-simplifier and is distributed under
+[Apache-2.0](plugins/engineering-tools/skills/simplify-code/LICENSE). Its source attribution and
+modification notice are included in the skill.
