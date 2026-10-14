@@ -1,6 +1,6 @@
 interface:
   display_name: "Plan Web App"
-  short_description: "Plan web apps and optional GitHub tracking"
-  default_prompt: "Use $plan-web-app to plan or align this web app’s living guidance and optional GitHub work tracking."
+  short_description: "Plan web apps, GitHub tracking, and code style"
+  default_prompt: "Use $plan-web-app to plan or align this web app’s living guidance, optional GitHub work tracking, and code style rules."
 policy:
   allow_implicit_invocation: true

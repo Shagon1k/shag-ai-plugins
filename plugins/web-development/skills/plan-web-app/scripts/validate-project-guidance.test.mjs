@@ -15,6 +15,20 @@ const VALIDATOR = path.join(
 const SKILL_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const GITHUB_ASSET_ROOT = path.join(SKILL_ROOT, "assets/github");
 const WORK_TRACKING_ASSET = path.join(SKILL_ROOT, "assets/GITHUB_WORK_TRACKING.template.md");
+const CODE_STYLE_ASSET = path.join(SKILL_ROOT, "assets/CODE_STYLE.template.md");
+const CODE_STYLE_ESLINT_ASSET = path.join(SKILL_ROOT, "assets/code-style/eslint-code-style.mjs");
+
+function renderCodeStyle() {
+  return fs
+    .readFileSync(CODE_STYLE_ASSET, "utf8")
+    .replace(/## Template Setup[\s\S]*?(?=\n## )/, "")
+    .replace("<MAX_FILE_LINES>", "300")
+    .replace("<MAX_COGNITIVE_COMPLEXITY>", "12")
+    .replace("<MAX_PARAMS>", "four")
+    .replace("<MAX_LINE_LENGTH>", "100")
+    .replace("`<name or pattern>` | `<why the rule does not apply>`", "API fields | Contract names stay")
+    .replace("`<rule>` | `<lint rule, formatter, type-check, or review>`", "Boolean names | ESLint");
+}
 
 function fixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "plan-web-app-"));
@@ -62,7 +76,15 @@ function fixture() {
       );
     }
   };
-  return { root, write, run, createValidDefault, createValidGithub };
+  const createValidCodeStyle = (relative = ".agent-docs/rules/code-style.md") => {
+    write(relative, renderCodeStyle());
+    fs.appendFileSync(
+      path.join(root, "AGENTS.md"),
+      `\n## Rule Index\n\n| Code style / naming | \`${relative}\` |\n`,
+      "utf8",
+    );
+  };
+  return { root, write, run, createValidDefault, createValidGithub, createValidCodeStyle };
 }
 
 test("valid default guidance passes", (t) => {
@@ -312,4 +334,83 @@ test("custom GitHub template paths pass when configured", (t) => {
   );
 
   assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test("rendered code style rules pass when AGENTS references them", (t) => {
+  const context = fixture();
+  t.after(() => fs.rmSync(context.root, { recursive: true, force: true }));
+  context.createValidDefault();
+  context.createValidCodeStyle();
+
+  const result = context.run("--code-style");
+
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stdout, /code style/);
+});
+
+test("code style rules keep no template setup or placeholders", (t) => {
+  const context = fixture();
+  t.after(() => fs.rmSync(context.root, { recursive: true, force: true }));
+  context.createValidDefault();
+  context.createValidCodeStyle();
+  context.write(".agent-docs/rules/code-style.md", fs.readFileSync(CODE_STYLE_ASSET, "utf8"));
+
+  const result = context.run("--code-style");
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /template marker remains: ## Template Setup/);
+  assert.match(result.stderr, /unresolved placeholders: <MAX_COGNITIVE_COMPLEXITY>/);
+});
+
+test("code style rules must be referenced from AGENTS", (t) => {
+  const context = fixture();
+  t.after(() => fs.rmSync(context.root, { recursive: true, force: true }));
+  context.createValidDefault();
+  context.write(".agent-docs/rules/code-style.md", renderCodeStyle());
+
+  const result = context.run("--code-style");
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /AGENTS\.md: does not reference \.agent-docs\/rules\/code-style\.md/);
+});
+
+test("code style rules need an Enforcement section", (t) => {
+  const context = fixture();
+  t.after(() => fs.rmSync(context.root, { recursive: true, force: true }));
+  context.createValidDefault();
+  context.createValidCodeStyle();
+  context.write(
+    ".agent-docs/rules/code-style.md",
+    renderCodeStyle().replace(/## Enforcement[\s\S]*$/, ""),
+  );
+
+  const result = context.run("--code-style");
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /missing Enforcement section/);
+});
+
+test("custom code style path passes when configured", (t) => {
+  const context = fixture();
+  t.after(() => fs.rmSync(context.root, { recursive: true, force: true }));
+  context.createValidDefault();
+  context.createValidCodeStyle("docs/rules/style.md");
+
+  const missing = context.run("--code-style");
+  const configured = context.run("--code-style-path", "docs/rules/style.md");
+
+  assert.equal(missing.status, 1);
+  assert.match(missing.stderr, /missing required code style rules/);
+  assert.equal(configured.status, 0, configured.stdout + configured.stderr);
+});
+
+test("code style ESLint asset exports flat-config entries", async () => {
+  const { codeStyleConfigs, constantNaming, magicNumbers } = await import(CODE_STYLE_ESLINT_ASSET);
+
+  assert.ok(Array.isArray(codeStyleConfigs) && codeStyleConfigs.length > 0);
+  for (const config of codeStyleConfigs) {
+    assert.ok(Array.isArray(config.files) && typeof config.rules === "object");
+  }
+  assert.match(constantNaming.selector, /UPPER|A-Z/);
+  assert.equal(magicNumbers.length, 2);
 });

@@ -64,6 +64,7 @@ Reusable project rules live in `<RULES_DIR>`. Remove rows that do not apply; rea
 | --- | --- |
 | Git workflow / commits | `<RULES_DIR>/git.md` |
 | Language / typing | `<RULES_DIR>/<LANGUAGE_RULES>.md` |
+| Code style / naming | `<RULES_DIR>/code-style.md` |
 | Tests | `<RULES_DIR>/testing.md` |
 | Frontend / design system | `<FRONTEND_AGENTS_PATH>` |
 | Backend / database / migrations | `<BACKEND_AGENTS_PATH>` |

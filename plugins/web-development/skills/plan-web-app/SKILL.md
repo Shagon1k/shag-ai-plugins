@@ -1,6 +1,6 @@
 ---
 name: plan-web-app
-description: Plan, align, or audit living project guidance for web apps through source-first discovery and gap-only questions, with optional GitHub Issue and pull request templates plus a simple GitHub Project. Use when starting a web app, onboarding an existing codebase, creating or repairing ROADMAP.md, DESIGN.md, ARCHITECTURE.md, AGENTS.md, CLAUDE.md, architecture decisions, GitHub work tracking, or coherent AI-ready project context.
+description: Plan, align, or audit living project guidance for web apps through source-first discovery and gap-only questions, with optional GitHub Issue and pull request templates, a simple GitHub Project, and a code style baseline. Use when starting a web app, onboarding an existing codebase, creating or repairing ROADMAP.md, DESIGN.md, ARCHITECTURE.md, AGENTS.md, CLAUDE.md, architecture decisions, GitHub work tracking, naming and code style rules, or coherent AI-ready project context.
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -17,11 +17,14 @@ Read these resources when their step begins:
 - `references/artifact-ownership.md`: read before choosing outputs or resolving overlap.
 - `references/setup-questionnaire.md`: read after source inspection; ask only uncovered items.
 - `references/github-workflow.md`: read when a GitHub repository may use optional work tracking.
+- `references/code-style.md`: read when the developer may want shared code style rules.
 - `references/phase-planning.md`: read before creating or materially restructuring a multi-phase
   delivery plan.
 - `references/validation-checklist.md`: read before final validation.
 - `assets/*.template.md`: use as scaffolds, not text to copy blindly.
 - `assets/github/`: use as the standard GitHub template pack; customize only after developer choice.
+- `assets/CODE_STYLE.template.md` and `assets/code-style/`: use as the standard code style rules
+  and their ESLint enforcement; customize only after developer choice.
 - `scripts/validate-project-guidance.mjs`: run after generating or aligning the documents.
 
 ## Output Contract
@@ -66,6 +69,16 @@ Do not create these optional outputs merely because a GitHub remote exists. In f
 `Skip`, `Standard`, or `Customize`; default to `Skip` when unanswered. `Standard` applies the
 documented baseline without more questions. `Customize` runs a short gap-only mini-questionnaire,
 and the developer may request it later as a focused update.
+
+Optional code style output:
+
+| Output | Standard asset | Purpose |
+| --- | --- | --- |
+| `<RULES_DIR>/code-style.md` | `assets/CODE_STYLE.template.md` | Naming, numbers, comments, size limits, and their enforcement |
+| Lint configuration | `assets/code-style/eslint-code-style.mjs` (ESLint and TypeScript) | Enforcement for a project without application code yet |
+
+Offer `Skip`, `Standard`, or `Customize` the same way; default to `Skip`. For an existing codebase,
+render the rules but propose lint adoption as tracked work instead of enabling it during planning.
 
 ## Run Modes and Output Depth
 
@@ -130,6 +143,9 @@ collect only material gaps.
 When a GitHub remote exists or the developer asks for GitHub work tracking, read
 `references/github-workflow.md`. In full setup, include its single profile choice in the gap set.
 Do not ask the Customize mini-questionnaire unless the developer selects it.
+
+When the developer may want shared code style rules, read `references/code-style.md` and include
+its single profile choice in the gap set the same way.
 
 Treat these as valid answers:
 
@@ -229,6 +245,9 @@ Use the templates as section checklists and formatting scaffolds. Apply these ru
     deferred disposition and revisit trigger.
 17. When GitHub work tracking is selected, render the approved local template pack and insert the
     resolved Work Tracking section into `AGENTS.md`. Keep routine Issues out of `ROADMAP.md`.
+18. When the code style baseline is selected, follow `references/code-style.md`: render the rule
+    file, link it from the `AGENTS.md` Rule Index, and add or propose enforcement by project state.
+    Never rename application code or enable new lint rules on an existing codebase during planning.
 
 ### 7. Provision Opt-In GitHub Work Tracking
 
@@ -263,6 +282,15 @@ For the standard GitHub profile:
 node <skill-root>/scripts/validate-project-guidance.mjs <project-root> --github
 ```
 
+For the code style baseline:
+
+```bash
+node <skill-root>/scripts/validate-project-guidance.mjs <project-root> --code-style
+```
+
+When the rule file is not at `.agent-docs/rules/code-style.md`, pass
+`--code-style-path <relative-path>` instead.
+
 For custom locations:
 
 ```bash
@@ -294,6 +322,7 @@ Report:
 - provisional/deferred items requiring future attention;
 - existing project material preserved unchanged.
 - selected GitHub profile, local template paths, verified Project URL/state, and any manual remainder.
+- selected code style profile, rule file path, enforcement added or proposed, and approved exceptions.
 
 ## Guardrails
 
