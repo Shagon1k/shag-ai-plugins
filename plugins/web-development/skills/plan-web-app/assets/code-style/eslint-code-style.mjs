@@ -10,6 +10,8 @@ export const constantNaming = {
         "> VariableDeclarator[id.type='Identifier']",
         ':matches([init.type=/^(Literal|TemplateLiteral)$/],',
         " [init.type='BinaryExpression']:not(:has(CallExpression, MemberExpression)))",
+        // A boolean constant follows the boolean naming rule instead (`isEnabled`).
+        ":not([init.raw=/^(true|false)$/])",
         ':not([id.name=/^[A-Z][A-Z0-9_]*$/])',
     ].join(''),
     message: 'Name a module-level literal constant in UPPER_SNAKE_CASE.',
@@ -48,6 +50,19 @@ export const handlerNaming = {
     message: 'Name an event handler handleX (or pass an onX prop or setX setter).',
 };
 
+/**
+ * The `no-restricted-syntax` entry for one group of files. A flat config that restates the rule
+ * replaces it entirely, so build every group's list here instead of copying selectors.
+ */
+export function restrictedSyntax({ withNumbers = false, withHandlers = false } = {}) {
+    return [
+        'error',
+        constantNaming,
+        ...(withNumbers ? magicNumbers : []),
+        ...(withHandlers ? [handlerNaming] : []),
+    ];
+}
+
 const BOOLEAN_PREFIXES = ['is', 'are', 'has', 'can', 'should', 'was', 'did', 'will', 'with'];
 
 export const codeStyleConfigs = [
@@ -82,12 +97,12 @@ export const codeStyleConfigs = [
                     format: null,
                 },
             ],
-            'no-restricted-syntax': ['error', constantNaming, ...magicNumbers, handlerNaming],
+            'no-restricted-syntax': restrictedSyntax({ withNumbers: true, withHandlers: true }),
         },
     },
     {
         // Tests keep literal expectations.
         files: ['**/__tests__/**', '**/*.{spec,test}.{ts,tsx}', 'tests/**', '**/*.config.*'],
-        rules: { 'no-restricted-syntax': ['error', constantNaming] },
+        rules: { 'no-restricted-syntax': restrictedSyntax({ withHandlers: true }) },
     },
 ];
