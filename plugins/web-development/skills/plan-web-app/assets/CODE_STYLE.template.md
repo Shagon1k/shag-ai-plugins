@@ -20,10 +20,10 @@ apply. Record each exception the developer approves in the Exceptions section.
 
 | Element | Rule | Example |
 | --- | --- | --- |
-| Boolean variable or parameter | Reads as a question: `is`, `are`, `has`, `can`, `should`, `was`, `did`, `will`, `with` | `isOpen`, `hasDeadlineChanged`, `withDetails` |
-| Function or method | Verb phrase: `get`/`find`/`list` read, `build`/`create` make, `to`/`format` convert, `assert` throws | `getClubPermissions`, `toInvitationPreview` |
+| Boolean variable or parameter | Reads as a question: `is`, `are`, `has`, `can`, `should`, `was`, `did`, `will`, `with`; a boolean constant too | `isOpen`, `hasDeadlineChanged`, `withDetails` |
+| Function or method, including controller handlers | Verb phrase: `get`/`find`/`list` read, `build`/`create` make, `to`/`format` convert, `assert` throws | `getClubPermissions`, `listPending` |
 | Class, type, component | Noun phrase | `SessionRoster`, `ClubSummary` |
-| Module-level literal constant | `UPPER_SNAKE_CASE` | `MAX_SUGGESTIONS`, `HTTP_STATUS` |
+| Module-level literal constant or fixed lookup table | `UPPER_SNAKE_CASE`; objects built for a library call stay camelCase | `MAX_SUGGESTIONS`, `HTTP_STATUS` |
 | Collection | Plural noun without a type suffix | `members`, not `memberList` |
 | Callback parameter | The singular of the collection | `members.map((member) => member.name)` |
 | UI event handler | `handleX` where it is defined, `onX` where it is received | `handleSubmit`, `onSubmit` |
@@ -32,6 +32,11 @@ apply. Record each exception the developer approves in the Exceptions section.
 
 - Single-letter names are only loop counters, sort comparator pairs (`a`, `b`), and `_` for an
   unused position.
+- Names keep their source: destructured values keep the property name, API and database fields keep
+  the contract's names, and component props that mirror DOM or UI-library props keep those names
+  (`open`, `disabled`). Framework-required names (`useX` hooks, route files) are exempt.
+- Rename through the language's tooling, not text replacement, so references and shorthand
+  properties stay correct.
 
 ## Numbers and Literals
 
@@ -54,6 +59,10 @@ apply. Record each exception the developer approves in the Exceptions section.
   that owns it (pass the work as a callback) instead of relying on callers to call them in order.
 - Compare with strict equality, return early instead of `else` after `return`, and prefer
   template strings and object shorthand.
+- Validate data once, where it enters: request bodies and parameters, form and action arguments,
+  provider responses, files. Inside the system, trust the shared contract types instead of parsing
+  your own API responses or database rows again; keep a parse only where stored data can outlive
+  its shape (a cache row) or right before a security-sensitive use (an outbound URL).
 
 ## Comments
 
