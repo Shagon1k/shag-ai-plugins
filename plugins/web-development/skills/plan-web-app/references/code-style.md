@@ -37,7 +37,7 @@ asks for code style rules. Inspect existing rule files, linter and formatter con
 | State | Action |
 | --- | --- |
 | `Idea` or `Greenfield` without application code | Add the lint rules with the rule file. For an ESLint flat config in TypeScript, adapt `assets/code-style/eslint-code-style.mjs`; for another stack, name the equivalent tooling. |
-| `Existing` | Do not enable new lint rules or rename code during planning. Measure violations per rule when tooling allows, then propose adoption as tracked work: one change per rule, renames through language tooling rather than text replacement, and the rule enabled in the same change that fixes its findings. |
+| `Existing` | Do not enable new lint rules or rename code during planning. Measure violations per rule when tooling allows, then propose adoption as tracked work: one change per rule, renames through language tooling rather than text replacement, and the rule enabled in the same change that fixes its findings. Language tooling misses names held in strings (test-double keys, `Pick<T, 'name'>`), so type-check and run the tests after each rename. |
 
 Make lint warnings fail the lint run so a cleared rule cannot quietly regress.
 
