@@ -18,6 +18,7 @@ become competing sources of truth.
 | System topology, boundaries, ownership, runtime, operations | `ARCHITECTURE.md` | Roadmap summarizes planning direction |
 | Exact API/event/data contracts | Focused specs, schema, generated contracts, or code | Architecture indexes the canonical source |
 | Significant technical rationale | `_docs/decisions/README.md` | Architecture indexes accepted ADRs |
+| Code conventions: naming, numbers, comments, size limits | `<RULES_DIR>/code-style.md` when the code style baseline is selected | `AGENTS.md` links it from the Rule Index; lint configuration enforces it |
 | Agent workflow, commands, approvals, repository rules | `AGENTS.md` and linked rule files | `CLAUDE.md` imports `AGENTS.md`; other docs do not duplicate operating policy |
 | Claude Code project entrypoint | `CLAUDE.md` | Thin adapter only; canonical shared instructions stay in `AGENTS.md` |
 | Documentation navigation | `_docs/README.md` | Root README may link to the map |

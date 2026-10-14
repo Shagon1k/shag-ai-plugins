@@ -23,6 +23,7 @@ const DEFAULT_GITHUB = {
   "issue-config": ".github/ISSUE_TEMPLATE/config.yml",
   "pr-template": ".github/pull_request_template.md",
 };
+const DEFAULT_CODE_STYLE = ".agent-docs/rules/code-style.md";
 const LABELS = {
   agents: "agents",
   claude: "Claude adapter",
@@ -84,6 +85,7 @@ function parseArgs(argv) {
     "issue-config": DEFAULT_GITHUB["issue-config"],
     "pr-template": DEFAULT_GITHUB["pr-template"],
   };
+  const codeStyle = { enabled: false, path: DEFAULT_CODE_STYLE };
   let projectRoot;
   let only;
 
@@ -115,6 +117,14 @@ function parseArgs(argv) {
       github.enabled = true;
       github[argument.slice(2)] = value;
       index += 1;
+    } else if (argument === "--code-style") {
+      codeStyle.enabled = true;
+    } else if (argument === "--code-style-path") {
+      const value = argv[index + 1];
+      if (!value || value.startsWith("--")) throw new Error(`${argument} requires a path`);
+      codeStyle.enabled = true;
+      codeStyle.path = value;
+      index += 1;
     } else if (argument === "--only") {
       const value = argv[index + 1];
       if (!value || value.startsWith("--")) throw new Error("--only requires a comma-separated list");
@@ -144,10 +154,10 @@ function parseArgs(argv) {
   if (!projectRoot) {
     throw new Error(
       "usage: validate-project-guidance.mjs <project-root> [--only design,roadmap] " +
-        "[--github] [--allow-blank-issues] [options]",
+        "[--github] [--allow-blank-issues] [--code-style] [options]",
     );
   }
-  return { projectRoot, configured, github, only };
+  return { projectRoot, configured, github, codeStyle, only };
 }
 
 function isFile(filePath) {
@@ -247,6 +257,7 @@ function main() {
     "issue-config": resolveProjectPath(root, args.github["issue-config"]),
     "pr-template": resolveProjectPath(root, args.github["pr-template"]),
   };
+  const codeStylePath = resolveProjectPath(root, args.codeStyle.path);
   const selected = args.only ?? new Set(Object.keys(DEFAULT_DOCS));
   const fullSetup = args.only === undefined;
   const errors = [];
@@ -270,9 +281,15 @@ function main() {
     }
   }
 
+  const codeStyleRequired = args.codeStyle.enabled ? [codeStylePath] : [];
+  if (args.codeStyle.enabled && !isFile(codeStylePath)) {
+    errors.push(`missing required code style rules: ${args.codeStyle.path}`);
+  }
+
   const selectedExisting = [...selected].map((name) => paths[name]).filter(isFile);
   const githubExisting = githubRequired.filter(isFile);
-  for (const filePath of [...selectedExisting, ...githubExisting]) {
+  const codeStyleExisting = codeStyleRequired.filter(isFile);
+  for (const filePath of [...selectedExisting, ...githubExisting, ...codeStyleExisting]) {
     const text = fs.readFileSync(filePath, "utf8");
     const relative = path.relative(root, filePath);
 
@@ -382,6 +399,28 @@ function main() {
     }
   }
 
+  if (args.codeStyle.enabled) {
+    if (isFile(codeStylePath)) {
+      const content = fs.readFileSync(codeStylePath, "utf8");
+      if (!/^## Enforcement\s*$/m.test(content)) {
+        errors.push(`${args.codeStyle.path}: missing Enforcement section`);
+      }
+    }
+    if (!isFile(paths.agents)) {
+      errors.push(`missing required agents for the code style rules: ${args.configured.agents}`);
+    } else {
+      const content = fs.readFileSync(paths.agents, "utf8");
+      const rulePath = path.relative(path.dirname(paths.agents), codeStylePath);
+      const isLinked =
+        markdownTargets(paths.agents).has(codeStylePath) ||
+        content.includes(rulePath) ||
+        content.includes(args.codeStyle.path);
+      if (!isLinked) {
+        errors.push(`${args.configured.agents}: does not reference ${args.codeStyle.path}`);
+      }
+    }
+  }
+
   if (fullSetup || selected.has("claude")) {
     if (isFile(paths.claude) && isFile(paths.agents)) {
       const expectedImport = `@${relativeImport(paths.claude, paths.agents)}`;
@@ -404,9 +443,14 @@ function main() {
   }
 
   const mode = fullSetup ? "full setup" : "focused update";
+  const extras = [
+    ...(args.github.enabled ? ["GitHub workflow"] : []),
+    ...(args.codeStyle.enabled ? ["code style"] : []),
+  ];
+  const checked = selectedExisting.length + githubExisting.length + codeStyleExisting.length;
   console.log(
-    `Project guidance validation passed: ${selectedExisting.length + githubExisting.length} ` +
-      `files checked (${mode}${args.github.enabled ? ", GitHub workflow" : ""})`,
+    `Project guidance validation passed: ${checked} files checked ` +
+      `(${[mode, ...extras].join(", ")})`,
   );
   return 0;
 }

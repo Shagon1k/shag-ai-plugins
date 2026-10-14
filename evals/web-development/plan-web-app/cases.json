@@ -110,6 +110,43 @@
         "States the Standard answer beside each relevant choice and does not re-interview product, design, architecture, or delivery",
         "Does not write local GitHub files or mutate remote GitHub state before the custom profile is confirmed"
       ]
+    },
+    {
+      "id": "code-style-standard-existing",
+      "request": "Use $plan-web-app as a focused update for this existing TypeScript web app: add the Standard code style baseline and do not ask customization questions. You may create or edit guidance files only.",
+      "files": {
+        "AGENTS.md": "# Agents\n\nSee the [docs map](_docs/README.md).\n\n## Rule Index\n\n| Work type | Read first |\n| --- | --- |\n| Language / typing | `.agent-docs/rules/typescript.md` |\n\n## Project Documentation\n\nReport `Documentation impact: none` when no artifact changes.\n",
+        "CLAUDE.md": "@AGENTS.md\n",
+        "_docs/README.md": "# Docs\n\n- [Agents](../AGENTS.md)\n- [Claude](../CLAUDE.md)\n",
+        ".agent-docs/rules/typescript.md": "# TypeScript\n\n- Interfaces are IName.\n",
+        "eslint.config.mjs": "import tseslint from 'typescript-eslint';\n\nexport default [...tseslint.configs.recommended, { rules: { 'max-lines': ['error', 400] } }];\n",
+        "package.json": "{\n  \"scripts\": { \"lint\": \"eslint .\", \"typecheck\": \"tsc --noEmit\" }\n}\n",
+        "src/orders.ts": "const open = true;\nexport function orderTotal(items: { price: number }[]) {\n  return items.reduce((s, i) => s + i.price, 0) * 1.2;\n}\nexport const isOpen = () => open;\n"
+      },
+      "expectations": [
+        "Creates a code style rule file under .agent-docs/rules and links it from the AGENTS.md Rule Index without moving the detailed rules into AGENTS.md",
+        "Removes the template setup section and every placeholder from the rendered rule file",
+        "Takes the file-length limit from the existing ESLint configuration (400) instead of the 300-line default",
+        "Leaves src/orders.ts, eslint.config.mjs, and package.json unchanged",
+        "Proposes enabling the code style lint rules as separate tracked work instead of enabling them now, and either reports measured violations or says why they were not measured",
+        "Fills the Enforcement table with real tooling per rule and marks rules without tooling as review items",
+        "Reports passing project-guidance validation with the code style check enabled, or names the exact failure"
+      ]
+    },
+    {
+      "id": "code-style-greenfield-enforcement",
+      "request": "Use $plan-web-app for a full setup of this greenfield web app. Apply the Standard code style baseline without customization questions; skip GitHub work tracking. You are approved to create guidance files and the lint configuration. Mark unspecified product decisions provisional instead of blocking.",
+      "files": {
+        "PRODUCT_BRIEF.md": "# Shelf\n\nShelf lets a household track which board games they own and who borrowed one. The MVP proves a signed-in owner can add a game and record a loan. English-only responsive web UI.",
+        "package.json": "{\n  \"scripts\": {\n    \"dev\": \"next dev\",\n    \"build\": \"next build\",\n    \"lint\": \"eslint .\"\n  },\n  \"devDependencies\": { \"eslint\": \"9.0.0\", \"typescript\": \"5.6.0\", \"typescript-eslint\": \"8.0.0\" }\n}\n"
+      },
+      "expectations": [
+        "Classifies the project as Greenfield and applies the Standard code style profile without a customization questionnaire",
+        "Creates a code style rule file linked from the AGENTS.md Rule Index",
+        "Adds lint enforcement for the adopted rules to the ESLint configuration and makes warnings fail the lint run",
+        "Does not create GitHub templates or a GitHub Project",
+        "Reports passing project-guidance validation with the code style check enabled, or names the exact failure"
+      ]
     }
   ]
 }

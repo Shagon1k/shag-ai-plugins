@@ -1,12 +1,12 @@
 {
   "name": "web-development",
-  "version": "0.2.0",
-  "description": "Reusable workflows for planning, building, reviewing, and maintaining web applications, including optional GitHub work tracking.",
+  "version": "0.3.0",
+  "description": "Reusable workflows for planning, building, reviewing, and maintaining web applications, including optional GitHub work tracking and code style rules.",
   "author": {
     "name": "Aliaksei Hurynovich",
     "email": "shagon1k@gmail.com"
   },
   "homepage": "https://github.com/Shagon1k/shag-ai-plugins",
   "repository": "https://github.com/Shagon1k/shag-ai-plugins",
-  "keywords": ["web-app", "frontend", "backend", "development", "architecture", "github", "project-management"]
+  "keywords": ["web-app", "frontend", "backend", "development", "architecture", "github", "project-management", "code-style"]
 }

@@ -66,6 +66,18 @@ Default to `Skip` when unanswered. Do not infer permission to mutate GitHub from
 remote. For an existing GitHub setup, inspect current templates and linked Projects before asking
 the profile question.
 
+## Optional Code Style Baseline
+
+Read `code-style.md` and ask one profile question:
+
+- `Skip`: leave code style to existing rules and tooling.
+- `Standard`: render the standard naming, readability, and comment rules and propose matching
+  enforcement.
+- `Customize`: ask only for deviations through the mini-questionnaire in that reference.
+
+Default to `Skip` when unanswered. For an existing codebase, inspect current rule files and lint
+configuration before asking.
+
 ## Conditional Checks
 
 Ask only when relevant:

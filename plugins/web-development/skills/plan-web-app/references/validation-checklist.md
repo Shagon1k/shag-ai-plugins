@@ -61,6 +61,20 @@ Check this section only when `Standard` or `Customize` was selected:
   configured without read-back evidence.
 - Local template validation passes with `--github` and the final paths.
 
+## Optional Code Style Baseline
+
+Check this section only when `Standard` or `Customize` was selected:
+
+- Existing rule files and lint configuration were inspected and merged, not replaced.
+- `<RULES_DIR>/code-style.md` exists, keeps no Template Setup section or placeholder, and the
+  `AGENTS.md` Rule Index links it.
+- Size limits match the lint configuration or approved defaults.
+- Every approved exception is recorded with its reason.
+- The Enforcement table names real tooling for each rule; rules without tooling are review items.
+- For an existing codebase, no lint rule was enabled and no code was renamed during planning;
+  adoption is proposed as tracked work with measured violations where tooling allowed.
+- Local validation passes with `--code-style` (or `--code-style-path` and the final path).
+
 ## Coverage
 
 - Product contract, MVP boundary, baseline web concerns, and acceptance evidence are addressed.
