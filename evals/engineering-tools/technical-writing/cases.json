@@ -51,6 +51,67 @@
         "Preserves natural variation in sentence length and the deliberate concluding emphasis",
         "Makes at most light changes and does not invent measurements or alternatives"
       ]
+    },
+    {
+      "id": "sync-stale-descriptive-doc",
+      "request": "Use the technical-writing skill to sync docs/architecture.md with the code. Report every mismatch and show the exact documentation edits you would make.",
+      "files": {
+        "AGENTS.md": "# Repository rules\n\nSource precedence: decision records in `docs/decisions/` record approved choices; `docs/architecture.md` describes the system as built.\n",
+        "docs/architecture.md": "# Architecture\n\n## Sessions\n\nThe API keeps sign-in sessions in Redis. A session expires after 5 minutes of inactivity\n(`SESSION_TTL_SECONDS = 300`). Expired sessions return `401 SESSION_EXPIRED`.\n",
+        "docs/decisions/0007-longer-sessions.md": "# 0007 — Extend idle sessions to 15 minutes\n\nStatus: Accepted (2026-09-02)\n\nFive-minute sessions logged out users who switched tabs. Raise the idle timeout to 15 minutes.\n",
+        "src/config.ts": "export const SESSION_TTL_SECONDS = 900;\nexport const SESSION_STORE = 'redis';\n",
+        "src/auth/session.ts": "import { SESSION_TTL_SECONDS } from '../config';\n\nexport function touch(store: Store, id: string) {\n    return store.expire(id, SESSION_TTL_SECONDS);\n}\n\nexport class SessionExpired extends Error {\n    readonly code = 'SESSION_EXPIRED';\n    readonly status = 401;\n}\n"
+      },
+      "expectations": [
+        "Identifies that the documented 5-minute timeout and `SESSION_TTL_SECONDS = 300` disagree with `SESSION_TTL_SECONDS = 900` in `src/config.ts`",
+        "Treats the documentation as stale and cites the accepted decision record as evidence that the code change was deliberate",
+        "Shows a documentation edit that states 15 minutes and `SESSION_TTL_SECONDS = 900` while keeping Redis and `401 SESSION_EXPIRED` unchanged",
+        "Does not propose changing the code to match the old documentation"
+      ]
+    },
+    {
+      "id": "sync-implementation-contradicts-requirement",
+      "request": "Use the technical-writing skill. After last week's refactor the docs and the code no longer agree about account deletion. Sync the documentation and tell me what you changed or would change.",
+      "files": {
+        "docs/requirements.md": "# Requirements\n\n## Account deletion\n\nDeleting an account anonymizes the user's shared comments: their text stays and the author shows as\n\"Deleted user\". Deletion never removes other members' threads.\n",
+        "src/account/delete-account.ts": "export async function deleteAccount(db: Db, userId: string) {\n    await db.comments.deleteMany({ where: { authorId: userId } });\n    await db.users.delete({ where: { id: userId } });\n}\n",
+        "src/account/delete-account.test.ts": "it('keeps shared comments and anonymizes their author', async () => {\n    await deleteAccount(db, alice.id);\n    const comment = await db.comments.findUnique({ where: { id: aliceComment.id } });\n    expect(comment?.text).toBe('See you Friday');\n    expect(comment?.authorName).toBe('Deleted user');\n});\n"
+      },
+      "expectations": [
+        "Identifies that `deleteAccount` deletes the user's comments while `docs/requirements.md` requires anonymizing them",
+        "Classifies the mismatch as a problem in the implementation rather than stale documentation, citing the normative requirement and the test that agrees with it",
+        "Does not rewrite or weaken the account-deletion requirement to describe the current deletion behavior",
+        "Recommends the code change that would restore anonymization, with file evidence, without claiming to have edited the code"
+      ]
+    },
+    {
+      "id": "sync-ambiguous-asks-owner",
+      "request": "Use the technical-writing skill to check whether README.md still matches the CLI and sync it.",
+      "files": {
+        "README.md": "# uploadr\n\n`uploadr push <file>` uploads a file. Failed uploads are retried 3 times with a 2-second delay.\n",
+        "src/push.ts": "const MAX_RETRIES = 5;\nconst RETRY_DELAY_MS = 2000;\n\nexport async function push(file: string) {\n    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {\n        if (await tryUpload(file)) return;\n        await sleep(RETRY_DELAY_MS);\n    }\n    throw new Error('Upload failed');\n}\n"
+      },
+      "expectations": [
+        "Identifies that the README says 3 retries while `MAX_RETRIES` is 5 in `src/push.ts`, and that the 2-second delay matches",
+        "States that the available evidence does not show which retry count is intended",
+        "Asks the owner which retry count is intended, with the consequence of each choice, instead of presenting either side as settled fact",
+        "Does not present a README rewrite to 5 retries as a completed fix"
+      ]
+    },
+    {
+      "id": "sync-respects-change-range",
+      "request": "Use the technical-writing skill. Only src/limits.ts changed on this branch. Sync the documentation for this change.",
+      "files": {
+        "docs/limits.md": "# Limits\n\nUploads are limited to 10 MB (`MAX_UPLOAD_MB`). Larger files return `413 FILE_TOO_LARGE`.\n",
+        "docs/auth.md": "# Authentication\n\nAccess tokens last 30 minutes (`ACCESS_TOKEN_MINUTES`).\n",
+        "src/limits.ts": "// Raised for photo uploads; see PR #212.\nexport const MAX_UPLOAD_MB = 25;\n",
+        "src/auth.ts": "export const ACCESS_TOKEN_MINUTES = 60;\n"
+      },
+      "expectations": [
+        "Reports that `docs/limits.md` states 10 MB while `MAX_UPLOAD_MB` is 25 and proposes updating the documentation to 25 MB",
+        "Keeps `docs/auth.md` out of the in-scope changes; at most mentions the token-lifetime mismatch as separate out-of-scope drift",
+        "States the scope that was checked"
+      ]
     }
   ]
 }

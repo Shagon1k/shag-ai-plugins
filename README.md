@@ -9,7 +9,7 @@ adapters.
 | Plugin | Purpose |
 | --- | --- |
 | `web-development` | Plan, build, review, and maintain web applications |
-| `engineering-tools` | Assess changes, simplify code, maintain engineering workflows, and improve technical documentation |
+| `engineering-tools` | Assess changes, simplify code, maintain engineering workflows, and improve and sync technical documentation |
 | `ai-quality` | Improve AI-agent context efficiency and output quality |
 
 ## Skills
@@ -21,7 +21,7 @@ adapters.
 | `engineering-tools` | `simplify-code` | Simplify code during implementation, on request, or in code review while preserving behavior and avoiding overengineering |
 | `engineering-tools` | `conventional-commit` | Prepare a Conventional Commit from staged changes with an explicit confirmation gate |
 | `engineering-tools` | `tech-debt-audit` | Audit and maintain a prioritized, deduplicated technical-debt roadmap |
-| `engineering-tools` | `technical-writing` | Write and review purpose-driven, clear, and precise engineering documentation |
+| `engineering-tools` | `technical-writing` | Write and review purpose-driven, clear, and precise engineering documentation, and sync it with the code in both directions |
 | `ai-quality` | `tokenomy` | Reduce unnecessary AI-agent context and token usage |
 | `ai-quality` | `unslop` | Apply a natural prose-quality pass by default while preserving meaning, facts, and structured content |
 | `ai-quality` | `bro` | Restate the immediately previous response in plain, concise human language |

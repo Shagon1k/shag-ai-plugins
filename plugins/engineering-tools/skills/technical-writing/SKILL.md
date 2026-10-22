@@ -1,6 +1,6 @@
 ---
 name: technical-writing
-description: Write, restructure, or review clear technical documentation by choosing its purpose with Diátaxis, addressing the reader directly, controlling sentence load, and removing ambiguity. Use for READMEs, tutorials, how-to guides, reference docs, explanations, RFCs, ADRs, runbooks, API docs, PR descriptions, commit-message prose, and code comments. Preserve technical accuracy and repository conventions. Not for product UI, marketing, legal text, or Conventional Commit structure.
+description: Write, restructure, review, or sync clear technical documentation by choosing its purpose with Diátaxis, addressing the reader directly, controlling sentence load, and removing ambiguity. Use for READMEs, tutorials, how-to guides, reference docs, explanations, RFCs, ADRs, runbooks, API docs, PR descriptions, commit-message prose, and code comments. Also use to sync documentation with code after changes — find drift, fix stale documents, and flag implementations that contradict documented requirements instead of rewriting the requirement. Preserve technical accuracy and repository conventions. Not for product UI, marketing, legal text, or Conventional Commit structure.
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -131,6 +131,12 @@ decision. Move material only when its different purpose starts competing with th
   rules, not the four-mode taxonomy, to PR descriptions, commit-message prose, and code comments.
 - **Respect ownership.** Let specialized formats keep their own rules. This skill can improve a
   commit message's prose, but the Conventional Commit workflow owns its structure.
+
+## Sync documentation with code
+
+When the user asks whether documentation is still true, or to sync it with code after changes,
+follow [`references/sync.md`](references/sync.md). It finds drift and decides whether the document
+or the implementation is wrong; write every resulting edit with the rules above.
 
 ## Worked examples
 

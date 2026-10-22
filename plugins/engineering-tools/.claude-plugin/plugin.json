@@ -1,12 +1,12 @@
 {
   "name": "engineering-tools",
-  "version": "0.5.0",
-  "description": "Developer workflows for change assessment, code simplification, commits, technical debt, and technical writing.",
+  "version": "0.6.0",
+  "description": "Developer workflows for change assessment, code simplification, commits, technical debt, technical writing, and documentation sync.",
   "author": {
     "name": "Aliaksei Hurynovich",
     "email": "shagon1k@gmail.com"
   },
   "homepage": "https://github.com/Shagon1k/shag-ai-plugins",
   "repository": "https://github.com/Shagon1k/shag-ai-plugins",
-  "keywords": ["developer-tools", "complexity-assessment", "code-simplification", "code-review", "git", "technical-debt", "technical-writing", "documentation"]
+  "keywords": ["developer-tools", "complexity-assessment", "code-simplification", "code-review", "git", "technical-debt", "technical-writing", "documentation", "documentation-sync"]
 }

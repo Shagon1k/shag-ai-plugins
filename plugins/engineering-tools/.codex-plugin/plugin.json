@@ -1,7 +1,7 @@
 {
   "name": "engineering-tools",
-  "version": "0.5.0",
-  "description": "Developer workflows for change assessment, code simplification, commits, technical debt, and technical writing.",
+  "version": "0.6.0",
+  "description": "Developer workflows for change assessment, code simplification, commits, technical debt, technical writing, and documentation sync.",
   "author": {
     "name": "Aliaksei Hurynovich",
     "email": "shagon1k@gmail.com"
@@ -10,7 +10,7 @@
   "interface": {
     "displayName": "Engineering Tools",
     "shortDescription": "Size work, simplify code, and improve engineering workflows.",
-    "longDescription": "Assess software-change complexity, simplify code during implementation or review, audit technical debt, prepare Conventional Commits, and write clear technical documentation.",
+    "longDescription": "Assess software-change complexity, simplify code during implementation or review, audit technical debt, prepare Conventional Commits, and write clear technical documentation that stays in sync with the code.",
     "developerName": "Aliaksei Hurynovich",
     "category": "Productivity",
     "capabilities": ["Write"],
@@ -19,7 +19,7 @@
       "Simplify this code or review it for unnecessary complexity while preserving behavior.",
       "Audit this codebase for actionable technical debt.",
       "Prepare a Conventional Commit from the staged changes.",
-      "Write or review this technical document for purpose, clarity, and precision."
+      "Write or review this technical document, or check that our docs still match the code."
     ]
   }
 }

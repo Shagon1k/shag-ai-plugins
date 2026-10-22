@@ -1,6 +1,6 @@
 interface:
   display_name: "Technical Writing"
-  short_description: "Write clear, usable engineering documentation"
-  default_prompt: "Use $technical-writing to write or review this technical document for purpose, clarity, and precision."
+  short_description: "Write clear docs and keep them in sync with code"
+  default_prompt: "Use $technical-writing to write, review, or sync this technical documentation with the code."
 policy:
   allow_implicit_invocation: true
