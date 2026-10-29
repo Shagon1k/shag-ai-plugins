@@ -77,6 +77,50 @@
         "Makes the uncertainty about external consumers or deployment configuration explicit rather than treating the one visible handler as proof that the registry is unused.",
         "Recommends retaining the supported extension behavior unless external usage and requirements are resolved; does not invent new plugins or expand the architecture."
       ]
+    },
+    {
+      "id": "long-single-job-function-stays",
+      "request": "Review report.py for worthwhile simplifications. It is long; should we split it into smaller helpers? Report findings only; do not edit files.",
+      "files": {
+        "README.md": "# Finance export\n\nexport_row builds one CSV row per order. Finance imports the columns in exactly this order. Orders come from the validated order store.\n",
+        "report.py": "def export_row(order):\n    \"\"\"One CSV row per order, in the column order finance imports.\"\"\"\n    customer = order[\"customer\"]\n    address = customer[\"address\"]\n    return [\n        order[\"id\"],\n        order[\"created_at\"].date().isoformat(),\n        customer[\"id\"],\n        customer[\"name\"],\n        customer[\"email\"],\n        address[\"line1\"],\n        address.get(\"line2\", \"\"),\n        address[\"city\"],\n        address[\"postcode\"],\n        address[\"country\"],\n        order[\"currency\"],\n        f\"{order['subtotal']:.2f}\",\n        f\"{order['tax']:.2f}\",\n        f\"{order['shipping']:.2f}\",\n        f\"{order['total']:.2f}\",\n        order[\"payment_method\"],\n        order[\"status\"],\n        len(order[\"lines\"]),\n        order.get(\"coupon\", \"\"),\n        order[\"channel\"],\n    ]\n"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Does not recommend splitting export_row into helpers only because of its length, and explains that it does one job in a straight line.",
+        "Does not recommend changing the column order, the number formatting, or adding validation for fields the order store already guarantees.",
+        "Reports no actionable simplification, or only findings that name a concrete case, rather than style changes."
+      ]
+    },
+    {
+      "id": "multi-file-review-states-coverage",
+      "request": "You are reviewing a change that adds pricing.py, checkout.py and banner.py. Review the change for simplification and duplication. Report findings only; do not edit files.",
+      "files": {
+        "README.md": "# Shop\n\nOrders of 100 or more ship for free. The cart banner tells the customer whether free shipping applies.\n",
+        "pricing.py": "def is_free_shipping(total):\n    return total >= 100\n",
+        "checkout.py": "from pricing import is_free_shipping\n\n\ndef shipping_fee(total):\n    return 0 if is_free_shipping(total) else 7\n",
+        "banner.py": "def cart_banner(total):\n    if total > 100:\n        return \"Free shipping applied\"\n    return f\"Add {100 - total} more for free shipping\"\n"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Identifies that the free-shipping threshold is implemented twice, in pricing.py and banner.py, and that the two disagree for a total of exactly 100.",
+        "Suggests one source for the rule, such as banner.py reusing is_free_shipping, without adding configuration or a new abstraction layer.",
+        "States which files in scope were read, or explicitly that none were left unread."
+      ]
+    },
+    {
+      "id": "incidental-bug-reported-not-fixed",
+      "request": "Use $simplify-code to simplify totals.py while preserving its behavior.",
+      "files": {
+        "README.md": "# Order totals\n\norder_total sums positive line quantities times positive prices. The TEN code takes 10 off. Order totals are never negative.\n",
+        "totals.py": "def order_total(lines, discount_code):\n    total = 0\n    for line in lines:\n        if line[\"qty\"] > 0:\n            if line[\"price\"] > 0:\n                total = total + line[\"qty\"] * line[\"price\"]\n    if discount_code is not None:\n        if discount_code == \"TEN\":\n            total = total - 10\n    return total\n"
+      },
+      "expectations": [
+        "Edits totals.py to reduce nesting without introducing new layers, configuration, or dependencies.",
+        "Preserves the current results for every input, including that the TEN code applied to a total below 10 still returns a negative value.",
+        "Reports separately that the TEN code can make a total negative, contrary to the README, and names the triggering case.",
+        "Does not fix that suspected bug, for example by clamping the total at zero."
+      ]
     }
   ]
 }

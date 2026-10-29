@@ -34,7 +34,8 @@ Keep required validation, security, reliability, and performance guarantees.
 
 Treat suspected bugs and requirement changes separately. If a simplification depends
 on an uncertain requirement or usage assumption, investigate it and make any unresolved
-uncertainty explicit.
+uncertainty explicit. Report a bug you notice along the way in its own short list, with the
+case that triggers it, and leave it unfixed unless fixing it is also requested.
 
 ### 2. Follow the project
 
@@ -48,6 +49,10 @@ clearer and preserve its semantics. Avoid introducing dependencies for cleanup.
 
 - Flatten unnecessary nesting and make control flow easier to follow.
 - Use names that explain responsibilities and meaningful intermediate values.
+  A name must not hide a side effect: a function called `prepare` that also finishes a job,
+  or an audit helper that also sends notifications, misleads every caller.
+- Replace bare `true`/`false` arguments whose meaning needs the signature to decode with
+  named options or separate functions.
 - Remove redundant work and code confirmed to be unused within scope.
 - Keep related logic together without combining unrelated responsibilities.
 - Remove comments that merely repeat the code; retain rationale and constraints.
@@ -70,11 +75,31 @@ to the failure's likelihood and impact.
 
 Consolidate duplication when it represents the same responsibility and should
 change together. Similar-looking code alone does not justify a shared abstraction.
+One rule implemented in two places that already behave differently is the strongest
+case: name both places and the input on which they disagree.
 
-Before removing a construct, inspect its callers, tests, and constraints. Check
-history when its purpose remains unclear.
+Split a function or component by the separate jobs it does, never by line count. Do
+not extract helpers whose only purpose is to make a function shorter; a long function
+that does one job in a straight line can stay.
 
-### 5. Keep useful structure
+Before calling code unused or removing it, search the whole tree, including tests,
+fixtures, configuration, and string or dynamic references, and inspect its constraints.
+Check history when its purpose remains unclear.
+
+### 5. Look for hidden complexity
+
+These cost a reader time even when the code passes every check:
+
+- Workarounds for a lint or type rule instead of a fix: disable comments, unusual
+  injection or casts that exist only to pass a limit such as a maximum parameter count.
+- A wrapper whose name misstates what it does, such as a notification-aware transaction
+  used for plain reads.
+- Temporary compatibility code that keeps running after its reason is gone, such as a
+  migration backfill repeated on every job cycle.
+- Validation that re-checks values the code produced itself or that a typed contract
+  already guarantees. Keep validation at real trust boundaries.
+
+### 6. Keep useful structure
 
 Retain abstractions that clarify a concept, isolate a boundary, or support a
 current requirement. A helper can be useful with one caller.
@@ -84,15 +109,18 @@ or make debugging harder. Leave already clear code alone.
 
 ## Workflow
 
-1. Identify the target code and whether the task calls for edits or review.
+1. Identify the target code and whether the task calls for edits or review. For a diff
+   or a set of files, list every file in scope and read each one, not a sample.
 2. Look for worthwhile simplifications using the principles and project conventions.
 3. Apply focused refinements, or propose them as findings when reviewing.
 4. Check that applied or proposed refinements preserve behavior and make the code
    easier to understand and maintain.
 5. Report only significant changes or actionable findings. For review findings,
-   identify the location, explain the concrete maintenance cost, and suggest
-   a simpler approach.
+   identify the location, give the concrete case (the input, or the change that would
+   have to be made in two places), explain the maintenance cost, and suggest a simpler
+   approach. No concrete case, no finding.
+6. End a review by naming any file in scope you did not read or could not check.
 
 Do not manufacture changes or findings when the code is already clear.
 
-*Adapted and modified from Anthropic's [code-simplifier](https://github.com/anthropics/claude-plugins-official/blob/main/plugins/code-simplifier/agents/code-simplifier.md): provider- and language-neutral guidance, review support, and focused rules for overengineering. Distributed under [Apache-2.0](LICENSE).*
+*Adapted and modified from Anthropic's [code-simplifier](https://github.com/anthropics/claude-plugins-official/blob/main/plugins/code-simplifier/agents/code-simplifier.md): provider- and language-neutral guidance, review support, and focused rules for overengineering. Distributed under [Apache-2.0](LICENSE). The rules on concrete cases, splitting by job, and stating unread scope draw on [ponytail](https://github.com/DietrichGebert/ponytail) (MIT).*

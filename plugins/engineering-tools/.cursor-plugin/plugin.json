@@ -1,7 +1,7 @@
 {
   "name": "engineering-tools",
   "displayName": "Engineering Tools",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Developer workflows for change assessment, code simplification, commits, technical debt, technical writing, and documentation sync.",
   "author": {
     "name": "Aliaksei Hurynovich",
