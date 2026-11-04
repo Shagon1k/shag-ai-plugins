@@ -32,6 +32,8 @@ instructions and output format.
 Preserve public contracts, outputs, side effects, error behavior, and ordering.
 Keep required validation, security, reliability, and performance guarantees.
 
+For user interfaces, rendered output and interaction count as behavior: a changed visual baseline or accessibility tree means the change is no longer a pure simplification.
+
 Treat suspected bugs and requirement changes separately. If a simplification depends
 on an uncertain requirement or usage assumption, investigate it and make any unresolved
 uncertainty explicit. Report a bug you notice along the way in its own short list, with the
@@ -59,6 +61,10 @@ clearer and preserve its semantics. Avoid introducing dependencies for cleanup.
 - Explain non-obvious decisions in comments when the code alone cannot
   communicate the reason.
 - Prefer readable expressions over dense conditionals or clever compression.
+- Use one name per concept and one concept per name.
+- Keep logic where a reader expects it: no business rules hidden in presentation code, and no work hidden in render paths.
+
+Test the result as a maintainer new to the code: they should find the place to change quickly and follow the flow from top to bottom, without holding the whole module in mind or jumping across several files.
 
 ### 4. Reduce unjustified complexity
 
@@ -107,6 +113,14 @@ current requirement. A helper can be useful with one caller.
 Avoid changes that merely trade one style for another, compress unrelated logic,
 or make debugging harder. Leave already clear code alone.
 
+## Large reviews
+
+When the scope spans many files and the environment can run parallel read-only agents, split it into a few disjoint areas of similar size and review them in parallel. Keep edits in a single session.
+
+Review the seams between areas yourself, since a reviewer of one area misses duplication across areas. Before reporting, have an independent pass re-check every consolidated finding against the code and the documented requirements, drop false positives, and move uncertain behavior-preserving findings to the ones that need a decision.
+
+Lint thresholds stricter than the project's can locate hotspots; use them to measure, not as a target.
+
 ## Workflow
 
 1. Identify the target code and whether the task calls for edits or review. For a diff
@@ -119,6 +133,7 @@ or make debugging harder. Leave already clear code alone.
    identify the location, give the concrete case (the input, or the change that would
    have to be made in two places), explain the maintenance cost, and suggest a simpler
    approach. No concrete case, no finding.
+   Mark each finding as behavior-preserving or as needing a decision because it changes behavior or visible output, contradicts a documented requirement, or touches persisted data.
 6. End a review by naming any file in scope you did not read or could not check.
 
 Do not manufacture changes or findings when the code is already clear.
