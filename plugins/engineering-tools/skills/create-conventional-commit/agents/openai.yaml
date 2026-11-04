@@ -1,0 +1,6 @@
+interface:
+  display_name: "Create Conventional Commit"
+  short_description: "Prepare a commit from staged changes"
+  default_prompt: "Use $create-conventional-commit to review the staged changes and prepare a Conventional Commit."
+policy:
+  allow_implicit_invocation: true

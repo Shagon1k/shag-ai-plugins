@@ -19,12 +19,34 @@ adapters.
 | `web-development` | `plan-web-app` | Create, align, and maintain web-app guidance with optional GitHub Issue/PR templates, a Project board, and code style rules |
 | `engineering-tools` | `assess-change-complexity` | Size proposed software changes with an evidence-backed XS–XXL score, driver guardrails, confidence, and optional project calibration |
 | `engineering-tools` | `simplify-code` | Simplify code during implementation, on request, or in code review while preserving behavior and avoiding overengineering |
-| `engineering-tools` | `conventional-commit` | Prepare a Conventional Commit from staged changes with an explicit confirmation gate |
-| `engineering-tools` | `tech-debt-audit` | Audit and maintain a prioritized, deduplicated technical-debt roadmap |
-| `engineering-tools` | `technical-writing` | Write and review purpose-driven, clear, and precise engineering documentation, and sync it with the code in both directions |
+| `engineering-tools` | `create-conventional-commit` | Prepare a Conventional Commit from staged changes with an explicit confirmation gate |
+| `engineering-tools` | `audit-tech-debt` | Audit and maintain a prioritized, deduplicated technical-debt roadmap |
+| `engineering-tools` | `write-technical-docs` | Write and review purpose-driven, clear, and precise engineering documentation, and sync it with the code in both directions |
 | `ai-quality` | `tokenomy` | Reduce unnecessary AI-agent context and token usage |
 | `ai-quality` | `unslop` | Apply a natural prose-quality pass by default while preserving meaning, facts, and structured content |
 | `ai-quality` | `bro` | Restate the immediately previous response in plain, concise human language |
+
+## Skill naming
+
+Workflow skills use `verb-object` names in lowercase kebab-case. Choose the verb by the
+primary result: `assess` gives an evidence-backed judgment against criteria; `audit`
+systematically examines a scoped area and records verified findings, coverage, and priorities;
+`review` examines a bounded artifact such as a pull request, design, or document. These are
+catalog conventions; a skill may support related actions under its primary name.
+
+Short authored names `tokenomy`, `unslop`, and `bro` remain exceptions.
+
+In `engineering-tools` 0.9.0, update explicit skill invocations and saved paths:
+
+| Previous name | Current name |
+| --- | --- |
+| `tech-debt-audit` | `audit-tech-debt` |
+| `technical-writing` | `write-technical-docs` |
+| `conventional-commit` | `create-conventional-commit` |
+
+The previous names are no longer skill entrypoints. Workflows and invocation policies are
+unchanged, including the commit confirmation gate. The default debt report remains
+`_docs/tech-debt-audit.md`. The documentation eval command is now `npm run eval:write-technical-docs`.
 
 ## Platform Support
 
