@@ -36,18 +36,6 @@ catalog conventions; a skill may support related actions under its primary name.
 
 Short authored names `tokenomy`, `unslop`, and `bro` remain exceptions.
 
-In `engineering-tools` 0.9.0, update explicit skill invocations and saved paths:
-
-| Previous name | Current name |
-| --- | --- |
-| `tech-debt-audit` | `audit-tech-debt` |
-| `technical-writing` | `write-technical-docs` |
-| `conventional-commit` | `create-conventional-commit` |
-
-The previous names are no longer skill entrypoints. Workflows and invocation policies are
-unchanged, including the commit confirmation gate. The default debt report remains
-`_docs/tech-debt-audit.md`. The documentation eval command is now `npm run eval:write-technical-docs`.
-
 ## Platform Support
 
 Reusable skill logic lives in each plugin's `skills/` directory and stays platform-neutral.
