@@ -121,6 +121,21 @@
         "Reports separately that the TEN code can make a total negative, contrary to the README, and names the triggering case.",
         "Does not fix that suspected bug, for example by clamping the total at zero."
       ]
+    },
+    {
+      "id": "visible-output-change-needs-decision",
+      "request": "Review rating-badge.mjs and club-summary.mjs for worthwhile simplifications. Report findings only; do not edit files.",
+      "files": {
+        "rating-badge.mjs": "export function ratingBadge(average) {\n  return `★ ${average.toFixed(1)}`;\n}\n",
+        "club-summary.mjs": "const averageFormat = new Intl.NumberFormat('en', { maximumFractionDigits: 1 });\n\nexport function clubSummary(club) {\n  return `${club.name} · average ${averageFormat.format(club.average)}`;\n}\n",
+        "README.md": "# Club pages\n\nThe rating badge and the Club summary both show a Club's average rating to members.\n"
+      },
+      "expectations": [
+        "Leaves every fixture file unchanged and creates no new files.",
+        "Identifies the two average-rating formats as one responsibility implemented twice, citing both locations.",
+        "States the concrete input on which they disagree, such as a whole-number average like 8 rendering as 8.0 in one place and 8 in the other.",
+        "Marks consolidating them as needing a decision because it changes what users see, rather than presenting it as a behavior-preserving cleanup."
+      ]
     }
   ]
 }
