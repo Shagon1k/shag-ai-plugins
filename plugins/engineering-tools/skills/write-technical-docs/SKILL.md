@@ -1,11 +1,11 @@
 ---
-name: technical-writing
+name: write-technical-docs
 description: Write, restructure, review, or sync clear technical documentation by choosing its purpose with Diátaxis, addressing the reader directly, controlling sentence load, and removing ambiguity. Use for READMEs, tutorials, how-to guides, reference docs, explanations, RFCs, ADRs, runbooks, API docs, PR descriptions, commit-message prose, and code comments. Also use to sync documentation with code after changes — find drift, fix stale documents, and flag implementations that contradict documented requirements instead of rewriting the requirement. Preserve technical accuracy and repository conventions. Not for product UI, marketing, legal text, or Conventional Commit structure.
 user-invocable: true
 disable-model-invocation: false
 ---
 
-# Technical Writing
+# Write Technical Docs
 
 Write for a tired engineer who needs to understand the document on the first read. Preserve facts,
 requirements, uncertainty, identifiers, commands, and the author's defensible judgment.

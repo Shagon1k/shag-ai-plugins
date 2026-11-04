@@ -12,7 +12,7 @@ to its established structure without dropping information.
 ```markdown
 # Technical Debt Roadmap
 
-> Maintained by the `tech-debt-audit` skill. Findings are grouped by severity and
+> Maintained by the `audit-tech-debt` skill. Findings are grouped by severity and
 > tagged by category. Developers: update the **Status** column as you work
 > (`Open` → `In progress` → `Done`), or delete a row once it's resolved.
 > The **Jira** column links to a tracker ticket when one has been created.

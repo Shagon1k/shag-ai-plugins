@@ -12,6 +12,17 @@ audience: ai
 3. Identify concrete trigger prompts, non-trigger cases, outputs, and reusable resources.
 4. Use the environment's `skill-creator` workflow when available.
 
+## Naming
+
+- Use `verb-object` in lowercase kebab-case for workflow skills; name the primary outcome.
+- Choose `assess` for an evidence-backed judgment against criteria, `audit` for a systematic
+  scoped examination with verified findings, coverage, and priorities, and `review` for a bounded
+  artifact such as a PR, design, or document. These are catalog conventions, not universal terms.
+- Preserve the short authored names `tokenomy`, `unslop`, and `bro` as explicit exceptions.
+- On rename, update the directory, frontmatter, heading, UI metadata, explicit invocations,
+  references, eval suite directory and slug, npm scripts, and README. Preserve output artifact
+  paths and domain keywords unless their meaning changes. Document old-to-new names for users.
+
 ## Build
 
 - Name the directory and frontmatter `name` identically using lowercase hyphen-case.

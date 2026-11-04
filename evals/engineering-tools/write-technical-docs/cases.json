@@ -1,5 +1,5 @@
 {
-  "skill": "technical-writing",
+  "skill": "write-technical-docs",
   "execution": {
     "sandbox": "read-only",
     "timeoutMs": 300000
@@ -43,7 +43,7 @@
     },
     {
       "id": "natural-rhythm-borderline",
-      "request": "Use $technical-writing for a light edit of this explanation. Preserve its judgment and rhythm:\n\nWe kept the write path synchronous for one reason: a successful response must mean the data is durable. An asynchronous queue improved median latency in the prototype, but it also created a state where the API had accepted a write that could still be lost. That trade was not worth the smaller number on the dashboard.",
+      "request": "Use $write-technical-docs for a light edit of this explanation. Preserve its judgment and rhythm:\n\nWe kept the write path synchronous for one reason: a successful response must mean the data is durable. An asynchronous queue improved median latency in the prototype, but it also created a state where the API had accepted a write that could still be lost. That trade was not worth the smaller number on the dashboard.",
       "files": {},
       "expectations": [
         "Preserves the durability rationale, prototype latency result, loss risk, and the author's judgment",
@@ -54,7 +54,7 @@
     },
     {
       "id": "sync-stale-descriptive-doc",
-      "request": "Use the technical-writing skill to sync docs/architecture.md with the code. Report every mismatch and show the exact documentation edits you would make.",
+      "request": "Use the write-technical-docs skill to sync docs/architecture.md with the code. Report every mismatch and show the exact documentation edits you would make.",
       "files": {
         "AGENTS.md": "# Repository rules\n\nSource precedence: decision records in `docs/decisions/` record approved choices; `docs/architecture.md` describes the system as built.\n",
         "docs/architecture.md": "# Architecture\n\n## Sessions\n\nThe API keeps sign-in sessions in Redis. A session expires after 5 minutes of inactivity\n(`SESSION_TTL_SECONDS = 300`). Expired sessions return `401 SESSION_EXPIRED`.\n",
@@ -71,7 +71,7 @@
     },
     {
       "id": "sync-implementation-contradicts-requirement",
-      "request": "Use the technical-writing skill. After last week's refactor the docs and the code no longer agree about account deletion. Sync the documentation and tell me what you changed or would change.",
+      "request": "Use the write-technical-docs skill. After last week's refactor the docs and the code no longer agree about account deletion. Sync the documentation and tell me what you changed or would change.",
       "files": {
         "docs/requirements.md": "# Requirements\n\n## Account deletion\n\nDeleting an account anonymizes the user's shared comments: their text stays and the author shows as\n\"Deleted user\". Deletion never removes other members' threads.\n",
         "src/account/delete-account.ts": "export async function deleteAccount(db: Db, userId: string) {\n    await db.comments.deleteMany({ where: { authorId: userId } });\n    await db.users.delete({ where: { id: userId } });\n}\n",
@@ -86,7 +86,7 @@
     },
     {
       "id": "sync-ambiguous-asks-owner",
-      "request": "Use the technical-writing skill to check whether README.md still matches the CLI and sync it.",
+      "request": "Use the write-technical-docs skill to check whether README.md still matches the CLI and sync it.",
       "files": {
         "README.md": "# uploadr\n\n`uploadr push <file>` uploads a file. Failed uploads are retried 3 times with a 2-second delay.\n",
         "src/push.ts": "const MAX_RETRIES = 5;\nconst RETRY_DELAY_MS = 2000;\n\nexport async function push(file: string) {\n    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {\n        if (await tryUpload(file)) return;\n        await sleep(RETRY_DELAY_MS);\n    }\n    throw new Error('Upload failed');\n}\n"
@@ -100,7 +100,7 @@
     },
     {
       "id": "sync-respects-change-range",
-      "request": "Use the technical-writing skill. Only src/limits.ts changed on this branch. Sync the documentation for this change.",
+      "request": "Use the write-technical-docs skill. Only src/limits.ts changed on this branch. Sync the documentation for this change.",
       "files": {
         "docs/limits.md": "# Limits\n\nUploads are limited to 10 MB (`MAX_UPLOAD_MB`). Larger files return `413 FILE_TOO_LARGE`.\n",
         "docs/auth.md": "# Authentication\n\nAccess tokens last 30 minutes (`ACCESS_TOKEN_MINUTES`).\n",
