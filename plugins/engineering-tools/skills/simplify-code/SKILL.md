@@ -1,6 +1,6 @@
 ---
 name: simplify-code
-description: Simplify code for clarity, consistency, and maintainability while preserving behavior. Use for explicit simplification requests, focused cleanup during or after implementation, and code reviews assessing readability, unnecessary abstractions, or overengineering. Not for adding features, changing behavior, or producing a technical-debt roadmap.
+description: Simplify code for clarity, consistency, and maintainability while preserving behavior. Use for explicit simplification requests, focused cleanup during or after implementation, and code reviews assessing readability, unnecessary abstractions, or overengineering. Not for adding features, changing behavior, hunting bugs, or producing a technical-debt roadmap.
 user-invocable: true
 disable-model-invocation: false
 license: Apache-2.0
@@ -8,134 +8,113 @@ license: Apache-2.0
 
 # Simplify Code
 
-Make code easier to understand, modify, and debug while preserving its behavior.
-Judge improvement by the reasoning and moving parts a maintainer must follow.
-Prioritize readable, explicit code over overly compact solutions.
+Reduce the reasoning and moving parts needed to understand, modify, and debug code.
+Prefer explicit, readable code over compression. Leave already clear code alone.
 
-## Scope
+## Establish scope and context
 
-Use the user's requested scope, including a supplied diff or code-review target.
-Otherwise, focus on code changed for the current task. If no target can be
-identified, ask which code to simplify.
+Use the requested target or diff; otherwise focus on changes for the current task.
+Ask for a target only if none can be identified. During implementation, keep cleanup
+within the authorized task. For review or suggestions, report without editing unless
+fixes are also requested. Honor the requested output format.
 
-During an authorized implementation task, apply worthwhile simplifications within
-that task's scope. When invoked directly, follow the requested scope and intent.
+Read applicable instructions, nearby conventions, and relevant requirements. Establish
+release context from project docs or the owner when compatibility or stored data matters:
+are there real users, deployed consumers, or production data? Do not infer this from a
+version number or an empty local database. State unknowns that affect a recommendation.
 
-When asked to review or suggest improvements, report findings without editing
-unless implementing fixes is also requested. Follow the reviewer's existing
-instructions and output format.
+List files in scope. Read each current file in full and inspect the diff when supplied;
+a diff alone is partial coverage. If scope exceeds available capacity, divide it or report
+the remaining scope explicitly rather than claiming a complete review.
 
-## Principles
+## Preserve behavior
 
-### 1. Preserve behavior
+Preserve public contracts, outputs, side effects, errors, ordering, and required security,
+validation, reliability, and performance guarantees. Rendered output, interaction, visual
+baselines, and accessibility trees count as behavior.
 
-Preserve public contracts, outputs, side effects, error behavior, and ordering.
-Keep required validation, security, reliability, and performance guarantees.
+Separate incidental suspected bugs from simplifications. Check documented intent before
+calling unusual behavior defective; report a bug with a triggering case and leave it
+unfixed unless fixes are authorized. If recommending a behavior-changing correction,
+apply the needs-decision label and do/don't recommendation below even in the bug list.
+Do not expand the task into a bug hunt.
 
-For user interfaces, rendered output and interaction count as behavior: a changed visual baseline or accessibility tree means the change is no longer a pure simplification.
+Distinguish a recommendation from permission to change behavior. Label proposals:
 
-Treat suspected bugs and requirement changes separately. If a simplification depends
-on an uncertain requirement or usage assumption, investigate it and make any unresolved
-uncertainty explicit. Report a bug you notice along the way in its own short list, with the
-case that triggers it, and leave it unfixed unless fixing it is also requested.
+- **Behavior-preserving:** evidence supports unchanged observable behavior and contracts.
+- **Needs decision:** behavior, requirements, visible output, or data held by real users or
+  deployed systems would change, or a material assumption remains unresolved.
 
-### 2. Follow the project
+For each needs-decision proposal, recommend **do** or **don't**, explain the tradeoff,
+and name the exact decision or evidence required. Uncertainty alone is not a reason to
+recommend leaving code alone. Before launch, with verified absence of real users, deployed
+consumers, and production data, recommend removing obsolete compatibility paths now when
+the gain is concrete. Still label contract or supported-input removal as needs decision;
+pre-launch status does not authorize it. For deployed systems, account for existing data
+and consumers rather than assuming an in-repository search proves safety.
 
-Read applicable repository instructions and nearby code. Follow the project's
-language idioms, naming, organization, and error-handling conventions.
+## Find worthwhile reductions
 
-Use existing utilities or standard capabilities when they make the implementation
-clearer and preserve its semantics. Avoid introducing dependencies for cleanup.
+Require a concrete case: an input, a misleading call, or the places that must change together.
+Identify what disappears: a moving part, duplicated responsibility, misleading name, or
+unnecessary reasoning step. Exchanging acceptable names, declaration order, or equivalent
+syntax is a style trade. A vague but accurate name alone is not a finding.
 
-### 3. Improve clarity
+- Flatten unnecessary nesting; replace dense conditionals with readable steps.
+- Clarify names that misstate responsibilities, shape, or side effects. Decode opaque boolean
+  arguments with named options only where this improves actual callers.
+- Keep related logic together and place responsibilities where readers expect them.
+  Split by separate jobs, never by length; retain long straight-line functions doing one job.
+- Remove confirmed unused code and redundant work. Search the whole tree, including tests,
+  fixtures, configuration, string and dynamic references, before claiming no uses or one caller.
+- Consolidate the same responsibility that must change together. Cite both sites and any
+  disagreeing input; classify resolving that disagreement separately from extraction.
+  Similar-looking code alone does not justify an abstraction.
+- Remove duplicated or derivable state when a single source preserves timing and ownership.
+  Check whether the apparent copy is an intentional snapshot, cache, or independently editable value.
+- Close type gaps that force casts, non-null assertions, or repetitive checks when an existing
+  contract can express the guarantee. Do not add speculative runtime handling inside trusted code;
+  retain validation at real trust boundaries.
+- Challenge wrappers, configuration, layers, and extension points supported only by hypothetical
+  requirements. Retain helpers, even with one caller, that clarify a concept or isolate a boundary.
+- Investigate temporary compatibility paths whose reason may have expired. Before proposing removal
+  of an odd rule, workaround, lint/type suppression, or wrapper, check the actual rule, requirements,
+  and relevant history. A wrapper required for safe async error handling is useful structure.
+- Remove comments that repeat code; retain rationale and constraints. Add a missing reason only
+  when an evidenced, non-obvious decision needs it.
 
-- Flatten unnecessary nesting and make control flow easier to follow.
-- Use names that explain responsibilities and meaningful intermediate values.
-  A name must not hide a side effect: a function called `prepare` that also finishes a job,
-  or an audit helper that also sends notifications, misleads every caller.
-- Replace bare `true`/`false` arguments whose meaning needs the signature to decode with
-  named options or separate functions.
-- Remove redundant work and code confirmed to be unused within scope.
-- Keep related logic together without combining unrelated responsibilities.
-- Remove comments that merely repeat the code; retain rationale and constraints.
-- Explain non-obvious decisions in comments when the code alone cannot
-  communicate the reason.
-- Prefer readable expressions over dense conditionals or clever compression.
-- Use one name per concept and one concept per name.
-- Keep logic where a reader expects it: no business rules hidden in presentation code, and no work hidden in render paths.
+Use existing utilities and standard capabilities when semantics match. Avoid new dependencies
+or layers for cleanup. In tests, preserve what failures assertions detect; making a test stricter
+is a behavior change, even if desirable.
 
-Test the result as a maintainer new to the code: they should find the place to change quickly and follow the flow from top to bottom, without holding the whole module in mind or jumping across several files.
+## Scale a review
 
-### 4. Reduce unjustified complexity
+When delegation is authorized and available, divide large reviews into disjoint areas balanced
+by lines to read and complexity, not file count. Keep edits in one session. Give each reviewer
+the scope, relevant context, and prior findings to skip on repeat passes. Review seams between
+areas explicitly for shared rules and ownership.
 
-Prefer the least complex implementation that fully satisfies current requirements.
-Judge complexity against the problem being solved.
+Before reporting, use an independent verification pass when available to check each consolidated
+finding against current code, usage evidence, and documented intent. Otherwise perform a separate
+verification pass yourself and disclose that independence was unavailable. Drop style trades,
+duplicates, and unsupported claims; keep decisions and incidental bugs distinct.
 
-Challenge wrappers, layers, configuration, and extension points whose only
-purpose is hypothetical future use. Replace them with direct code when their
-removal reduces the effort needed to understand and maintain the implementation.
+## Verify and report
 
-Add edge-case handling only for explicit requirements or concrete failure scenarios
-in the actual system. Trust established guarantees, and keep safeguards proportionate
-to the failure's likelihood and impact.
+Apply focused refinements only when authorized. Run relevant checks for affected behavior and
+inspect the final diff. For reviews, explain proposed verification without claiming it ran.
+Use existing lint or analysis tools to locate hotspots and compare before/after results when
+useful; stricter thresholds are measurements, not cleanup targets. Never optimize for line count.
 
-Consolidate duplication when it represents the same responsibility and should
-change together. Similar-looking code alone does not justify a shared abstraction.
-One rule implemented in two places that already behave differently is the strongest
-case: name both places and the input on which they disagree.
+Order findings by concrete maintenance value. For each, include location **and symbol**, case,
+evidence, simpler approach, behavior classification, and approximate net lines removed (zero or
+an increase can be worthwhile). Include the recommendation and unresolved decision where needed.
+Fit these fields into the user's format rather than replacing it.
 
-Split a function or component by the separate jobs it does, never by line count. Do
-not extract helpers whose only purpose is to make a function shorter; a long function
-that does one job in a straight line can stay.
-
-Before calling code unused or removing it, search the whole tree, including tests,
-fixtures, configuration, and string or dynamic references, and inspect its constraints.
-Check history when its purpose remains unclear.
-
-### 5. Look for hidden complexity
-
-These cost a reader time even when the code passes every check:
-
-- Workarounds for a lint or type rule instead of a fix: disable comments, unusual
-  injection or casts that exist only to pass a limit such as a maximum parameter count.
-- A wrapper whose name misstates what it does, such as a notification-aware transaction
-  used for plain reads.
-- Temporary compatibility code that keeps running after its reason is gone, such as a
-  migration backfill repeated on every job cycle.
-- Validation that re-checks values the code produced itself or that a typed contract
-  already guarantees. Keep validation at real trust boundaries.
-
-### 6. Keep useful structure
-
-Retain abstractions that clarify a concept, isolate a boundary, or support a
-current requirement. A helper can be useful with one caller.
-
-Avoid changes that merely trade one style for another, compress unrelated logic,
-or make debugging harder. Leave already clear code alone.
-
-## Large reviews
-
-When the scope spans many files and the environment can run parallel read-only agents, split it into a few disjoint areas of similar size and review them in parallel. Keep edits in a single session.
-
-Review the seams between areas yourself, since a reviewer of one area misses duplication across areas. Before reporting, have an independent pass re-check every consolidated finding against the code and the documented requirements, drop false positives, and move uncertain behavior-preserving findings to the ones that need a decision.
-
-Lint thresholds stricter than the project's can locate hotspots; use them to measure, not as a target.
-
-## Workflow
-
-1. Identify the target code and whether the task calls for edits or review. For a diff
-   or a set of files, list every file in scope and read each one, not a sample.
-2. Look for worthwhile simplifications using the principles and project conventions.
-3. Apply focused refinements, or propose them as findings when reviewing.
-4. Check that applied or proposed refinements preserve behavior and make the code
-   easier to understand and maintain.
-5. Report only significant changes or actionable findings. For review findings,
-   identify the location, give the concrete case (the input, or the change that would
-   have to be made in two places), explain the maintenance cost, and suggest a simpler
-   approach. No concrete case, no finding.
-   Mark each finding as behavior-preserving or as needing a decision because it changes behavior or visible output, contradicts a documented requirement, or touches persisted data.
-6. End a review by naming any file in scope you did not read or could not check.
-
-Do not manufacture changes or findings when the code is already clear.
+For edits, report what became simpler and checks performed, with measured before/after results
+when available. Separate estimates from measurements and report checks not run.
+End reviews with a coverage line: files read in full, diff-only/partial files, and unread files
+(or explicitly none). Never claim full coverage for partial reading. Return no findings when
+no worthwhile reduction is supported.
 
 *Adapted and modified from Anthropic's [code-simplifier](https://github.com/anthropics/claude-plugins-official/blob/main/plugins/code-simplifier/agents/code-simplifier.md): provider- and language-neutral guidance, review support, and focused rules for overengineering. Distributed under [Apache-2.0](LICENSE). The rules on concrete cases, splitting by job, and stating unread scope draw on [ponytail](https://github.com/DietrichGebert/ponytail) (MIT).*
