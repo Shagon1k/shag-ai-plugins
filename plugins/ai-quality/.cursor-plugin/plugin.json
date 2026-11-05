@@ -1,8 +1,8 @@
 {
   "name": "ai-quality",
   "displayName": "AI Quality",
-  "version": "0.2.1",
-  "description": "AI-quality workflows for efficient context, natural output, and plain-language restatements.",
+  "version": "0.3.0",
+  "description": "AI-quality workflows for efficient context, natural output, plain-language restatements, and iterative artifact improvement.",
   "author": {
     "name": "Aliaksei Hurynovich",
     "email": "shagon1k@gmail.com"
@@ -10,8 +10,8 @@
   "homepage": "https://github.com/Shagon1k/shag-ai-plugins",
   "repository": "https://github.com/Shagon1k/shag-ai-plugins",
   "license": "MIT",
-  "keywords": ["ai-quality", "agent-context", "token-efficiency", "writing", "plain-language"],
+  "keywords": ["ai-quality", "agent-context", "token-efficiency", "writing", "plain-language", "artifact-improvement", "multi-agent-review"],
   "category": "productivity",
-  "tags": ["ai-quality", "agent-context", "token-efficiency", "writing", "plain-language", "productivity"],
+  "tags": ["ai-quality", "agent-context", "token-efficiency", "writing", "plain-language", "productivity", "artifact-improvement", "multi-agent-review"],
   "skills": "./skills/"
 }

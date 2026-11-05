@@ -1,7 +1,7 @@
 {
   "name": "ai-quality",
-  "version": "0.2.1",
-  "description": "AI-quality workflows for efficient context, natural output, and plain-language restatements.",
+  "version": "0.3.0",
+  "description": "AI-quality workflows for efficient context, natural output, plain-language restatements, and iterative artifact improvement.",
   "author": {
     "name": "Aliaksei Hurynovich",
     "email": "shagon1k@gmail.com"
@@ -10,14 +10,15 @@
   "interface": {
     "displayName": "AI Quality",
     "shortDescription": "Improve agent context and output quality.",
-    "longDescription": "Reduce unnecessary AI-agent context, refine human-facing prose, and restate a previous answer in plain language.",
+    "longDescription": "Reduce unnecessary AI-agent context, refine prose, restate answers in plain language, and improve artifacts through independent candidates and iterative review.",
     "developerName": "Aliaksei Hurynovich",
     "category": "Productivity",
     "capabilities": ["Write"],
     "defaultPrompt": [
       "Use tokenomy to reduce this agent configuration's context cost.",
       "Use unslop as the default prose-quality pass for this response.",
-      "Use bro to restate the previous response in plain language."
+      "Use bro to restate the previous response in plain language.",
+      "Use improve-artifact to improve this artifact through independent candidates and iterative review."
     ]
   }
 }
