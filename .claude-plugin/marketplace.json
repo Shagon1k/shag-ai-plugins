@@ -31,13 +31,13 @@
     {
       "name": "ai-quality",
       "source": "./plugins/ai-quality",
-      "description": "AI-quality workflows for efficient context, natural output, and plain-language restatements.",
+      "description": "AI-quality workflows for efficient context, natural output, plain-language restatements, and iterative artifact improvement.",
       "author": {
         "name": "Aliaksei Hurynovich",
         "email": "shagon1k@gmail.com"
       },
       "category": "productivity",
-      "tags": ["ai-quality", "agent-context", "token-efficiency", "writing", "plain-language"]
+      "tags": ["ai-quality", "agent-context", "token-efficiency", "writing", "plain-language", "artifact-improvement", "multi-agent-review"]
     }
   ]
 }

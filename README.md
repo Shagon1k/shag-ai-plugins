@@ -10,7 +10,7 @@ adapters.
 | --- | --- |
 | `web-development` | Plan, build, review, and maintain web applications |
 | `engineering-tools` | Assess changes, simplify code, maintain engineering workflows, and improve and sync technical documentation |
-| `ai-quality` | Improve AI-agent context efficiency and output quality |
+| `ai-quality` | Improve AI-agent context efficiency, output quality, and artifacts through iterative review |
 
 ## Skills
 
@@ -25,6 +25,7 @@ adapters.
 | `ai-quality` | `tokenomy` | Reduce unnecessary AI-agent context and token usage |
 | `ai-quality` | `unslop` | Apply a natural prose-quality pass by default while preserving meaning, facts, and structured content |
 | `ai-quality` | `bro` | Restate the immediately previous response in plain, concise human language |
+| `ai-quality` | `improve-artifact` | Improve bounded artifacts through configurable independent candidates, cross-review, and evidence-based iterations |
 
 ## Skill naming
 

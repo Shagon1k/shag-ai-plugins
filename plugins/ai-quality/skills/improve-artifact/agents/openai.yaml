@@ -1,0 +1,6 @@
+interface:
+  display_name: "Improve Artifact"
+  short_description: "Iterate independent candidates against a quality rubric"
+  default_prompt: "Use $improve-artifact to configure independent candidates and reviews for this artifact, then run the explicitly accepted improvement process."
+policy:
+  allow_implicit_invocation: false

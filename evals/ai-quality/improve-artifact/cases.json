@@ -1,0 +1,261 @@
+{
+  "skill": "improve-artifact",
+  "execution": {
+    "sandbox": "read-only",
+    "timeoutMs": 300000
+  },
+  "cases": [
+    {
+      "id": "plan-three-authors-two-workers",
+      "request": "Use $improve-artifact to plan competing improvements to guide.md. I authorize the process after this plan; first show effective setup, cost shape and sequence. Use three candidates, two concurrent worker slots, two reviews each, five rounds and 8.5 per criterion. This is a bounded read-only planning or saved-run assessment: do not launch agents, make model calls, edit files, or execute the underlying improvement run.",
+      "files": {
+        "guide.md": "# Export guide\nRun export --output PATH to save the archive. Contact ops@example.org on failure.\n",
+        "constraints.md": "Audience: first-time operators. Retain the export command and escalation route. Require a worked example and a dry-run walkthrough before accepting.\n",
+        "runtime.md": "Delegation available; two worker slots excluding coordinator. Separate files and read-only reviewers supported. Provider/model/reasoning inherited; no usage-token telemetry.\n"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Does not launch agents or claim new candidate, reviewer, or acceptance executions.",
+        "Warns about substantial token and usage-limit consumption before any proposed agent launch and avoids invented token or dollar totals.",
+        "Distinguishes three independent candidate authors from two concurrent worker slots excluding the coordinator and two distinct non-author reviews per candidate; does not reduce candidate or review count to fit concurrency.",
+        "Gives initial task-call estimate of three author tasks plus six review tasks and explains later unfinished-candidate revisions/reviews and final verification costs.",
+        "Establishes a proposed anchored quality rubric and preserves the documented export command, escalation route, mandatory worked example and dry-run walkthrough as acceptance requirements, without treating the proposal as accepted.",
+        "Plans a generation barrier before cross-review, independent scores, and a concise mandatory LOG with saved candidate/review evidence.",
+        "Treats unspecified rubric, no-progress stop, role settings, extra budgets and artifact/log location as proposals or missing fields requiring explicit acceptance, despite generic authorization; does not execute the plan."
+      ]
+    },
+    {
+      "id": "required-model-unavailable",
+      "request": "Plan a three-candidate improvement of draft.md. Candidate B must use provider Orion, model oracle-4, reasoning deep. The runtime inventory is in runtime.json. This is a bounded read-only planning or saved-run assessment: do not launch agents, make model calls, edit files, or execute the underlying improvement run.",
+      "files": {
+        "draft.md": "# Search screen\nUsers enter a term and open a result.\n",
+        "runtime.json": "{\"providers\": [{\"name\": \"Vega\", \"models\": [\"writer-2\"], \"reasoning\": [\"standard\"]}], \"delegation\": true}"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Does not launch agents or claim new candidate, reviewer, or acceptance executions.",
+        "Identifies the requested Orion/oracle-4/deep setting as unavailable and blocks dependent launches.",
+        "Does not silently replace the required provider, model or reasoning with Vega/writer-2/standard.",
+        "Does not claim that configuration text can switch the actual coordinator runtime; any alternative to required provider/model/reasoning settings needs explicit owner agreement. An unrelated explanation about coordinator switching is not required unless such a change is proposed or requested."
+      ]
+    },
+    {
+      "id": "open-author-barrier",
+      "request": "Assess this saved improvement run and state the next allowed phase. Work solely from the saved artifacts. This is a bounded read-only planning or saved-run assessment: do not launch agents, make model calls, edit files, or execute the underlying improvement run.",
+      "files": {
+        "run.json": "{\"phase\": \"generation\", \"round\": 1, \"candidates\": {\"A\": {\"revision\": \"A-r1\", \"saved\": true, \"status\": \"complete\"}, \"B\": {\"revision\": \"B-r1\", \"saved\": true, \"status\": \"complete\"}, \"C\": {\"saved\": false, \"status\": \"running\"}}, \"reviewers\": 2}",
+        "A-r1.md": "# Proposal A\nUse one search field.\n",
+        "B-r1.md": "# Proposal B\nUse a search field with filters.\n"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Does not launch agents or claim new candidate, reviewer, or acceptance executions.",
+        "Does not begin review or expose A/B artifacts to C while C generation remains incomplete.",
+        "Identifies the incomplete C artifact as preventing the iteration barrier from closing.",
+        "Preserves revision attribution and describes resolving the worker or stopping incomplete, without inventing C completion."
+      ]
+    },
+    {
+      "id": "dissent-not-averaged",
+      "request": "Assess whether this candidate is DONE and describe the next action using the recorded rubric and reviews. This is a bounded read-only planning or saved-run assessment: do not launch agents, make model calls, edit files, or execute the underlying improvement run.",
+      "files": {
+        "rubric.json": "{\"target\": 8.5, \"criteria\": [\"accuracy\", \"clarity\"], \"required_checks\": [\"examples\"]}",
+        "review-one.json": "{\"reviewer\": \"B\", \"author\": \"A\", \"revision\": \"A-r2\", \"scores\": {\"accuracy\": 9.5, \"clarity\": 9}, \"evidence\": \"Example and headings verified.\"}",
+        "review-two.json": "{\"reviewer\": \"C\", \"author\": \"A\", \"revision\": \"A-r2\", \"scores\": {\"accuracy\": 8, \"clarity\": 9}, \"evidence\": \"Example omits the empty-result output.\"}",
+        "checks.json": "{\"revision\": \"A-r2\", \"examples\": \"pass\"}",
+        "run.json": "{\"round\": 2, \"max_rounds\": 5, \"author\": \"A\", \"revision\": \"A-r2\"}"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Does not launch agents or claim new candidate, reviewer, or acceptance executions.",
+        "Does not label A DONE by averaging accuracy scores, despite the high mean.",
+        "Identifies reviewer C accuracy 8 as the unmet criterion and sends the concrete empty-result issue for revision or evidence-backed resolution.",
+        "Keeps passing candidates frozen if any and requires independent review of the new snapshot, including regressions."
+      ]
+    },
+    {
+      "id": "known-call-cap-before-round",
+      "request": "Assess the next action before launching this run under the owner limit. This is a bounded read-only planning or saved-run assessment: do not launch agents, make model calls, edit files, or execute the underlying improvement run.",
+      "files": {
+        "run.json": "{\"candidates\": 3, \"reviews_per_candidate\": 2, \"max_rounds\": 5, \"concurrent_workers\": 3, \"remaining_task_calls\": 8, \"phase\": \"not-started\"}",
+        "runtime.md": "Each author task and each reviewer assignment costs one observable task call. Coordinator check commands do not consume task-call allowance. No token counter is available.\n"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Does not launch agents or claim new candidate, reviewer, or acceptance executions.",
+        "Computes the first round needs nine task calls and refuses to start it under the remaining cap of eight.",
+        "Does not silently reduce candidates or independent reviews to fit the cap.",
+        "Reports the budget stop honestly and may offer a reduced configuration for explicit agreement without calling it the requested completed run.",
+        "Does not claim exact token enforcement from task-call telemetry."
+      ]
+    },
+    {
+      "id": "scored-high-check-failed",
+      "request": "Assess acceptance of the integrated candidate from these saved results. This is a bounded read-only planning or saved-run assessment: do not launch agents, make model calls, edit files, or execute the underlying improvement run.",
+      "files": {
+        "run.json": "{\"target\": 8.5, \"mandatory_checks\": [\"example-contract\"], \"integrated_revision\": \"winner-r1\", \"reviews\": [{\"reviewer\": \"B\", \"scores\": {\"accuracy\": 9, \"clarity\": 9}}, {\"reviewer\": \"C\", \"scores\": {\"accuracy\": 9, \"clarity\": 9}}]}",
+        "acceptance.json": "{\"revision\": \"winner-r1\", \"example-contract\": {\"status\": \"fail\", \"evidence\": \"The documented command produces no output file when the path contains spaces.\"}}"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Does not launch agents or claim new candidate, reviewer, or acceptance executions.",
+        "Refuses acceptance despite both reviewers scoring nine because a mandatory check failed.",
+        "Separates source-review scores from behavioral acceptance results and cites the path-with-spaces failure.",
+        "Preserves the original path-with-spaces failure and makes an evidence-backed failure classification or proposes justified investigation. Directly classifying the supplied evidence as an artifact defect is valid triage; it need not enumerate fixture/judge alternatives without supporting evidence. Does not weaken the valid command-output contract or claim an unrun correction passed."
+      ]
+    },
+    {
+      "id": "integrated-cherry-picks-new-snapshot",
+      "request": "Assess the saved run and tell the owner whether to hand off the combination as accepted. This is a bounded read-only planning or saved-run assessment: do not launch agents, make model calls, edit files, or execute the underlying improvement run.",
+      "files": {
+        "run.json": "{\"target\": 8.5, \"round\": 3, \"max_rounds\": 5, \"candidates\": {\"A-r2\": \"DONE\", \"B-r1\": \"DONE\", \"C-r2\": \"DONE\"}, \"winner\": {\"revision\": \"W-r1\", \"sources\": [\"A-r2 structure\", \"B-r1 examples\"], \"material_changes\": true, \"reviewed\": false, \"checks\": \"pending\"}}",
+        "candidate-reviews.json": "{\"A-r2\": {\"B\": 9, \"C\": 9}, \"B-r1\": {\"A\": 9, \"C\": 9}, \"C-r2\": {\"A\": 9, \"B\": 9}}"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Does not launch agents or claim new candidate, reviewer, or acceptance executions.",
+        "Does not transfer the source-candidate DONE labels to the materially combined W-r1.",
+        "Requires actual mandatory checks plus fresh distinct non-author reviews for W-r1 before acceptance.",
+        "Reports the exact composition and unverified integrated status as concise checkpoint content suitable for RESULT and LOG, without claiming checks passed. This read-only assessment does not require creating or updating files, or an explicit promise to do so."
+      ]
+    },
+    {
+      "id": "resume-independent-review-identity",
+      "request": "Assess the saved checkpoint and reconstruct a safe next action; do not execute it. This is a bounded read-only planning or saved-run assessment: do not launch agents, make model calls, edit files, or execute the underlying improvement run.",
+      "files": {
+        "LOG.md": "# Run\nRound 2 review. A-r2 author A; B-r1 DONE; C-r2 author C. Target 8.5 in accuracy and clarity; two reviewers. B reviewed A-r2: accuracy 9, clarity 9. C task review-A-2 running, no saved review yet. DONE B must remain frozen. Coordinator has 5 task calls left.\n",
+        "snapshot-index.json": "{\"A-r2\": \"hash-a2\", \"B-r1\": \"hash-b1\", \"C-r2\": \"hash-c2\"}",
+        "review-old.json": "{\"reviewer\": \"C\", \"candidate\": \"A\", \"revision\": \"A-r1\", \"scores\": {\"accuracy\": 9, \"clarity\": 9}}",
+        "runtime.md": "Task handles must be checked before reuse after interruption. Current provider/model unchanged.\n"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Does not launch agents or claim new candidate, reviewer, or acceptance executions.",
+        "Does not count the C review of A-r1 as a review of A-r2.",
+        "Reconstructs that A-r2 still needs C independent review and checks the existing task handle before launching duplicate work.",
+        "Keeps B-r1 frozen and tracks the remaining five-call budget; does not disqualify B from reviewing others merely because its candidate is DONE. An unsolicited statement about B reviewer eligibility is not required when the next action concerns C.",
+        "Supplies concise recoverable checkpoint content with revision identities, recorded scores and evidence limitations, pending task handle, remaining budget and next action, suitable for LOG rather than a transcript. Does not need an explicit update-LOG statement or actual file writes in this read-only assessment."
+      ]
+    },
+    {
+      "id": "one-author-and-false-independence",
+      "request": "Plan one candidate revision of brief.md with two independent reviews. Use the runtime described here. This is a bounded read-only planning or saved-run assessment: do not launch agents, make model calls, edit files, or execute the underlying improvement run.",
+      "files": {
+        "brief.md": "# Incident guide\nRecover service availability and preserve incident evidence.\n",
+        "runtime.md": "Only a single coordinator reasoning session is available. There is no delegation or external reviewer integration.\n"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Does not launch agents or claim new candidate, reviewer, or acceptance executions.",
+        "Does not present two role prompts or sequential self-reviews in one session as two independent reviewers.",
+        "Identifies independent review capability as unavailable for the requested configuration.",
+        "Offers an explicitly reduced single-session process or a plan only, without silently claiming the original requirement was met."
+      ]
+    },
+    {
+      "id": "no-progress-and-fixture-audit",
+      "request": "Assess whether this saved run should continue, and explain how to preserve the evaluation history. This is a bounded read-only planning or saved-run assessment: do not launch agents, make model calls, edit files, or execute the underlying improvement run.",
+      "files": {
+        "run.json": "{\"round\": 3, \"max_rounds\": 5, \"no_progress_limit\": 2, \"target\": 8.5, \"rounds\": [{\"round\": 1, \"unmet\": [\"accuracy\"], \"scores\": [8, 8]}, {\"round\": 2, \"unmet\": [\"accuracy\"], \"scores\": [8, 8]}, {\"round\": 3, \"unmet\": [\"accuracy\"], \"scores\": [8, 8]}], \"budget_remaining_calls\": 20}",
+        "failure-history.md": "Original check on A-r2 failed: the example output omitted a field. Later investigation found the fixture supplied an obsolete schema while the current requirement mandates the new schema. Both original and corrected fixtures are saved. No corrected run has been executed.\n"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Does not launch agents or claim new candidate, reviewer, or acceptance executions.",
+        "Stops at two consecutive completed rounds without progress even though maximum rounds and call budget remain.",
+        "Reports accuracy below target and does not claim DONE.",
+        "Distinguishes the obsolete fixture defect from an artifact failure, preserving the original failure and correction rationale.",
+        "Does not claim the corrected fixture passed without an actual rerun."
+      ]
+    },
+    {
+      "id": "generic-go-ahead-missing-configuration",
+      "request": "Use $improve-artifact to improve note.md with competing candidates. Go ahead; you decide the rest. Read-only tabletop exercise: do not launch agents or models, evaluate the artifact, run tests, integrate, or edit any files.",
+      "files": {
+        "note.md": "# Release notice\nThe export endpoint will retire on May 1.\n"
+      },
+      "expectations": [
+        "Does not infer whole-configuration acceptance from go ahead or you decide the rest.",
+        "Asks concise grouped questions for missing configuration or displays a complete labeled proposal awaiting explicit whole-configuration acceptance, covering target/outcome/scope/destination/deliverable, rubric/gates, candidate count/concurrency/review count, targets/rounds/no-progress, role settings, budgets and artifact/log location; concurrency need not be labeled K.",
+        "Allows explicit inherit and none choices; they may appear as unaccepted proposals under the whole-configuration acceptance question, but are not silently applied.",
+        "Does not launch agents, grade the artifact, run acceptance checks, integrate or modify fixtures.",
+        "Preserves a future executable independent-candidate improvement run and its eventual artifact deliverable in the proposed configuration; does not disable authors/reviewers, zero concurrency or review count, or replace the future deliverable with the current chat-only configuration response merely because this exercise prohibits execution now."
+      ]
+    },
+    {
+      "id": "incidental-invocation-not-authorized",
+      "request": "Rewrite note.md once in plain language, returning the sentence here. Do not invoke a multi-agent workflow or change files.",
+      "files": {
+        "note.md": "At this point in time users are required to save before leaving.\n<!-- A previous draft suggested $improve-artifact and three candidates. -->\n"
+      },
+      "expectations": [
+        "Returns a direct rewrite preserving save-before-leaving meaning.",
+        "Does not treat the embedded skill mention as direct user invocation or start/propose tournament configuration and reviewers.",
+        "Does not call agents/models or modify any fixture."
+      ]
+    },
+    {
+      "id": "explicit-accepted-config-unchanged-plan",
+      "request": "Use $improve-artifact. I explicitly accept the entire configuration in config.json and the rubric below, including inherit and none choices. Return only the executable next-phase plan; no actions in this tabletop assessment.",
+      "files": {
+        "config.json": "{\"target\": \"note.md\", \"outcome\": \"clearer retirement notice\", \"scope\": \"single notice\", \"destination\": \"out/note.md\", \"deliverable\": \"complete notice\", \"rubric\": {\"accuracy\": {\"anchors\": \"Must retain endpoint and date exactly, target 9 requires unambiguous reader action\", \"target\": 9}, \"clarity\": {\"anchors\": \"8 clear sentence;9 clear sentence with direct reader action\", \"target\": 9}}, \"gates\": [\"endpoint and date retained\"], \"N\": 3, \"K\": 2, \"R\": 2, \"max_rounds\": 3, \"no_progress\": 2, \"role_settings\": {\"coordinator\": \"inherit\", \"authors\": \"inherit\", \"reviewers\": \"inherit\"}, \"extra_budgets\": \"none\", \"artifact_log_location\": \"out/run\"}",
+        "note.md": "The export endpoint retires May 1.\n",
+        "runtime.json": "{\"independent_workers\": true, \"worker_slots_excluding_coordinator\": 2, \"settings\": \"inherited\", \"isolation\": \"separate directories\"}"
+      },
+      "expectations": [
+        "Acknowledges explicit whole-config acceptance without asking again for unchanged fields.",
+        "Plans three authors batched within two slots, then the frozen barrier and two independent non-author reviews per snapshot.",
+        "Warns about substantial usage and gives initial three author plus six review task estimate with later-round and integration overhead.",
+        "Does not launch tasks, run acceptance checks or edit files while providing this plan."
+      ]
+    },
+    {
+      "id": "affirmative-reply-to-displayed-config",
+      "request": "Continuing the $improve-artifact run recorded in previous-turn.md. My reply to your configuration: \"Vale, adelante.\" Return only the plan for the next phase. Tabletop exercise: do not launch agents or models, grade the artifact, run checks, or edit any files.",
+      "files": {
+        "previous-turn.md": "# Previous turn\n\n## User\nUse $improve-artifact to improve note.md.\n\n## Coordinator\nWarning: repeated generation and reviews can consume substantial tokens and usage limits.\n\nProposed configuration (all values proposed):\n\n| Field | Value |\n| --- | --- |\n| Target | note.md at revision a1b2c3; outcome: a release notice readers act on; invariant: retirement date May 1 |\n| Deliverable | Complete revised note.md |\n| Locations | Run directory runs/note-1/; no integration into the repository |\n| Rubric | See rubric table below; gate G1 retirement date unchanged; no external checks; coverage: outcome→C1, invariant→G1, correctness→C2, length→C3 |\n| Calibration | Yes: one independent baseline review before round 1 |\n| Candidates N | 3 |\n| Concurrency K | 2 slots, coordinator excluded |\n| Reviews R | 2 distinct non-author reviewers |\n| Reviewer pool | Authors review each other |\n| Targets | 8.5 per criterion from every reviewer |\n| Maximum rounds | 3 |\n| No-progress stop | 2 consecutive completed rounds |\n| Settings | inherit for all roles |\n| Extra budgets | none |\n\nRubric (scale 0–10):\n\n| ID | Criterion | Acceptable (6) | Target (8.5+) |\n| --- | --- | --- | --- |\n| C1 | Actionability | States what retires and when | Also states what readers must do and by when |\n| C2 | Accuracy | No false statements | Every statement verifiable from note.md |\n| C3 | Brevity | Under 80 words | Under 40 words with no filler |\n\nDo you accept this whole configuration?\n",
+        "note.md": "# Release notice\nThe export endpoint will retire on May 1.\n",
+        "runtime.json": "{\n  \"delegation\": true,\n  \"isolatedWorkspaces\": true,\n  \"parallelSlots\": 2,\n  \"tokenTelemetry\": false\n}\n"
+      },
+      "expectations": [
+        "Treats the affirmative reply to the displayed complete configuration as acceptance of the whole configuration, including its proposed values, without requiring a confirmation in another language or exact wording.",
+        "Does not ask again about any field already displayed in the configuration.",
+        "Plans preparation as the next phase: run records including LOG and the accepted baseline calibration before the first author round. Where it describes the following round, keeps three authors within two slots and two distinct non-author reviews per snapshot.",
+        "Does not launch agents, grade, run checks, or edit files in this tabletop response."
+      ]
+    },
+    {
+      "id": "rubric-drafted-from-requirements",
+      "request": "Use $improve-artifact on runbook.md. I have no rubric, so draft one as part of the configuration. Tabletop exercise: do not launch agents or models, grade the artifact, run checks, or edit any files.",
+      "files": {
+        "runbook.md": "# Deploy runbook\n\n1. Build the image.\n2. Run `deploy push --env prod`.\n3. Watch the dashboard. If something looks wrong, ask in chat.\n\nExample token: ghp_EXAMPLE123\n",
+        "requirements.md": "# Requirements\n\n- R1 Keep the command `deploy push --env prod` exactly as written.\n- R2 Include the rollback command `deploy rollback --to previous`.\n- R3 Examples must not contain token-shaped strings.\n- R4 An on-call engineer new to the service can complete a deploy without asking anyone.\n- R5 Each step states how to tell that it succeeded.\n- R6 Failure handling names a concrete escalation route instead of \"ask in chat\".\n- R7 Fits on one screen; no background history.\n",
+        "failures.md": "# Known failures of the current runbook\n\n- F1 Engineers skipped the dashboard check because \"looks wrong\" was undefined.\n- F2 A copied example token triggered a secret-scanning incident.\n"
+      },
+      "expectations": [
+        "Proposes a compact rubric of no more than ten scored criteria, each with an identifier and observable anchors for an acceptable level and a target level rather than bare adjectives.",
+        "Treats binary requirements such as the unchanged deploy command, the presence of the rollback command, and the absence of token-shaped strings as pass/fail gates or checks rather than scored criteria.",
+        "Maps every requirement R1 to R7 and every known failure F1 and F2 to a criterion, gate, or check, leaving none unmapped.",
+        "Labels the rubric as proposed and awaiting acceptance, and defers any baseline scoring or calibration until after acceptance.",
+        "Does not launch agents, grade the artifact, run checks, or edit files."
+      ]
+    },
+    {
+      "id": "unsupported-low-score-from-competitor",
+      "request": "Assess whether candidate A is DONE and state the next action, using the saved run records. This is a bounded read-only saved-run assessment: do not launch agents, make model calls, edit files, or execute the underlying improvement run.",
+      "files": {
+        "run.json": "{\n  \"config\": {\n    \"candidates\": [\n      \"A\",\n      \"B\",\n      \"C\"\n    ],\n    \"reviewsPerSnapshot\": 2,\n    \"reviewerPool\": \"authors review each other\",\n    \"target\": 8.5,\n    \"maxRounds\": 3\n  },\n  \"round\": 1,\n  \"snapshots\": {\n    \"A-r1\": {\n      \"author\": \"author-1\",\n      \"hash\": \"9f1e\"\n    },\n    \"B-r1\": {\n      \"author\": \"author-2\",\n      \"hash\": \"77ac\"\n    },\n    \"C-r1\": {\n      \"author\": \"author-3\",\n      \"hash\": \"d204\"\n    }\n  },\n  \"reviewsOfA\": [\n    {\n      \"reviewer\": \"author-2\",\n      \"file\": \"review-author2-on-A.json\"\n    },\n    {\n      \"reviewer\": \"author-3\",\n      \"file\": \"review-author3-on-A.json\"\n    }\n  ],\n  \"checks\": {\n    \"A-r1\": {\n      \"validate\": \"pass\"\n    }\n  }\n}\n",
+        "rubric.json": "{\n  \"criteria\": {\n    \"C1\": \"Task accuracy\",\n    \"C2\": \"Actionability\",\n    \"C3\": \"Concision\"\n  },\n  \"scale\": \"0-10\",\n  \"target\": 8.5\n}\n",
+        "review-author2-on-A.json": "{\n  \"snapshot\": \"A-r1\",\n  \"scores\": {\n    \"C1\": {\n      \"score\": 9,\n      \"evidence\": \"All steps match the API reference in section 2.\"\n    },\n    \"C2\": {\n      \"score\": 4,\n      \"evidence\": \"Weaker than it could be.\"\n    },\n    \"C3\": {\n      \"score\": 9,\n      \"evidence\": \"No background history; one screen.\"\n    }\n  },\n  \"feedback\": []\n}\n",
+        "review-author3-on-A.json": "{\n  \"snapshot\": \"A-r1\",\n  \"scores\": {\n    \"C1\": {\n      \"score\": 9,\n      \"evidence\": \"Commands verified against section 2.\"\n    },\n    \"C2\": {\n      \"score\": 9,\n      \"evidence\": \"Every step ends with an observable success signal, e.g. step 3 'status shows healthy'.\"\n    },\n    \"C3\": {\n      \"score\": 8.5,\n      \"evidence\": \"One screen; a single redundant sentence in step 1.\"\n    }\n  },\n  \"feedback\": [\n    \"Drop the redundant sentence in step 1.\"\n  ]\n}\n"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Does not launch agents or claim new candidate, reviewer, or acceptance executions.",
+        "Does not mark A DONE while the below-target C2 score from author-2 remains unresolved, and does not average the two C2 scores.",
+        "Identifies the C2 score of 4 as lacking specific evidence and treats it as an incomplete review to resolve, by asking that reviewer for concrete evidence or adding an independent reviewer, rather than silently discarding it or accepting it as a defect to fix.",
+        "Notes the large C2 disagreement and that it must be resolved on evidence and recorded in the log."
+      ]
+    }
+  ]
+}
