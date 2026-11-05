@@ -1,109 +1,109 @@
 ---
 name: create-conventional-commit
-description: Prepare and create a Conventional Commit from staged changes. Use when the user asks to commit, generate a commit message, or validate staged commit scope. Detects related unstaged work, handles repositories without prior commits, and always requires explicit confirmation before running git commit.
+description: Prepare and create a Conventional Commit from staged changes. Use when the user asks to commit or to write or validate a commit message. Always requires explicit confirmation before git commit. Not for push, amend, or history rewrites.
 user-invocable: true
 disable-model-invocation: false
 ---
 
 # Create Conventional Commit
 
-Run immediately in parallel:
+Never run `git commit` without `y` in step 6. Never use `git add -A`, `git add .`, or `-a`;
+stage only user-approved paths with `git add -- <paths>`.
 
-- `git status --short`
-- `git diff --staged --stat`
-- `git diff --staged`
-- `git branch --show-current`
-- `git rev-parse --verify HEAD` followed by `git log --oneline -10` only when `HEAD` exists
+## 1 — Gather state
 
-## 1 — Nothing staged
+- `git rev-parse --show-toplevel`: fails: say "Not a git repository." and stop. Run all
+  later commands from this root.
+- `git rev-parse --verify --quiet HEAD`: non-zero exit means no commits; skip all `git log`.
+- `git status --porcelain=v1`: `XY <path>`; `X` staged, `Y` working tree.
+- `git diff --staged --stat`, then `git diff --staged`.
+- `git branch --show-current`.
 
-If `git diff --staged` is empty: output "Nothing staged. Run `git add` first." and stop.
+## 2 — Decide what to commit
 
-## 2 — Partial staging check
+1. Unmerged entries (`U` in either column, `AA`, `DD`): output "Resolve merge conflicts first."
+   and stop.
+2. Nothing staged (`git diff --staged --quiet` exits 0): if status is empty, output "Nothing to
+   commit." and stop; otherwise list changed paths and ask which to stage; none chosen: stop.
+3. Partially staged files (`MM` and similar): ask "Stage the rest too? (yes / no)".
+4. Unstaged or untracked (`??`) files tied to the staged change by content, imports, or
+   references (not proximity), not already asked about: list them and ask "These look related.
+   Stage them too? (yes / no / pick paths)".
+5. Never offer ignored or secret-like files (`.env*`, keys, credentials). Staged ones: show paths;
+   ask to unstage (`git restore --staged -- <path>`; without `HEAD`, `git rm --cached -f -- <path>`)
+   or stop.
+6. Unrelated changes mixed: ask whether to commit together or stop to split.
 
-From `git status --short`, find:
+After any `git add`, repeat steps 1–2. Then run `git diff --staged --check`; on failure, show
+its output and stop. Fix only if asked.
 
-- unstaged tracked files: lines where the first character is a space and the second is `M`, `D`,
-  or `A` (for example, ` M path/to/file`);
-- untracked files: lines beginning with `??`.
+## 3 — Read repository conventions
 
-If any exist, check whether they belong to the same feature, module, or logical unit as the staged
-changes. Do not infer relation from proximity alone. If they look related, list them and ask:
+Configuration beats history; history beats defaults.
+- Configuration (commitlint, commitizen, `CONTRIBUTING*`, agent instructions): types, scopes,
+  header length, case.
+- History (needs `HEAD`): `git log --format=%s -20 -- <staged paths>`; use it for scope and
+  case only when those subjects follow Conventional Commits.
 
-> These files look related to your staged changes:
->
-> - `<path>`
->   Stage them too? (yes / no)
+## 4 — Choose type and scope
 
-If yes: `git add <files>`, then re-run status, staged stat, and staged diff. If no, or none are
-related: continue silently. Never stage ignored files, secrets, or unrelated changes.
+**Type** (lowercase): configured list, else `feat`, `fix`, `docs`, `style` (formatting), `refactor` (no
+behavior change), `perf`, `test`, `build` (build, dependencies), `ci`, `chore` (other
+maintenance), `revert` (footer `Refs: <sha>`). Pick the primary effect: `feat` or `fix` outranks supporting tests, docs, or
+refactoring. If two fit equally, ask the user, recommending one.
 
-## 3 — Infer scope
+**Scope** (optional noun), first that applies:
 
-Apply first match from staged file paths:
+1. Configured scope matching the staged paths; none matches but scope required: ask.
+2. A scope used by most step 3 history subjects.
+3. The module or package holding all staged files, in kebab-case; never `src` or `lib`.
+4. None. If several fit equally, omit it and list them in step 6.
 
-| Condition                                                                         | Scope               |
-| --------------------------------------------------------------------------------- | ------------------- |
-| All under `frontend/`                                                             | `frontend`          |
-| All under `backend/`                                                              | `backend`           |
-| Mixed `frontend/` + `backend/`                                                    | _(none)_            |
-| Only root config files (`docker-compose*`, `.gitlab-ci*`, `Dockerfile*`, `.env*`) | `infra`             |
-| Only `_docs/` or `notes/`                                                         | `docs`              |
-| All under a single named subdirectory                                             | that directory name |
-| Otherwise                                                                         | _(none)_            |
+## 5 — Write the message
 
-## 4 — Generate message
+```text
+<type>[(<scope>)][!]: <description>
 
-**Type** — pick one:
+[body]
 
-| Type       | When to use                                                      |
-| ---------- | ---------------------------------------------------------------- |
-| `feat`     | New feature                                                      |
-| `fix`      | Bug fix                                                          |
-| `chore`    | Maintenance (deps, configs) — no production code behavior change |
-| `docs`     | Documentation only                                               |
-| `refactor` | Code restructuring, no behavior change                           |
-| `test`     | Tests only                                                       |
-| `perf`     | Performance improvement                                          |
-| `build`    | Build system or external dependencies                            |
-| `ci`       | CI/CD configuration                                              |
-| `style`    | Formatting/whitespace, no code change                            |
-
-**Subject line**: `<type>(<scope>): <imperative description>`
-
-- Max 72 chars total
-- Imperative mood — "add", not "added" or "adds"
-- Lowercase, except proper nouns (e.g. `fix(Stripe): ...`)
-- No trailing period
-- Omit `(<scope>)` when no scope applies
-
-**Body**: include only when the _why_ is not obvious from the subject. Blank line before body. Wrap at 72 chars. Do not restate the diff.
-
-**Footer**:
-
-- `BREAKING CHANGE: <description>` — if public API is removed, renamed, or behavior changes incompatibly
-- `Closes #N` — if an issue number appears in the current branch name or recent log
-
-## 5 — Validate the staged patch
-
-Run `git diff --staged --check`. If it reports whitespace errors, conflict markers, or another
-mechanical problem, show the relevant paths and stop before proposing a commit. Do not modify the
-staged patch unless the user asks.
-
-Do not claim tests passed unless they were run in the current work. A commit-message request does
-not itself authorize unrelated fixes or dependency changes.
-
-## 6 — Present and confirm
-
-Show the message in a code block. Then ask exactly:
-
-> Ready to commit, or cancel? **(y / c)**
-
-**y** — commit with message:
-
-```bash
-git commit -m "<subject>"
-# Add another -m argument for a body or footer when present.
+[footers]
 ```
 
-**c** — output "Cancelled." and stop. Do not run any git command.
+- **Header**: imperative ("add", not "added"), lowercase unless conventions or proper nouns
+  differ, no trailing period, ≤ 72 characters or the configured limit.
+- **Body**: only when the reason is not obvious; why, not the diff. Wrap at 72.
+- **Footers**: `<Token>: <value>` or `<Token> #<value>`; tokens use `-` for spaces
+  (`Reviewed-by`) except `BREAKING CHANGE`.
+- **Breaking change** (incompatible API or behavior), any type: `!` and footer `BREAKING CHANGE: <what breaks, how to migrate>` (uppercase; `BREAKING-CHANGE` is
+  equivalent).
+- **Issues**: `Refs #<n>` only for an issue ID from the branch name or user; `Closes #<n>` only
+  if the user says it resolves it.
+
+Separate header, body paragraphs, and footers with one blank line. Mention tests only if run.
+
+## 6 — Confirm
+
+Show the message in a code block, staged files, and scope alternatives:
+
+> Commit with this message? **(y / edit / c)**
+
+- `y`: go to step 7.
+- `edit` or requested changes: revise, ask again.
+- `c`: output "Cancelled." and stop; run no more git commands.
+- Anything else: ask again.
+
+## 7 — Commit
+
+Pass the message on stdin, not `-m`:
+
+```bash
+git commit --cleanup=whitespace -F - <<'COMMIT_MSG'
+<confirmed message, verbatim>
+COMMIT_MSG
+```
+
+Without a POSIX shell, use `-F <file>` with a temporary file outside the repository, then delete it.
+
+- Commit-msg hook rejects the message: fix the reported rule and return to step 6.
+- Other failure: show output, stop; `--no-verify` only if the user asks.
+- Success: report `git log -1 --format='%h %s'` and any `git status` changes made by hooks.
