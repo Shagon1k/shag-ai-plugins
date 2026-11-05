@@ -126,8 +126,8 @@
       "id": "visible-output-change-needs-decision",
       "request": "Review rating-badge.mjs and club-summary.mjs for worthwhile simplifications. Report findings only; do not edit files.",
       "files": {
-        "rating-badge.mjs": "export function ratingBadge(average) {\n  return `★ ${average.toFixed(1)}`;\n}\n",
-        "club-summary.mjs": "const averageFormat = new Intl.NumberFormat('en', { maximumFractionDigits: 1 });\n\nexport function clubSummary(club) {\n  return `${club.name} · average ${averageFormat.format(club.average)}`;\n}\n",
+        "rating-badge.mjs": "export function ratingBadge(average) {\n  return `\u2605 ${average.toFixed(1)}`;\n}\n",
+        "club-summary.mjs": "const averageFormat = new Intl.NumberFormat('en', { maximumFractionDigits: 1 });\n\nexport function clubSummary(club) {\n  return `${club.name} \u00b7 average ${averageFormat.format(club.average)}`;\n}\n",
         "README.md": "# Club pages\n\nThe rating badge and the Club summary both show a Club's average rating to members.\n"
       },
       "expectations": [
@@ -135,6 +135,139 @@
         "Identifies the two average-rating formats as one responsibility implemented twice, citing both locations.",
         "States the concrete input on which they disagree, such as a whole-number average like 8 rendering as 8.0 in one place and 8 in the other.",
         "Marks consolidating them as needing a decision because it changes what users see, rather than presenting it as a behavior-preserving cleanup."
+      ]
+    },
+    {
+      "id": "prelaunch-obsolete-data-compatibility",
+      "request": "Review loader.py for worthwhile simplifications; do not edit.",
+      "files": {
+        "README.md": "# Launch status\nThe service has never launched. There are no real users, deployed consumers, or production records. Internal seed scripts produce only version 2 records. Version 1 came from a discarded prototype.\n",
+        "loader.py": "def load(record):\n    if record[\"version\"] == 1:\n        return {\"name\": record[\"title\"], \"version\": 2}\n    return record\n"
+      },
+      "expectations": [
+        "Leaves every fixture file unchanged and creates no files.",
+        "Recommends removing the obsolete version-1 compatibility branch now, citing the documented release and data context.",
+        "Labels the supported-input change as needing a decision, with an explicit do recommendation and reason; does not silently classify it as behavior-preserving.",
+        "Anchors the finding to load and a location and provides an approximate line reduction rather than claiming a measured saving."
+      ]
+    },
+    {
+      "id": "production-compatibility-retained",
+      "request": "Review loader.py for simplification; do not edit.",
+      "files": {
+        "README.md": "# Deployments\nVersion 1 records remain in production customer backups and restoration is supported. No migration deadline has been approved.\n",
+        "loader.py": "def load(record):\n    if record[\"version\"] == 1:\n        return {\"name\": record[\"title\"], \"version\": 2}\n    return record\n"
+      },
+      "expectations": [
+        "Leaves every fixture file unchanged and creates no files.",
+        "Does not recommend unconditional removal of version-1 support.",
+        "Explains that production records or supported restores require the branch and retains it; if proposing future removal, identifies the requirement and migration decision that must change."
+      ]
+    },
+    {
+      "id": "accurate-vague-name-is-not-finding",
+      "request": "Review card.mjs for worthwhile simplifications, without editing.",
+      "files": {
+        "README.md": "# Card\ncard is internal presentation code accepting a validated object containing title. No other fields or effects exist.\n",
+        "card.mjs": "export function card(data) {\n  return data.title;\n}\n"
+      },
+      "expectations": [
+        "Leaves every fixture file unchanged and creates no files.",
+        "Reports no actionable simplification rather than renaming data solely because it is vague.",
+        "Does not manufacture wrappers, validation, or changes in declaration order."
+      ]
+    },
+    {
+      "id": "lint-wrapper-and-intended-rule",
+      "request": "Review action.ts and sort.mjs for simplification; do not edit.",
+      "files": {
+        "README.md": "# UI rules\nEvent handlers must return void under no-misused-promises; save rejects and report records that error. Sorting deliberately resets to ascending when the user chooses a different column.\n",
+        "action.ts": "declare function save(): Promise<void>;\ndeclare function report(error: unknown): void;\nexport function onClick(): void {\n  void save().catch(report);\n}\n",
+        "sort.mjs": "export function nextSort(current, column) {\n  return { column, direction: current.column === column && current.direction === \"asc\" ? \"desc\" : \"asc\" };\n}\n"
+      },
+      "expectations": [
+        "Leaves every fixture file unchanged and creates no files.",
+        "Does not remove the void-returning wrapper or its catch as mere lint-rule workarounds.",
+        "Does not report the documented sort reset behavior as a bug."
+      ]
+    },
+    {
+      "id": "repeat-pass-seams-and-coverage",
+      "request": "Review these areas for new simplifications without editing. Area one is page.py; area two is email.py. Prior approved finding: extract the repeated lower/strip normalization in normalize.py; skip it this pass. Review the seams too.",
+      "files": {
+        "README.md": "# Labels\nThe page and email order labels must be identical for a given order. Orders are validated internal objects.\n",
+        "page.py": "def order_label(order):\n    return f\"Order {order['id']}: {order['total']}\"\n",
+        "email.py": "def receipt_label(order):\n    return f\"Order {order['id']}: {order['total']}\"\n",
+        "normalize.py": "def first(s):\n    return s.lower().strip()\n\ndef second(s):\n    return s.lower().strip()\n"
+      },
+      "expectations": [
+        "Leaves every fixture file unchanged and creates no files.",
+        "Identifies the duplicated order-label responsibility in page.py and email.py and proposes one maintained source without unrelated configuration, registries, or abstractions beyond that shared responsibility.",
+        "Does not re-report the prior approved normalization finding.",
+        "Provides symbol and location anchors for both label sites, names a shared maintenance change affecting both (such as label wording), and gives approximate net line savings.",
+        "States full-file coverage separately from partial/diff-only or unread coverage, without inventing delegated reviewers or an independent agent pass."
+      ]
+    },
+    {
+      "id": "state-derivation-versus-snapshot",
+      "request": "Review state.mjs for simplification without edits.",
+      "files": {
+        "README.md": "# Editor state\nNames are strings. initialName is the deliberate opening snapshot for cancel. fullName always reflects the current first and last values.\n",
+        "state.mjs": "export function createEditor(first, last) {\n  const initialName = `${first} ${last}`;\n  let fullName = `${first} ${last}`;\n  return {\n    get fullName() { return fullName; },\n    get initialName() { return initialName; },\n    setFirst(next) { first = next; fullName = `${first} ${last}`; },\n    setLast(next) { last = next; fullName = `${first} ${last}`; },\n  };\n}\n"
+      },
+      "expectations": [
+        "Leaves every fixture file unchanged and creates no files.",
+        "Recommends deriving fullName from current first and last rather than maintaining a second synchronized value.",
+        "Preserves initialName as the intentional opening snapshot rather than treating all duplicate state as redundant.",
+        "Labels the proposed fullName derivation behavior-preserving and cites createEditor and a coordinated-change case."
+      ]
+    },
+    {
+      "id": "repeat-pass-cross-area-consolidation",
+      "request": "Second simplification review, read-only. Areas are backend/ and frontend/. Prior findings in prior.md are already accepted; skip them. Consolidate the area notes against current code, including seams, and state coverage.",
+      "files": {
+        "README.md": "# Renewal\nRenewal is available through exactly 30 days before expiry, inclusive.\n",
+        "prior.md": "Accepted: flatten nested branches in backend/label.py.\n",
+        "area-notes.md": "Backend reviewer: backend/label.py nested branches; propose flattening. Frontend reviewer: frontend/title.py uses the generic parameter name data; propose renaming. Area notes inspected diff snippets only, not full files.\n",
+        "backend/label.py": "def label(active):\n    if active:\n        return \"active\"\n    else:\n        return \"inactive\"\n",
+        "backend/renewal.py": "def can_renew(days):\n    return days <= 30\n",
+        "frontend/renewal.py": "def renewal_message(days):\n    return \"Renew now\" if days < 30 else \"Wait\"\n",
+        "frontend/title.py": "def title(data):\n    return data[\"title\"]\n"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Does not re-report the accepted label.py cleanup or retain the style-only data rename from area notes.",
+        "Re-checks current code and identifies the cross-area renewal threshold duplication and disagreement at exactly 30 days.",
+        "Anchors the seam finding to symbols and file locations and marks changing output as needs decision, with an explicit do or do-not recommendation and reason.",
+        "States full-file versus diff-only or unread coverage honestly; does not claim independent agents ran merely because area notes exist.",
+        "Includes an approximate reduction estimate for the actionable finding."
+      ]
+    },
+    {
+      "id": "derived-state-and-type-gap",
+      "request": "Review state.ts for worthwhile simplification, no edits.",
+      "files": {
+        "README.md": "# Selection state\ngetCount always reports the current length. This module is internal, synchronous, and has no external consumers.\n",
+        "state.ts": "let selected: string[] = [];\nlet count = 0;\nexport function add(value: string) { selected.push(value); count = selected.length; }\nexport function clear() { selected = []; count = selected.length; }\nexport function getCount() { return count; }\nconst modes: Record<string, {label: string}> = {plain: {label: \"Plain\"}};\nexport function label() { return modes.plain!.label; }\n"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Identifies redundant count state and synchronization, explaining that it is derivable from selected.length without changing timing in this synchronous module.",
+        "Suggests representing the known plain entry directly or with a precise type instead of adding repeated assertions, runtime fallbacks, or a new registry layer.",
+        "Does not claim static types alone validate untrusted runtime inputs."
+      ]
+    },
+    {
+      "id": "release-state-unknown-not-assumed",
+      "request": "Review reader.py for simplification; do not edit.",
+      "files": {
+        "README.md": "# Archive reader\nPackage version 0.2.0. The v1 data format was replaced by v2. Deployment and archive inventories are maintained outside this checkout.\n",
+        "reader.py": "def read(row):\n    return row[\"value\"] if row[\"version\"] == 2 else row[\"payload\"][\"value\"]\n"
+      },
+      "expectations": [
+        "Leaves all fixture files unchanged and creates no files.",
+        "Does not infer absence of deployed consumers or old persisted records from version 0.2.0.",
+        "If recommending legacy format removal, marks it as a decision and provides do or do-not with rationale plus the missing deployment/data evidence; does not call removal behavior-preserving."
       ]
     }
   ]
