@@ -1,0 +1,6 @@
+interface:
+  display_name: "Audit UI/UX"
+  short_description: "Audit usability and accessibility with annotated evidence"
+  default_prompt: "Use $audit-ui-ux to audit the UI/UX and accessibility of this web app's key flows and produce an annotated HTML report."
+policy:
+  allow_implicit_invocation: true

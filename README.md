@@ -8,7 +8,7 @@ adapters.
 
 | Plugin | Purpose |
 | --- | --- |
-| `web-development` | Plan, build, review, and maintain web applications |
+| `web-development` | Plan, build, review, audit, and maintain web applications |
 | `engineering-tools` | Assess changes, simplify code, maintain engineering workflows, and improve and sync technical documentation |
 | `ai-quality` | Improve AI-agent context efficiency, output quality, and artifacts through iterative review |
 
@@ -17,6 +17,7 @@ adapters.
 | Plugin | Skill | Purpose |
 | --- | --- | --- |
 | `web-development` | `plan-web-app` | Create, align, and maintain web-app guidance with optional GitHub Issue/PR templates, a Project board, and code style rules |
+| `web-development` | `audit-ui-ux` | Audit usability, accessibility, visual design, interface copy, and visual direction with task walkthroughs, page probes, annotated screenshots, product-specific design ideas, and a portable HTML report |
 | `engineering-tools` | `assess-change-complexity` | Size proposed software changes with an evidence-backed XS–XXL score, driver guardrails, confidence, and optional project calibration |
 | `engineering-tools` | `simplify-code` | Simplify code during implementation, on request, or in code review while preserving behavior and avoiding overengineering |
 | `engineering-tools` | `create-conventional-commit` | Prepare a Conventional Commit from staged changes with an explicit confirmation gate |
