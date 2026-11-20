@@ -99,6 +99,14 @@ figure { margin: 0; }
 .ideas .finding { border-left: 4px solid var(--suggestion); }
 .ideas .finding[data-severity="signature"] { border-left-color: var(--ok); }
 figcaption { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+.fig-concept .zoom { border: 2px dashed var(--suggestion); }
+.fig-concept figcaption { color: var(--suggestion); font-weight: 600; }
+.fig-evidence .zoom { border: 1px solid var(--line); }
+.contents { display: grid; gap: 8px 32px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-top: 24px; padding: 16px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.contents-title { font-size: 0.8rem; font-weight: 700; color: var(--muted); margin: 0 0 4px; text-transform: none; }
+.contents ol, .contents ul { margin: 0 0 12px; padding-left: 1.3rem; }
+.contents li { margin: 2px 0; }
+.contents ul.inline { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; }
 .priorities { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .priorities li { display: grid; grid-template-columns: 2.25rem 1fr; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
 .priorities .rank { font-size: 1.4rem; font-weight: 700; color: var(--muted); line-height: 1.2; }
@@ -124,7 +132,7 @@ figcaption { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
 .zoom img { display: block; width: 100%; height: auto; border-radius: 7px; }
 dl { margin: 0; display: grid; gap: 10px; align-content: start; }
 dt { font-size: 0.8rem; font-weight: 700; color: var(--muted); }
-dd { margin: 2px 0 0; max-width: 72ch; }
+dd { margin: 2px 0 0; max-width: 72ch; overflow-wrap: anywhere; }
 table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); font-size: 0.92rem; }
 .table-scroll { overflow-x: auto; border-radius: var(--radius); }
 th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
@@ -143,7 +151,11 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.75); }
 dialog img { display: block; max-width: 96vw; max-height: 88vh; height: auto; border-radius: 8px; background: #fff; }
 dialog form { text-align: right; margin-bottom: 8px; }
 dialog button { font: inherit; padding: 6px 14px; border-radius: 8px; border: 0; cursor: pointer; }
-@media (max-width: 600px) { .wrap { padding: 24px 16px 64px; } .finding { padding: 16px; } .filters input { min-width: 0; width: 100%; } }
+@media (max-width: 600px) {
+  .wrap { padding: 24px 16px 64px; } .finding { padding: 16px; } .filters input { min-width: 0; width: 100%; }
+  .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; } .stat { padding: 8px 10px; } .stat b { font-size: 1.25rem; } .stat span { font-size: 0.8rem; }
+  .verdict { font-size: 1rem; } .contents { padding: 12px 14px; }
+}
 @media print { .filters, .skip { display: none; } .finding { break-inside: avoid; } }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 </style>

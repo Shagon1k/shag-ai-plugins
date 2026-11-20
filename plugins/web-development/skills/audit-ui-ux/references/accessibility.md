@@ -31,14 +31,14 @@ lens worth running.
 | 2.2.1 Timing adjustable | Time limits and auto-dismissing messages can be extended or avoided | manual |
 | 2.4.1 Bypass blocks | A skip link or landmarks let users bypass repeated blocks | probe `landmarks`, manual |
 | 2.4.2 Page titled | Each page or view has a descriptive title | probe `page.title` |
-| 2.4.3 Focus order | Focus order follows the visual and logical order | probe `focusables`, manual |
+| 2.4.3 Focus order | Focus order follows the visual and logical order | focus walk, probe `focusables`, manual |
 | 2.4.4 Link purpose | Link text, with its context, says where it goes | probe `names`, visual |
 | 2.4.6 Headings and labels | Headings and labels describe their content | visual |
-| 2.4.7 Focus visible | A visible indicator shows where keyboard focus is | probe `focus` (heuristic), manual |
-| 2.4.11 Focus not obscured | Focused elements are not hidden by sticky headers, banners, or chat widgets | manual |
+| 2.4.7 Focus visible | A visible indicator shows where keyboard focus is | focus walk `indicatorChanged`, probe `focus` (heuristic), manual |
+| 2.4.11 Focus not obscured | Focused elements are not hidden by sticky headers, banners, or chat widgets | focus walk `obscuredBy`, probe `obscured`, manual |
 | 2.5.3 Label in name | A control's accessible name contains its visible label | probe `names`, manual |
 | 2.5.7 Dragging movements | Every drag action has a single-pointer alternative | manual |
-| 2.5.8 Target size (minimum) | Targets are at least 24 × 24 CSS px or have enough spacing | probe `targets`, then judge exceptions |
+| 2.5.8 Target size (minimum) | Targets are at least 24 × 24 CSS px or have enough spacing | probe `targets` or `design-nodes.mjs`, then judge exceptions |
 | 3.1.1 Language of page | `lang` is set correctly | probe `page.lang` |
 | 3.2.1 / 3.2.2 On focus, on input | Focus or input does not change context unexpectedly | manual |
 | 3.2.6 Consistent help | Help mechanisms appear in the same relative place | visual |
@@ -58,10 +58,11 @@ VI-13; it is not an AA failure.
 Run these on primary task paths at minimum. Record what you did in the surface note when
 the result is not obvious from the finding.
 
-1. **Keyboard walkthrough.** From the top of the page, complete each primary task with Tab,
-   Shift+Tab, Enter, Space, Escape, and arrow keys only. Note unreachable controls, focus
-   that disappears or jumps, traps, missing visible focus, and focus hidden behind sticky
-   elements.
+1. **Keyboard walkthrough.** This is the `keyboard` depth check. From a fresh load, record a
+   focus walk ([capture.md](capture.md)) on each page of the task, then complete the task with
+   Tab, Shift+Tab, Enter, Space, Escape, and arrow keys only. Note unreachable controls, focus
+   that disappears or jumps, traps, missing visible focus (`indicatorChanged: false`), and
+   focus hidden behind sticky elements (`obscuredBy`). Save the walks as evidence.
 2. **Dialogs and menus.** Opening moves focus into the dialog; Escape closes it; focus
    returns to the trigger; background content is not reachable while a modal is open.
 3. **Zoom and reflow.** Set the viewport to 320 CSS px wide and rerun the overflow probe.
@@ -83,4 +84,9 @@ the result is not obvious from the finding.
 - Group one failure pattern into one finding with all its surfaces, such as "Gray helper
   text fails contrast across all forms", instead of one finding per element.
 - A small target can pass 2.5.8 through spacing or the inline-text exception. Judge the
-  exception before filing a defect.
+  exception before filing a defect, and write the verdict as a comparison: "drawn 20 × 20 px,
+  below the 24 × 24 px minimum (2.5.8); the spacing exception fails because the 24 px circle
+  around it overlaps the one around Help, 22 px away".
+- A `focus` probe item is a lead. `unconfirmed` items have a `:focus-visible` rule that
+  programmatic focus may not trigger; confirm them, and `noVisibleChange` items, with a focus
+  walk before filing 2.4.7.

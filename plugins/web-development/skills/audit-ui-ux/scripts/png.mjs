@@ -162,3 +162,45 @@ export function encodePng(image) {
     chunk("IEND", Buffer.alloc(0)),
   ]);
 }
+
+/** Scale an RGBA image by `factor` (< 1 shrinks) with area averaging, which keeps text legible. */
+export function scaleImage(image, factor) {
+  if (!(factor > 0) || factor >= 1) return image;
+  const width = Math.max(1, Math.round(image.width * factor));
+  const height = Math.max(1, Math.round(image.height * factor));
+  const data = new Uint8Array(width * height * 4);
+  const stepX = image.width / width;
+  const stepY = image.height / height;
+  const sums = new Float64Array(4);
+  for (let y = 0; y < height; y += 1) {
+    const top = Math.floor(y * stepY);
+    const bottom = Math.max(top + 1, Math.min(image.height, Math.floor((y + 1) * stepY)));
+    for (let x = 0; x < width; x += 1) {
+      const left = Math.floor(x * stepX);
+      const right = Math.max(left + 1, Math.min(image.width, Math.floor((x + 1) * stepX)));
+      sums.fill(0);
+      for (let row = top; row < bottom; row += 1) {
+        for (let column = left; column < right; column += 1) {
+          const index = (row * image.width + column) * 4;
+          for (let channel = 0; channel < 4; channel += 1) sums[channel] += image.data[index + channel];
+        }
+      }
+      const count = (bottom - top) * (right - left);
+      for (let channel = 0; channel < 4; channel += 1) data[(y * width + x) * 4 + channel] = Math.round(sums[channel] / count);
+    }
+  }
+  return { width, height, data };
+}
+
+/** Keep `bits` per color channel (alpha untouched) so DEFLATE finds longer repeats. */
+export function quantizeImage(image, bits = 6) {
+  if (!(bits >= 1 && bits < 8)) return image;
+  const shift = 8 - bits;
+  const half = 1 << (shift - 1);
+  const data = new Uint8Array(image.data);
+  for (let index = 0; index < data.length; index += 1) {
+    if (index % 4 === 3) continue;
+    data[index] = Math.min(255, ((data[index] >> shift) << shift) + half);
+  }
+  return { ...image, data };
+}

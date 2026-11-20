@@ -56,3 +56,13 @@ test("validates arguments and runs from the CLI with a scale", () => {
   assert.equal(result.status, 0, result.stderr);
   assert.equal(JSON.parse(result.stdout)[0].ratio, 2.42);
 });
+
+test("refuses non-PNG screenshots with a conversion hint", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "audit-ui-ux-sample-"));
+  const file = path.join(root, "shot.jpg");
+  fs.writeFileSync(file, Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 16]));
+  const result = spawnSync(process.execPath, [SCRIPT, file, "--rect", "0,0,10,10"], { encoding: "utf8" });
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /is not a PNG\. Convert it first/);
+  assert.match(result.stderr, /mark contrast unverifiable/);
+});

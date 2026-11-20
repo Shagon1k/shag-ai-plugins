@@ -10,6 +10,8 @@
  *   - other defects in a theme               -> the theme's scored criterion
  *   - remaining defects                      -> one "Other problems" criterion
  * Journey metrics become a scored criterion. Ideas join only with --with-ideas.
+ * The rendered rubric is checked before it is written: each finding ID appears in exactly one
+ * criterion row, gate, or check, so a finding never has two owners that can drift apart.
  * The output is a proposal; improve-artifact makes it binding only after acceptance.
  */
 
@@ -66,7 +68,7 @@ export function draftRubric(audit, findings, { withIdeas = false, auditPath = "<
       id,
       name: theme.title,
       acceptable: `The root cause is addressed: of ${remaining.join(", ")}, at most one minor problem still fails its acceptance check.`,
-      target: `Every problem in the theme (${theme.findings.join(", ")}) passes its acceptance check and a re-audit finds no new problem with the same root cause.`,
+      target: `Every problem of this criterion (${remaining.join(", ")}) passes its acceptance check and a re-audit finds no new problem with the same root cause.`,
     });
     for (const findingId of remaining) coverage.set(findingId, id);
   }
@@ -125,7 +127,30 @@ export function draftRubric(audit, findings, { withIdeas = false, auditPath = "<
     `Coverage: ${[...coverage].map(([findingId, target]) => `${findingId}→${target}`).join(", ")}.`,
     "",
   ];
-  return { markdown: lines.join("\n"), gates, checks, criteria, coverage: Object.fromEntries(coverage) };
+  const markdown = lines.join("\n");
+  return { markdown, gates, checks, criteria, coverage: Object.fromEntries(coverage), ownership: checkOwnership(markdown, [...coverage.keys()], findings.map((finding) => finding.id)) };
+}
+
+/**
+ * Check finding ownership on the rendered rubric: every required ID appears in exactly one
+ * criterion row, gate, or check line, and no other finding ID appears in more than one. The
+ * coverage line is the map itself and is not counted.
+ */
+export function checkOwnership(markdown, required, all = required) {
+  const owners = new Map([...new Set([...required, ...all])].map((id) => [id, []]));
+  for (const line of markdown.split("\n")) {
+    const owner = line.match(/^\| (C\d+) \|/)?.[1] ?? line.match(/^- ([GX]\d+) /)?.[1];
+    if (!owner) continue;
+    for (const id of new Set(line.match(/\bF-\d{3,}\b/g) ?? [])) {
+      if (owners.has(id)) owners.get(id).push(owner);
+    }
+  }
+  const problems = [];
+  for (const [id, places] of owners) {
+    if (places.length > 1) problems.push(`${id} appears in ${places.join(", ")}`);
+    else if (places.length === 0 && required.includes(id)) problems.push(`${id} appears in no criterion, gate, or check`);
+  }
+  return problems;
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
@@ -144,7 +169,11 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     process.exit(1);
   }
   const audit = JSON.parse(fs.readFileSync(path.join(auditDir, "audit.json"), "utf8"));
-  const { markdown } = draftRubric(audit, readFindings(auditDir).findings, { withIdeas: args.includes("--with-ideas"), auditPath: dir });
+  const { markdown, ownership } = draftRubric(audit, readFindings(auditDir).findings, { withIdeas: args.includes("--with-ideas"), auditPath: dir });
+  if (ownership.length) {
+    console.error(`Rubric would give a finding several owners; fix the audit text first:\n${ownership.map((problem) => `- ${problem}`).join("\n")}`);
+    process.exit(1);
+  }
   if (out) {
     fs.writeFileSync(path.resolve(out), markdown);
     console.log(path.resolve(out));

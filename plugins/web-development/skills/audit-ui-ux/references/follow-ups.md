@@ -63,6 +63,10 @@ place:
 | Remaining defects | An "Other problems" criterion |
 | Ideas, with `--with-ideas` | A "Visual direction and signature ideas" criterion |
 
+The script checks the rendered rubric before writing it: each defect ID appears in exactly
+one criterion row, gate, or check. It exits 1 and names the duplicates otherwise, for example
+when a finding's acceptance text mentions another finding's ID.
+
 Review the anchors before handing the rubric over; adjust any that the product's situation
 makes unrealistic. Keep the coverage intact while editing: each defect stays in exactly one
 criterion, gate, or check, so never restate a check's acceptance criterion inside a scored

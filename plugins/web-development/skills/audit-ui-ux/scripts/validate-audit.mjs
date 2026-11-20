@@ -2,10 +2,14 @@
 /**
  * Validate a UI/UX audit directory against the audit-record contract.
  *
- *   node validate-audit.mjs <audit-dir> [--allow-pending]
+ *   node validate-audit.mjs <audit-dir> [--allow-pending | --stage plan|review|final]
  *
- * --allow-pending accepts an audit in progress: pending lenses, empty priorities, no re-check.
+ * --allow-pending (= --stage plan) accepts an audit in progress: pending lenses, empty
+ * priorities, no re-check, no synthesis or depth record yet. --stage review checks the end of
+ * phase 4: closed lenses, evidence, and depth, but not yet the phase 5 outputs.
  * Exits 1 when any error is found. Warnings never fail the run.
+ * Schema version 2 enforces the depth benchmark, synthesis, sketch coverage, and signature rules;
+ * version 1 audits still validate, with a warning that points to the migration.
  */
 
 import fs from "node:fs";
@@ -22,6 +26,17 @@ export const BASES = ["measured", "observed", "design-node", "visual-estimate", 
 export const SEVERITIES = ["blocker", "major", "minor"];
 export const FREQUENCIES = ["widespread", "recurring", "isolated"];
 export const EFFORTS = ["S", "M", "L"];
+export const SCHEMA_VERSIONS = [1, 2];
+export const DEPTH_CHECKS = ["first-use", "failure-recovery", "keyboard", "constrained-states"];
+export const CONSTRAINED_STATES = ["empty", "error", "long-content", "small-viewport"];
+export const DEPTH_STATUSES = ["done", "not-applicable", "unverifiable"];
+export const EXCEPTION_RULES = ["themes", "journeys", "strengths", "signatures", "sketches"];
+const IMAGE_FILE = /\.(?:png|svg|jpe?g|webp|gif)$/i;
+// Findings whose fix always changes what the user sees: the visual lens and the WCAG criteria
+// about colour, contrast, and focus visibility. Target size (2.5.8) is left out on purpose: a
+// larger hit area can be invisible.
+const VISIBLE_WCAG = new Set(["WCAG 1.4.1", "WCAG 1.4.3", "WCAG 1.4.11", "WCAG 2.4.7", "WCAG 2.4.11", "WCAG 2.4.13"]);
+export const visibleByNature = (finding) => finding.lens === "visual" || (finding.principle ?? []).some((item) => VISIBLE_WCAG.has(item));
 const PRINCIPLE_PATTERN = /^(?:(?:FL|VI|CO)-\d{2}|WCAG \d\.\d{1,2}\.\d{1,2})$/;
 const GENERIC_RECOMMENDATION =
   /^(?:improve|enhance|increase|add more|make (?:it )?more|ensure|consider improving)\b.{0,40}$/i;
@@ -30,7 +45,9 @@ const isText = (value) => typeof value === "string" && value.trim().length > 0;
 
 export function readFindings(auditDir) {
   const file = path.join(auditDir, "findings.jsonl");
-  if (!fs.existsSync(file)) return { findings: [], errors: ["findings.jsonl is missing"] };
+  if (!fs.existsSync(file)) {
+    return { findings: [], errors: ["findings.jsonl is missing; create it empty when you write audit.json (phase 2)"] };
+  }
   const findings = [];
   const errors = [];
   fs.readFileSync(file, "utf8")
@@ -46,7 +63,17 @@ export function readFindings(auditDir) {
   return { findings, errors };
 }
 
-export function validateAudit(auditDir, { allowPending = false } = {}) {
+/**
+ * Stages: "plan" (phase 2, --allow-pending) accepts pending lenses and planned surfaces;
+ * "review" (end of phase 4) requires closed lenses, evidence, and the depth record, but not yet
+ * the phase 5 outputs (re-check, synthesis, priorities, sketches); "final" requires everything.
+ */
+export const STAGES = ["plan", "review", "final"];
+
+export function validateAudit(auditDir, { allowPending = false, stage = allowPending ? "plan" : "final" } = {}) {
+  if (!STAGES.includes(stage)) throw new Error(`stage must be one of ${STAGES.join(", ")}`);
+  const planning = stage === "plan";
+  allowPending = stage !== "final";
   const errors = [];
   const warnings = [];
   const fileExists = (relative) =>
@@ -63,7 +90,22 @@ export function validateAudit(auditDir, { allowPending = false } = {}) {
     return { errors: [`audit.json: invalid JSON (${error.message})`], warnings, stats: {} };
   }
 
-  if (audit.version !== 1) errors.push("audit.json: version must be 1");
+  if (!SCHEMA_VERSIONS.includes(audit.version)) errors.push(`audit.json: version must be one of ${SCHEMA_VERSIONS.join(", ")}`);
+  const v2 = audit.version === 2;
+  if (audit.version === 1) {
+    warnings.push("audit.json: version 1 is the legacy schema; version 2 rules (depth, synthesis, sketches, re-check eligibility) only warn (see audit-record.md, Migrating from version 1)");
+  }
+  // Declared exceptions: a rule that does not apply, with the reason, optionally for some IDs only.
+  const exceptions = Array.isArray(audit.exceptions) ? audit.exceptions : [];
+  for (const [index, exception] of exceptions.entries()) {
+    if (!EXCEPTION_RULES.includes(exception?.rule)) errors.push(`exceptions[${index}]: rule must be one of ${EXCEPTION_RULES.join(", ")}`);
+    if (!isText(exception?.reason)) errors.push(`exceptions[${index}]: reason is required`);
+    if (exception?.ids !== undefined && !Array.isArray(exception.ids)) errors.push(`exceptions[${index}]: ids must be a list`);
+  }
+  const excepted = (rule, id) =>
+    exceptions.some((exception) => exception?.rule === rule && isText(exception?.reason) && (!Array.isArray(exception.ids) || exception.ids.length === 0 || (id !== undefined && exception.ids.includes(id))));
+  // In version 2, a synthesis rule is an error unless excepted; in version 1 it stays a warning.
+  const enforce = (message) => (v2 ? errors : warnings).push(message);
   if (!isText(audit.title)) errors.push("audit.json: title is required");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(audit.date ?? "")) errors.push("audit.json: date must be YYYY-MM-DD");
   if (!isText(audit.target?.name)) errors.push("audit.json: target.name is required");
@@ -106,7 +148,7 @@ export function validateAudit(auditDir, { allowPending = false } = {}) {
     const mode = surface?.mode ?? (audit.modes?.length === 1 ? audit.modes[0] : undefined);
     if (surface?.mode !== undefined && !MODES.includes(surface.mode)) errors.push(`${label}: unknown mode ${surface.mode}`);
     const evidence = Array.isArray(surface?.evidence) ? surface.evidence : [];
-    if (evidence.length === 0 && mode !== "source" && !allowPending) {
+    if (evidence.length === 0 && mode !== "source" && !planning) {
       errors.push(`${label}: evidence must list at least one file`);
     }
     for (const file of evidence) {
@@ -128,7 +170,7 @@ export function validateAudit(auditDir, { allowPending = false } = {}) {
       if (!lenses.includes(lens)) warnings.push(`${label}: lens ${lens} is not declared in lenses`);
     }
   }
-  if (pending > 0 && !allowPending) errors.push(`${pending} surface lenses are still pending`);
+  if (pending > 0 && !planning) errors.push(`${pending} surface lenses are still pending`);
 
   // Tasks.
   const tasks = Array.isArray(audit.tasks) ? audit.tasks : [];
@@ -145,7 +187,7 @@ export function validateAudit(auditDir, { allowPending = false } = {}) {
     if (!isText(task?.goal)) errors.push(`${label}: goal is required`);
     if (!["primary", "secondary"].includes(task?.importance)) errors.push(`${label}: importance must be primary or secondary`);
     if (!TASK_STATUSES.includes(task?.status)) errors.push(`${label}: status must be one of ${TASK_STATUSES.join(", ")}`);
-    if (task?.status === "not-walked" && allowPending) {
+    if (task?.status === "not-walked" && planning) {
       // An audit in progress may not have walked every task yet.
     } else if (task?.status !== "walked" && !isText(task?.note)) {
       errors.push(`${label}: status ${task?.status} needs a note`);
@@ -203,7 +245,10 @@ export function validateAudit(auditDir, { allowPending = false } = {}) {
     for (const file of sketches) {
       if (!fileExists(file)) errors.push(`${label}: sketch not found: ${file}`);
     }
-    if (finding.kind === "defect" && annotations.length === 0 && evidence.basis !== "source" && !allowPending) {
+    // Source findings and node-only design findings (no frame image to draw on) have no image.
+    const surfaceImages = findingSurfaces.some((id) => (surfaces.find((surface) => surface.id === id)?.evidence ?? []).some((file) => IMAGE_FILE.test(file)));
+    const imageless = evidence.basis === "source" || (evidence.basis === "design-node" && !surfaceImages && !files.some((file) => IMAGE_FILE.test(file)));
+    if (finding.kind === "defect" && annotations.length === 0 && !imageless && !allowPending) {
       warnings.push(`${label}: no annotated image; add one unless the finding has no visual location`);
     }
 
@@ -218,6 +263,14 @@ export function validateAudit(auditDir, { allowPending = false } = {}) {
       for (const principle of principles) {
         if (!PRINCIPLE_PATTERN.test(principle)) warnings.push(`${label}: unrecognized principle ${JSON.stringify(principle)}`);
       }
+      // Severity is judged on a task, so a blocker or major names the tasks it affects.
+      const findingTasks = Array.isArray(finding.tasks) ? finding.tasks : [];
+      for (const taskId of findingTasks) {
+        if (!taskIds.has(taskId)) errors.push(`${label}: unknown task ${taskId}`);
+      }
+      if (v2 && ["blocker", "major"].includes(finding.severity) && findingTasks.length === 0) {
+        errors.push(`${label}: a ${finding.severity} defect must list the tasks it affects in tasks`);
+      }
     } else if (finding.kind === "suggestion") {
       if (finding.severity !== undefined) errors.push(`${label}: a suggestion must not have a severity`);
       if (!isText(finding.impact)) warnings.push(`${label}: state the expected benefit in impact`);
@@ -230,7 +283,11 @@ export function validateAudit(auditDir, { allowPending = false } = {}) {
       if (!OBVIOUSNESS.includes(finding.obviousness)) {
         errors.push(`${label}: obviousness must be one of ${OBVIOUSNESS.join(", ")}`);
       }
+      if (v2 && !isText(finding.obviousnessReason)) {
+        errors.push(`${label}: obviousnessReason must say what knowledge of the domain or its users the idea needs`);
+      }
     }
+    if (finding.noSketch !== undefined && !isText(finding.noSketch)) errors.push(`${label}: noSketch must be the reason no sketch applies`);
     if (finding.effort !== undefined && !EFFORTS.includes(finding.effort)) {
       errors.push(`${label}: effort must be one of ${EFFORTS.join(", ")}`);
     }
@@ -241,9 +298,12 @@ export function validateAudit(auditDir, { allowPending = false } = {}) {
 
   // Signature ideas: few, and at least one beyond the obvious.
   const signatures = findings.filter((finding) => finding.kind === "signature");
-  if (signatures.length > 5) warnings.push(`${signatures.length} signature ideas; keep the strongest one to three`);
+  if (signatures.length > 3) enforce(`${signatures.length} signature ideas; keep the strongest one to three`);
   if (signatures.length > 0 && !signatures.some((finding) => finding.obviousness === "non-obvious")) {
-    warnings.push("every signature idea is marked obvious; add at least one non-obvious idea");
+    enforce("every signature idea is marked obvious; add at least one non-obvious idea");
+  }
+  if (!allowPending && lenses.includes("taste") && signatures.length === 0 && !excepted("signatures")) {
+    enforce('audit.json: no signature ideas; propose one to three, or add an exception { "rule": "signatures", "reason": … }');
   }
 
   // Priorities.
@@ -284,11 +344,12 @@ export function validateAudit(auditDir, { allowPending = false } = {}) {
       themed.add(id);
     }
   }
-  if (!allowPending) {
+  if (!allowPending && !excepted("themes")) {
     const loose = defects.filter((finding) => ["blocker", "major"].includes(finding.severity) && !themed.has(finding.id));
-    if (themes.length === 0 && defects.length >= 3) warnings.push("audit.json: no themes; group related findings by root cause");
-    else if (themes.length > 0) {
-      for (const finding of loose) warnings.push(`audit.json: ${finding.severity} defect ${finding.id} belongs to no theme`);
+    if (themes.length === 0 && defects.length >= 3) enforce("audit.json: no themes; group related findings by root cause, or add a themes exception with the reason");
+    // Every blocker and major needs a theme or a reasoned exception, however small the audit.
+    for (const finding of loose.filter((item) => !excepted("themes", item.id))) {
+      enforce(`audit.json: ${finding.severity} defect ${finding.id} belongs to no theme; add it to one or list it in a themes exception`);
     }
   }
   const journeys = Array.isArray(audit.journeys) ? audit.journeys : [];
@@ -306,7 +367,9 @@ export function validateAudit(auditDir, { allowPending = false } = {}) {
   }
   if (!allowPending) {
     for (const task of tasks.filter((item) => item?.importance === "primary" && item?.status === "walked")) {
-      if (!journeys.some((journey) => journey?.task === task.id)) warnings.push(`audit.json: walked primary task ${task.id} has no journey metrics`);
+      if (!journeys.some((journey) => journey?.task === task.id) && !excepted("journeys", task.id)) {
+        enforce(`audit.json: walked primary task ${task.id} has no journey metrics`);
+      }
     }
   }
   const strengths = Array.isArray(audit.strengths) ? audit.strengths : [];
@@ -316,7 +379,9 @@ export function validateAudit(auditDir, { allowPending = false } = {}) {
       if (!surfaceIds.has(surfaceId)) errors.push(`strengths[${index}]: unknown surface ${surfaceId}`);
     }
   }
-  if (!allowPending && strengths.length === 0) warnings.push("audit.json: no strengths recorded; name what works and must survive the fixes");
+  if (!allowPending && strengths.length === 0 && !excepted("strengths")) {
+    enforce("audit.json: no strengths recorded; name what works and must survive the fixes");
+  }
 
   // Re-audit: every defect of the previous audit gets a confirmed status.
   if (audit.previous !== undefined) {
@@ -347,14 +412,54 @@ export function validateAudit(auditDir, { allowPending = false } = {}) {
     for (const id of previousDefects) if (!seen.has(id)) errors.push(`audit.json: previous defect ${id} has no status`);
   }
 
-  // Show, do not only tell.
+  // Show, do not only tell (references/report.md): in version 2 every finding has a sketch, a
+  // noSketch reason (its change is not visual), or a sketches exception. Version 1 only warned
+  // about ideas and prioritized defects.
   if (!allowPending) {
-    for (const finding of findings.filter((item) => item.kind === "signature" && !(item.sketches?.length > 0))) {
-      warnings.push(`${finding.id}: signature idea without a sketch; show it unless the environment cannot render HTML`);
+    const needsSketch = v2 ? findings : findings.filter((item) => item.kind !== "defect" || priorities.includes(item.id));
+    for (const finding of needsSketch) {
+      const hasSketch = (finding.sketches ?? []).some((file) => IMAGE_FILE.test(file));
+      if (hasSketch || excepted("sketches", finding.id)) continue;
+      if (isText(finding.noSketch)) {
+        if (visibleByNature(finding)) enforce(`${finding.id}: noSketch on a ${finding.lens === "visual" ? "visual-lens finding" : "colour, contrast, or focus-visibility finding"}; its fix changes what the user sees, so it needs a sketch or a sketches exception`);
+        continue;
+      }
+      const what = finding.kind === "defect" ? "defect" : finding.kind === "signature" ? "signature idea" : "suggestion";
+      enforce(`${finding.id}: ${what} without a sketch image; add one, give noSketch the reason the change is not visual, or add a sketches exception`);
+    }
+    // A sketch shared by findings whose current images differ cannot compare like with like.
+    const sketchOwners = new Map();
+    for (const finding of findings) {
+      for (const file of (finding.sketches ?? []).filter((item) => IMAGE_FILE.test(item))) {
+        if (!sketchOwners.has(file)) sketchOwners.set(file, []);
+        sketchOwners.get(file).push(finding);
+      }
+    }
+    for (const [file, owners] of sketchOwners) {
+      const currents = new Set(owners.map((finding) => currentImageOf(finding)).filter(Boolean));
+      if (owners.length > 1 && currents.size > 1 && !owners.every((finding) => excepted("sketches", finding.id))) {
+        enforce(`${file} is the proposed sketch for ${owners.map((finding) => finding.id).join(", ")}, whose current images differ; sketch each against its own Now image`);
+      }
+    }
+    for (const finding of findings) {
+      const sketch = (finding.sketches ?? []).find((file) => IMAGE_FILE.test(file));
+      const current = currentImageOf(finding);
+      if (!sketch || !current || excepted("sketches", finding.id)) continue;
+      const left = imageSize(path.join(auditDir, current));
+      const right = imageSize(path.join(auditDir, sketch));
+      if (!left || !right) continue;
+      const ratio = left.width / left.height / (right.width / right.height);
+      if (ratio > 1.15 || ratio < 1 / 1.15) {
+        enforce(`${finding.id}: Now (${current}, ${left.width}×${left.height}) and Proposed (${sketch}, ${right.width}×${right.height}) have different shapes; sketch the same viewport and content`);
+      }
     }
   }
 
-  // Re-check sample.
+  // Depth benchmark (version 2): a bounded second pass over the riskiest tasks and surfaces.
+  if (v2 && !planning) validateDepth(audit.depth, { errors, surfaceIds, taskIds, findingIds });
+
+  // Re-check sample. Only a checked surface lens that had no findings is eligible: a "confirmed"
+  // entry must still have none, and a "new-findings" entry must name findings on that surface and lens.
   const cleanPairs = [];
   for (const surface of surfaces) {
     for (const lens of lenses) {
@@ -364,20 +469,42 @@ export function validateAudit(auditDir, { allowPending = false } = {}) {
     }
   }
   const recheck = Array.isArray(audit.recheck) ? audit.recheck : [];
-  const requiredRechecks = Math.min(cleanPairs.length, Math.max(3, Math.ceil(cleanPairs.length * 0.1)));
+  const eligible = new Set();
   for (const [index, entry] of recheck.entries()) {
     const label = `recheck[${index}]`;
-    if (!surfaceIds.has(entry?.surface)) errors.push(`${label}: unknown surface ${entry?.surface}`);
-    if (!lenses.includes(entry?.lens)) errors.push(`${label}: unknown lens ${entry?.lens}`);
-    if (!["confirmed", "new-findings"].includes(entry?.result)) errors.push(`${label}: result must be confirmed or new-findings`);
+    const pair = `${entry?.surface}|${entry?.lens}`;
+    let valid = true;
+    if (!surfaceIds.has(entry?.surface)) (valid = false), errors.push(`${label}: unknown surface ${entry?.surface}`);
+    if (!lenses.includes(entry?.lens)) (valid = false), errors.push(`${label}: unknown lens ${entry?.lens}`);
+    if (!["confirmed", "new-findings"].includes(entry?.result)) (valid = false), errors.push(`${label}: result must be confirmed or new-findings`);
     if (entry?.result === "new-findings" && !(entry.findings?.length > 0)) {
+      valid = false;
       errors.push(`${label}: new-findings must list the findings`);
     }
     for (const id of entry?.findings ?? []) {
-      if (!findingIds.has(id)) errors.push(`${label}: unknown finding ${id}`);
+      if (!findingIds.has(id)) (valid = false), errors.push(`${label}: unknown finding ${id}`);
     }
+    if (!valid) continue;
+    const status = surfaces.find((surface) => surface.id === entry.surface)?.lenses?.[entry.lens]?.status;
+    // Version 2 rejects ineligible pairs; version 1 audits predate the rule, so they only warn
+    // and keep counting the entry, as the version 1 validator did.
+    let problem = "";
+    if (status !== "checked") {
+      problem = `${entry.surface} ${entry.lens} is ${status ?? "missing"}; only checked surface lenses can be re-checked`;
+    } else if (entry.result === "confirmed" && coveredPairs.has(pair)) {
+      problem = `${entry.surface} ${entry.lens} has findings; re-check a surface lens that had none`;
+    } else if (entry.result === "new-findings") {
+      const offTarget = entry.findings.filter((id) => {
+        const finding = findingIds.get(id);
+        return finding.lens !== entry.lens || !(finding.surfaces ?? []).includes(entry.surface);
+      });
+      if (offTarget.length) problem = `${offTarget.join(", ")} must list ${entry.surface} and lens ${entry.lens}`;
+    }
+    if (problem) enforce(`${label}: ${problem}`);
+    if (!problem || !v2) eligible.add(pair);
   }
-  const distinctRechecks = new Set(recheck.map((entry) => `${entry?.surface}|${entry?.lens}`)).size;
+  const requiredRechecks = Math.min(cleanPairs.length, Math.max(3, Math.ceil(cleanPairs.length * 0.1)));
+  const distinctRechecks = eligible.size;
   if (!allowPending && distinctRechecks < requiredRechecks) {
     errors.push(
       `audit.json: recheck covers ${distinctRechecks} surface lenses; at least ${requiredRechecks} of the ` +
@@ -386,6 +513,7 @@ export function validateAudit(auditDir, { allowPending = false } = {}) {
   }
 
   const stats = {
+    version: audit.version,
     surfaces: surfaces.length,
     tasks: tasks.length,
     lensChecks: surfaces.length * lenses.length,
@@ -401,16 +529,82 @@ export function validateAudit(auditDir, { allowPending = false } = {}) {
   return { errors, warnings, stats };
 }
 
+/** The image the report shows as "Now": the first annotation, else the first screenshot. */
+export function currentImageOf(finding) {
+  const annotations = finding.evidence?.annotations ?? [];
+  if (annotations.length) return annotations[0];
+  const images = (finding.evidence?.files ?? []).filter((file) => IMAGE_FILE.test(file));
+  return images.find((file) => !/-full\.[a-z]+$/i.test(file)) ?? images[0];
+}
+
+/** Pixel size of a PNG or the viewBox of an SVG; undefined for other files. */
+export function imageSize(file) {
+  try {
+    if (/\.png$/i.test(file)) {
+      const header = Buffer.alloc(24);
+      const handle = fs.openSync(file, "r");
+      fs.readSync(handle, header, 0, 24, 0);
+      fs.closeSync(handle);
+      return { width: header.readUInt32BE(16), height: header.readUInt32BE(20) };
+    }
+    if (/\.svg$/i.test(file)) {
+      const head = fs.readFileSync(file, "utf8").slice(0, 2000);
+      const box = head.match(/viewBox="\s*[-\d.]+[\s,]+[-\d.]+[\s,]+([\d.]+)[\s,]+([\d.]+)\s*"/);
+      if (box) return { width: Number(box[1]), height: Number(box[2]) };
+    }
+  } catch {
+    // An unreadable image is reported by the file checks; size checks just skip it.
+  }
+  return undefined;
+}
+
+export function validateDepth(depth, { errors, surfaceIds, taskIds, findingIds }) {
+  if (!depth || typeof depth !== "object") {
+    errors.push(`audit.json: depth is required; record the depth benchmark (${DEPTH_CHECKS.join(", ")})`);
+    return;
+  }
+  if (!isText(depth.selection)) errors.push("depth: selection must say which tasks and surfaces got the depth pass and why");
+  if (!isText(depth.complete)) errors.push("depth: complete must say why the depth pass is finished");
+  const checks = Array.isArray(depth.checks) ? depth.checks : [];
+  for (const id of DEPTH_CHECKS) {
+    const entries = checks.filter((check) => check?.check === id);
+    if (entries.length !== 1) {
+      errors.push(`depth: needs exactly one ${id} check`);
+      continue;
+    }
+    const [check] = entries;
+    const label = `depth ${id}`;
+    if (!DEPTH_STATUSES.includes(check.status)) errors.push(`${label}: status must be one of ${DEPTH_STATUSES.join(", ")}`);
+    if (!isText(check.note)) errors.push(`${label}: note must say what was exercised, or why it could not be`);
+    if (check.status === "done" && !(check.surfaces?.length > 0)) errors.push(`${label}: done needs the surfaces it covered`);
+    for (const surfaceId of check.surfaces ?? []) if (!surfaceIds.has(surfaceId)) errors.push(`${label}: unknown surface ${surfaceId}`);
+    for (const taskId of check.tasks ?? []) if (!taskIds.has(taskId)) errors.push(`${label}: unknown task ${taskId}`);
+    for (const findingId of check.findings ?? []) if (!findingIds.has(findingId)) errors.push(`${label}: unknown finding ${findingId}`);
+    if (id === "constrained-states" && check.status === "done") {
+      for (const state of CONSTRAINED_STATES) {
+        if (!DEPTH_STATUSES.includes(check.states?.[state])) {
+          errors.push(`${label}: states.${state} must be one of ${DEPTH_STATUSES.join(", ")}`);
+        }
+      }
+    }
+  }
+  for (const check of checks) {
+    if (!DEPTH_CHECKS.includes(check?.check)) errors.push(`depth: unknown check ${check?.check}`);
+  }
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const args = process.argv.slice(2);
   const allowPending = args.includes("--allow-pending");
-  const positional = args.filter((argument) => !argument.startsWith("--"));
-  const unknown = args.filter((argument) => argument.startsWith("--") && argument !== "--allow-pending");
-  if (positional.length !== 1 || unknown.length > 0) {
-    console.error("Usage: validate-audit.mjs <audit-dir> [--allow-pending]");
+  const stageIndex = args.indexOf("--stage");
+  const stage = stageIndex >= 0 ? args[stageIndex + 1] : allowPending ? "plan" : "final";
+  const positional = args.filter((argument, index) => !argument.startsWith("--") && !(stageIndex >= 0 && index === stageIndex + 1));
+  const unknown = args.filter((argument) => argument.startsWith("--") && !["--allow-pending", "--stage"].includes(argument));
+  if (positional.length !== 1 || unknown.length > 0 || !STAGES.includes(stage)) {
+    console.error("Usage: validate-audit.mjs <audit-dir> [--allow-pending | --stage plan|review|final]");
     process.exit(2);
   }
-  const { errors, warnings, stats } = validateAudit(path.resolve(positional[0]), { allowPending });
+  const { errors, warnings, stats } = validateAudit(path.resolve(positional[0]), { stage });
   for (const warning of warnings) console.log(`warning: ${warning}`);
   for (const error of errors) console.log(`error: ${error}`);
   console.log(

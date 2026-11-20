@@ -6,7 +6,12 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import {
   blendColors,
+  classifyContrast,
+  classifyFocus,
   contrastRatio,
+  gradientSamples,
+  labelNotInName,
+  truncationKind,
   isLargeText,
   parseCliOptions,
   parseColor,
@@ -73,4 +78,51 @@ test("extracts gradient stop colors from computed background images", async () =
   );
   assert.deepEqual(extractColors("radial-gradient(circle, #fff 0, transparent 70%)"), ["#fff", "transparent"]);
   assert.deepEqual(extractColors('url("a.png")'), []);
+});
+
+test("classifies gradient contrast as a range", () => {
+  assert.equal(classifyContrast([2.1, 3.9], 4.5), "fail");
+  assert.equal(classifyContrast([2.1, 7.2], 4.5), "partial");
+  assert.equal(classifyContrast([4.6, 9], 4.5), "pass");
+  assert.equal(classifyContrast([3.2], 3), "pass");
+});
+
+test("ignores visually hidden text but reports real truncation", () => {
+  const base = { width: 120, height: 20, scrollWidth: 300, clientWidth: 120, scrollHeight: 20, clientHeight: 20, textOverflow: "ellipsis", overflowX: "hidden", lineClamp: "none" };
+  assert.equal(truncationKind(base), "horizontal");
+  assert.equal(truncationKind({ ...base, width: 1, height: 1 }), null, "sr-only 1 px box");
+  assert.equal(truncationKind({ ...base, clippedAway: true }), null, "clip: rect(0 0 0 0)");
+  assert.equal(truncationKind({ ...base, scrollWidth: 120 }), null, "fits");
+  assert.equal(truncationKind({ ...base, textOverflow: "clip", overflowX: "visible" }), null, "overflow is visible");
+  assert.equal(truncationKind({ ...base, scrollWidth: 120, lineClamp: "2", scrollHeight: 60 }), "line-clamp");
+});
+
+test("label-in-name ignores empty visible text and accepts names that contain the label", () => {
+  assert.equal(labelNotInName("Send now", "Go"), true);
+  assert.equal(labelNotInName("Close dialog", "close"), false);
+  assert.equal(labelNotInName("Close dialog", "  "), false, "only aria-hidden decoration was visible");
+  assert.equal(labelNotInName("Search the shop", "Search"), false);
+});
+
+test("focus heuristic separates missing indicators from :focus-visible styles", () => {
+  assert.equal(classifyFocus({ changed: true, matchesFocusVisible: false, focusVisibleRules: true }), "visible");
+  assert.equal(classifyFocus({ changed: false, matchesFocusVisible: false, focusVisibleRules: true }), "unconfirmed");
+  assert.equal(classifyFocus({ changed: false, matchesFocusVisible: false, focusVisibleRules: "unknown" }), "unconfirmed");
+  assert.equal(classifyFocus({ changed: false, matchesFocusVisible: false, focusVisibleRules: false }), "none");
+  assert.equal(classifyFocus({ changed: false, matchesFocusVisible: true, focusVisibleRules: true }), "none");
+});
+
+test("samples gradient interiors so mid-gradient matches are found", () => {
+  const white = { r: 255, g: 255, b: 255, a: 1 };
+  const black = { r: 0, g: 0, b: 0, a: 1 };
+  const samples = gradientSamples([white, black], 4);
+  assert.equal(samples.length, 5);
+  assert.deepEqual(samples[2], { r: 127.5, g: 127.5, b: 127.5, a: 1 });
+  const text = parseColor("#767676");
+  const endpoints = [white, black].map((backdrop) => contrastRatio(text, backdrop));
+  assert.equal(classifyContrast(endpoints, 4.5), "pass", "the stops alone hide the problem");
+  const interior = gradientSamples([white, black]).map((backdrop) => contrastRatio(text, backdrop));
+  assert.ok(Math.min(...interior) < 1.5);
+  assert.equal(classifyContrast(interior, 4.5), "partial");
+  assert.deepEqual(gradientSamples([white]), [white]);
 });

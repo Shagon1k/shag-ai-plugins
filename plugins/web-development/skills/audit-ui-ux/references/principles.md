@@ -13,8 +13,11 @@ signs are prompts, not a checklist to recite. Report only instances you observed
 A rule tells you when something is wrong. It does not tell you what would be distinctive or
 delightful; record those ideas as `suggestion` findings, never as defects.
 
-Sources: NN/g = Nielsen's 10 usability heuristics; GOV.UK = GOV.UK Design System and Service
-Manual; Laws of UX = lawsofux.com summaries of established research; WCAG = WCAG 2.2.
+Every rule names its sources. NN/g <n> = Nielsen's 10 usability heuristics, by number; NN/g
+otherwise = Nielsen Norman Group research articles; GOV.UK = GOV.UK Design System, Service
+Manual, and style guide; Laws of UX = lawsofux.com summaries of established research; WCAG =
+WCAG 2.2; Apple HIG and Material Design = the platform guidelines; Norman = *The Design of
+Everyday Things*. Cite a rule only for what its sources support.
 
 ## Flow and interaction (FL)
 
@@ -98,7 +101,8 @@ return to a list. *NN/g 3, 6.*
 
 **FL-17 The interface is stable.** Content does not move under the user. Look for: layout
 shift as images, ads, or fonts load; buttons that move as the user aims; spinners for
-instant actions; optimistic updates that silently roll back. *Core Web Vitals CLS.*
+instant actions; optimistic updates that silently roll back. *Google Core Web Vitals (CLS);
+NN/g 3.*
 
 **FL-18 Interruptions are justified.** Look for: modals for non-blocking information;
 stacked dialogs; cookie, chat, and promo overlays covering the task; toasts carrying the
@@ -109,61 +113,68 @@ only copy of critical information or disappearing too fast to read. *NN/g 8; WCA
 **VI-01 Hierarchy matches importance.** The most important element on each screen gets the
 most attention, and scan order follows task order. Look for: competing focal points;
 secondary metadata louder than primary content; the primary action visually equal to the
-secondary one. *Gestalt focal point; NN/g 8.*
+secondary one. *NN/g visual hierarchy research; NN/g 8.*
 
 **VI-02 Spacing encodes grouping.** Related items sit closer together than unrelated ones,
 and spacing follows a consistent scale. Look for: labels nearer to the wrong field; equal
-gaps everywhere so nothing groups; arbitrary one-off spacing values. *Gestalt proximity,
-common region.*
+gaps everywhere so nothing groups; arbitrary one-off spacing values. *Laws of UX: Law of
+Proximity, Law of Common Region.*
 
 **VI-03 Elements align.** Shared edges and a grid make structure readable. Look for: near-miss
 alignments of a few pixels; mixed centered and left-aligned text in one block; columns that
-drift between sections.
+drift between sections. *Material Design layout grids; Apple HIG: Layout.*
 
 **VI-04 Typography is readable and structured.** Look for: body text below 16 px on the web
 without a strong reason; lines longer than about 80 characters; tight line-height on body
 text; more than a few type sizes without a clear scale; long passages in all caps; weight
-used inconsistently for hierarchy. *Bringhurst, The Elements of Typographic Style.*
+used inconsistently for hierarchy. *Bringhurst, The Elements of Typographic Style; WCAG
+1.4.12 for spacing that must survive overrides.*
 
 **VI-05 Color has consistent meaning.** Look for: the accent color used for both actions and
 decoration; danger or success colors used decoratively; too many accent colors to learn;
-state communicated by color alone (see WCAG 1.4.1).
+state communicated by color alone. *WCAG 1.4.1; Material Design color roles; NN/g 4.*
 
 **VI-06 Structure without noise.** Borders, dividers, shadows, and backgrounds encode real
 structure. Look for: a card with border, shadow, and tinted background at once; dividers
-between already separated groups; decoration that competes with content. *frontend-design:
-visual structure is information.*
+between already separated groups; decoration that competes with content. *NN/g 8; Laws of
+UX: Law of Common Region.*
 
 **VI-07 One visual system.** Radii, icon style and size, button styles, elevation, and
 spacing come from one coherent set. Look for: three button styles for one role; mixed
 outline and filled icon sets; one-off radii; deviations from the project's design tokens.
+*NN/g 4; the project's own design system.*
 
 **VI-08 Controls look like what they are.** Look for: buttons indistinguishable from labels;
 disabled states that look enabled or are unreadable; selected and unselected states that
-differ only subtly; links without any distinguishing style in body text.
+differ only subtly; links without any distinguishing style in body text. *Norman,
+signifiers; NN/g 4; WCAG 1.4.11 for control boundaries.*
 
 **VI-09 Density fits the task.** Operational tools can be dense; first-use and marketing
 surfaces need room. Look for: data tools that waste space and force scrolling; onboarding
-screens packed with controls.
+screens packed with controls. *NN/g 8; Material Design density guidance.*
 
 **VI-10 Layout adapts, not just shrinks.** Look for: overlap or clipping; horizontal scroll;
 desktop tables squeezed onto mobile; content order on mobile that buries the primary task;
-hover-only affordances on touch.
+hover-only affordances on touch. *WCAG 1.4.10; Apple HIG and Material Design layout
+guidance.*
 
 **VI-11 Truncation keeps meaning.** Look for: names, paths, or IDs truncated at the end when
 the distinguishing part is at the end; no way to see the full value; truncation that hides
-the only differing part of similar items.
+the only differing part of similar items. *NN/g 6; WCAG 1.4.4 when text is lost at zoom.*
 
 **VI-12 Icons and images earn their place.** Look for: unlabeled icons whose meaning is not
 conventional; images that push the task below the fold without adding information;
-distorted aspect ratios; mixed illustration styles.
+distorted aspect ratios; mixed illustration styles. *NN/g icon usability research; WCAG
+1.1.1.*
 
 **VI-13 Motion explains change.** Look for: animation that delays the task; entrance effects
 on every section; transitions longer than about 300 ms for routine UI; motion that ignores
-`prefers-reduced-motion`. *frontend-design; WCAG 2.3.3 (AAA) as best practice.*
+`prefers-reduced-motion`. *NN/g animation research; Apple HIG: Motion; WCAG 2.3.3 (AAA)
+as best practice.*
 
 **VI-14 Themes have parity.** Look for: dark theme with lost borders, unreadable states, or
-images and logos with light-only backgrounds.
+images and logos with light-only backgrounds. *Apple HIG: Dark Mode; Material Design: dark
+theme; WCAG 1.4.3 and 1.4.11 in every theme.*
 
 ## Content (CO)
 
@@ -173,32 +184,38 @@ their own word; system states exposed raw ("null", error codes, enum values). *N
 **CO-02 Action labels say what happens.** Use a verb and object, and keep the same name
 through the flow: a "Publish" button leads to a "Published" confirmation. Look for: "Submit",
 "OK", or "Continue" where the outcome is specific; a button and its confirmation that use
-different words. *frontend-design; GOV.UK buttons.*
+different words. *GOV.UK buttons; NN/g 4.*
 
 **CO-03 Error messages help.** Say what happened and how to fix it, in plain words, near the
 cause. Look for: blame ("You entered an invalid…"); vague text ("Invalid input"); apologies
 in place of information; codes without explanation. *GOV.UK error messages.*
 
 **CO-04 Empty states direct.** Explain why it is empty and offer the next action. Look for:
-"No data"; empty states that look like loading or errors.
+"No data"; empty states that look like loading or errors. *NN/g empty-state guidelines;
+NN/g 1.*
 
 **CO-05 Text is scannable.** Front-load key words in headings, links, and buttons; keep one
 idea per sentence. Look for: headings that start with filler; walls of text where a list
 fits; important conditions buried mid-paragraph. *NN/g F-pattern research.*
 
 **CO-06 One term per concept.** Look for: the same thing called "project", "workspace", and
-"space" on different screens; one word meaning two things.
+"space" on different screens; one word meaning two things. *NN/g 4.*
 
 **CO-07 Tone and case are consistent.** Look for: mixed sentence and title case; jokes in
 error or payment states; tone that does not fit the audience or the product summary.
+*GOV.UK style guide; NN/g tone-of-voice research.*
 
 **CO-08 Formats fit the locale.** Look for: ambiguous dates such as 03/04; numbers without
 units or with inconsistent separators; relative times with no way to see the absolute time;
-currency without a symbol or code.
+currency without a symbol or code. *GOV.UK style guide (dates, numbers, money); W3C
+Internationalization.*
 
 **CO-09 Instructions come before the action.** Look for: format requirements revealed only
 by an error; help hidden in tooltips for required information; placeholder text as the
 only instruction. *GOV.UK hint text; WCAG 3.3.2.*
 
-**CO-10 Links make sense out of context.** Look for: "click here", "read more", or several
-identical link texts pointing to different places. *WCAG 2.4.4.*
+**CO-10 Links say where they go.** Look for: "click here", "read more", or several identical
+link texts pointing to different places. Cite WCAG 2.4.4 only when the purpose cannot be told
+from the link text together with its programmatic context (sentence, list item, table cell,
+or heading); a link that is clear only in context fails 2.4.9 (AAA), so file it under CO-10
+alone. *WCAG 2.4.4, 2.4.9 (AAA); NN/g link-text research.*

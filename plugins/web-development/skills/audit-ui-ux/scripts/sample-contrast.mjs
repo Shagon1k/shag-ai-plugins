@@ -13,7 +13,7 @@
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { contrastRatio, formatColor, relativeLuminance } from "./page-probes.mjs";
-import { cropImage, decodePng } from "./png.mjs";
+import { cropImage, decodePng, isPng } from "./png.mjs";
 
 function mean(pixels) {
   const total = pixels.reduce((sum, pixel) => ({ r: sum.r + pixel.r, g: sum.g + pixel.g, b: sum.b + pixel.b }), { r: 0, g: 0, b: 0 });
@@ -128,7 +128,14 @@ export function parseArguments(args) {
 }
 
 export function sampleFile({ image, rects, scale }) {
-  const decoded = decodePng(fs.readFileSync(image));
+  const buffer = fs.readFileSync(image);
+  if (!isPng(buffer)) {
+    throw new Error(
+      `${image} is not a PNG. Convert it first (open it in a browser tool and save a 1x PNG screenshot, or ` +
+        "run capture.mjs on a page that shows it); if no conversion is possible, mark contrast unverifiable.",
+    );
+  }
+  const decoded = decodePng(buffer);
   return rects.map((rect) => {
     const pixelRect = { x: rect.x * scale, y: rect.y * scale, w: rect.w * scale, h: rect.h * scale };
     return { rect, ...estimateContrast(cropImage(decoded, pixelRect)) };

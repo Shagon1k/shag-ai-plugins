@@ -94,6 +94,70 @@ export function formatColor(color) {
     : `rgba(${round(color.r)}, ${round(color.g)}, ${round(color.b)}, ${Math.round(color.a * 100) / 100})`;
 }
 
+/**
+ * Colors along a gradient: every stop plus `steps - 1` evenly spaced colors between neighbours,
+ * interpolated in sRGB as browsers do for legacy color syntax. Text can match the backdrop in
+ * the middle of a gradient even when it contrasts with both ends.
+ */
+export function gradientSamples(stops, steps = 8) {
+  if (stops.length < 2) return stops;
+  const samples = [stops[0]];
+  for (let index = 1; index < stops.length; index += 1) {
+    const from = stops[index - 1];
+    const to = stops[index];
+    for (let step = 1; step <= steps; step += 1) {
+      const t = step / steps;
+      samples.push({ r: from.r + (to.r - from.r) * t, g: from.g + (to.g - from.g) * t, b: from.b + (to.b - from.b) * t, a: from.a + (to.a - from.a) * t });
+    }
+  }
+  return samples;
+}
+
+/**
+ * Contrast verdict for text over one or more possible backdrops (gradients give several):
+ * "fail" when even the best backdrop is below the requirement, "partial" when only part of the
+ * backdrop fails, "pass" otherwise.
+ */
+export function classifyContrast(ratios, required) {
+  const worst = Math.min(...ratios);
+  const best = Math.max(...ratios);
+  if (best < required) return "fail";
+  if (worst < required) return "partial";
+  return "pass";
+}
+
+/**
+ * Truncation verdict from an element's layout metrics. Visually hidden text (sr-only patterns
+ * render at 1 px or are clipped to nothing) is never truncation.
+ */
+export function truncationKind(metrics) {
+  if (metrics.width <= 2 || metrics.height <= 2 || metrics.clippedAway) return null;
+  const clipsX =
+    metrics.scrollWidth > metrics.clientWidth + 1 &&
+    (metrics.textOverflow === "ellipsis" || ["hidden", "clip"].includes(metrics.overflowX));
+  if (clipsX) return "horizontal";
+  const clamp = metrics.lineClamp && metrics.lineClamp !== "none";
+  if (clamp && metrics.scrollHeight > metrics.clientHeight + 1) return "line-clamp";
+  return null;
+}
+
+/** WCAG 2.5.3: an ARIA name must contain the visible label; aria-hidden decoration is not label. */
+export function labelNotInName(name, visibleText) {
+  const visible = String(visibleText ?? "").replace(/\s+/g, " ").trim().toLowerCase();
+  return Boolean(visible) && !String(name ?? "").toLowerCase().includes(visible);
+}
+
+/**
+ * Focus-indicator verdict after programmatic focus. Sites that style only :focus-visible show
+ * nothing when the browser decides programmatic focus is not "visible", so an unchanged style
+ * is only a lead ("unconfirmed") unless :focus-visible matched or the page has no such rules.
+ */
+export function classifyFocus({ changed, matchesFocusVisible, focusVisibleRules }) {
+  if (changed) return "visible";
+  if (matchesFocusVisible || focusVisibleRules === false) return "none";
+  return "unconfirmed";
+}
+
 /** Runs inside the audited page. Every helper it calls is serialized beside it. */
 export function runProbes(options = {}) {
   const limit = options.limit ?? 40;
@@ -218,7 +282,7 @@ export function runProbes(options = {}) {
         if (stops.length === 0 || stops.some((stop) => !stop)) {
           return { colors: null, reason: `unparsed gradient on ${selectorFor(current)}` };
         }
-        layers.push({ stops });
+        layers.push({ stops: gradientSamples(stops) });
       }
       const color = toRgb(style.backgroundColor);
       if (!color) return { colors: null, reason: `unparsed-color ${style.backgroundColor}` };
@@ -231,7 +295,7 @@ export function runProbes(options = {}) {
       const next = [];
       for (const base of candidates) for (const stop of layer.stops) next.push(blendColors(stop, base));
       const unique = new Map(next.map((color) => [formatColor(color), color]));
-      candidates = [...unique.values()].slice(0, 24);
+      candidates = [...unique.values()].slice(0, 96);
     }
     return { colors: candidates, reason: "", gradient: layers.some((layer) => layer.stops.length > 1) };
   };
@@ -278,6 +342,7 @@ export function runProbes(options = {}) {
     pairs.sort((left, right) => left.ratio - right.ratio);
     const worst = pairs[0];
     const best = pairs[pairs.length - 1];
+    const verdict = classifyContrast(pairs.map((pair) => pair.ratio), required);
     const detail = {
       ...base,
       ratio: worst.ratio,
@@ -285,8 +350,8 @@ export function runProbes(options = {}) {
       background: formatColor(worst.background),
       ...(backgrounds.gradient ? { gradient: true, bestRatio: best.ratio } : {}),
     };
-    if (best.ratio < required) push(contrast.failures, detail);
-    else if (worst.ratio < required) {
+    if (verdict === "fail") push(contrast.failures, detail);
+    else if (verdict === "partial") {
       push(contrast.unknown, { ...detail, reason: "gradient: fails on part of the backdrop; check where the text sits" });
     }
   }
@@ -323,7 +388,7 @@ export function runProbes(options = {}) {
       const copy = element.cloneNode(true);
       copy.querySelectorAll("[aria-hidden=true]").forEach((node) => node.remove());
       const visible = clip(copy.textContent ?? "", 80).toLowerCase();
-      if (visible && !name.toLowerCase().includes(visible)) {
+      if (labelNotInName(name, visible)) {
         push(names.labelNotInName, { ...item, name, visible });
       }
     }
@@ -425,20 +490,27 @@ export function runProbes(options = {}) {
       }
     }
     const text = element.textContent ?? "";
-    // Skip visually hidden text (sr-only patterns render at 1 px) and containers.
-    if (!text.trim() || element.children.length > 3 || rect.width <= 2 || rect.height <= 2) continue;
-    const clipsX =
-      element.scrollWidth > element.clientWidth + 1 &&
-      (style.textOverflow === "ellipsis" || ["hidden", "clip"].includes(style.overflowX));
-    const clamp = style.webkitLineClamp && style.webkitLineClamp !== "none";
-    const clipsY = clamp && element.scrollHeight > element.clientHeight + 1;
-    if (clipsX || clipsY) {
+    // Skip containers; truncationKind skips visually hidden (sr-only) text.
+    if (!text.trim() || element.children.length > 3) continue;
+    const kind = truncationKind({
+      width: rect.width,
+      height: rect.height,
+      clippedAway: /rect\(0(?:px)?,? 0(?:px)?,? 0(?:px)?,? 0(?:px)?\)/.test(style.clip) || /inset\(50%\)/.test(style.clipPath),
+      scrollWidth: element.scrollWidth,
+      clientWidth: element.clientWidth,
+      scrollHeight: element.scrollHeight,
+      clientHeight: element.clientHeight,
+      textOverflow: style.textOverflow,
+      overflowX: style.overflowX,
+      lineClamp: style.webkitLineClamp,
+    });
+    if (kind) {
       push(truncation, {
         selector: selectorFor(element),
         rect: rectOf(element),
         fullText: clip(text, 160),
         title: element.getAttribute("title") ?? "",
-        kind: clipsY ? "line-clamp" : "horizontal",
+        kind,
       });
     }
   }
@@ -458,7 +530,44 @@ export function runProbes(options = {}) {
   // Optional focus-indicator heuristic. Focusing can trigger page handlers, so it is opt-in.
   let focus;
   if (options.focus) {
-    focus = { checked: 0, noVisibleChange: capped(), note: "Heuristic: compares styles before and after programmatic focus." };
+    // Which elements do :focus-visible rules target? Unreadable (cross-origin) sheets leave
+    // every element "unknown" rather than claiming it has no focus style.
+    const focusVisibleSelectors = [];
+    let unreadableSheets = false;
+    const collect = (rules) => {
+      for (const rule of rules) {
+        if (rule.cssRules) collect(rule.cssRules);
+        if (!rule.selectorText?.includes(":focus-visible")) continue;
+        for (const part of rule.selectorText.split(",")) {
+          if (!part.includes(":focus-visible") || part.includes(":not(:focus-visible")) continue;
+          focusVisibleSelectors.push(part.replace(/:focus-visible/g, "").trim() || "*");
+        }
+      }
+    };
+    for (const sheet of doc.styleSheets) {
+      try {
+        collect(sheet.cssRules);
+      } catch {
+        unreadableSheets = true;
+      }
+    }
+    const focusVisibleRulesFor = (element) => {
+      const targeted = focusVisibleSelectors.some((selector) => {
+        try {
+          return element.matches(selector) || element.matches(`${selector} *`);
+        } catch {
+          return false;
+        }
+      });
+      return targeted ? true : unreadableSheets ? "unknown" : false;
+    };
+    focus = {
+      checked: 0,
+      focusVisibleRules: focusVisibleSelectors.length > 0 || (unreadableSheets ? "unknown" : false),
+      noVisibleChange: capped(),
+      unconfirmed: capped(),
+      note: "Heuristic: compares styles before and after programmatic focus. Confirm noVisibleChange and unconfirmed items with a real Tab walk (capture.mjs focusWalk).",
+    };
     const snapshot = (element) => {
       const style = view.getComputedStyle(element);
       return [
@@ -475,11 +584,20 @@ export function runProbes(options = {}) {
     const previousFocus = doc.activeElement;
     for (const element of tabbable.slice(0, limit * 2)) {
       const before = snapshot(element);
-      element.focus({ preventScroll: true });
+      element.focus({ preventScroll: true, focusVisible: true });
       const after = snapshot(element);
+      let matchesFocusVisible = false;
+      try {
+        matchesFocusVisible = element.matches(":focus-visible");
+      } catch {
+        matchesFocusVisible = false;
+      }
       element.blur();
       focus.checked += 1;
-      if (before === after) push(focus.noVisibleChange, { selector: selectorFor(element), rect: rectOf(element), name: accessibleName(element).name });
+      const verdict = classifyFocus({ changed: before !== after, matchesFocusVisible, focusVisibleRules: focusVisibleRulesFor(element) });
+      const item = { selector: selectorFor(element), rect: rectOf(element), name: accessibleName(element).name };
+      if (verdict === "none") push(focus.noVisibleChange, item);
+      else if (verdict === "unconfirmed") push(focus.unconfirmed, item);
     }
     if (previousFocus && previousFocus.focus) previousFocus.focus({ preventScroll: true });
   }
@@ -555,6 +673,11 @@ const HELPERS = [
   requiredContrast,
   extractColors,
   formatColor,
+  gradientSamples,
+  classifyContrast,
+  truncationKind,
+  labelNotInName,
+  classifyFocus,
   runProbes,
 ];
 

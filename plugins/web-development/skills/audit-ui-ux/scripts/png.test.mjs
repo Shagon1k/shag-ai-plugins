@@ -2,7 +2,7 @@
 
 import assert from "node:assert/strict";
 import test from "node:test";
-import { cropImage, decodePng, encodePng, isPng } from "./png.mjs";
+import { cropImage, decodePng, encodePng, isPng, quantizeImage, scaleImage } from "./png.mjs";
 
 function gradient(width, height, alpha = 255) {
   const data = new Uint8Array(width * height * 4);
@@ -35,4 +35,19 @@ test("crops to a clamped rectangle", () => {
 
 test("rejects non-PNG input", () => {
   assert.throws(() => decodePng(Buffer.from("nope")), /Not a PNG/);
+});
+
+test("scales down by area averaging and never scales up", () => {
+  const image = { width: 4, height: 2, data: new Uint8Array([0, 0, 0, 255, 100, 100, 100, 255, 200, 200, 200, 255, 50, 50, 50, 255, 0, 0, 0, 255, 100, 100, 100, 255, 200, 200, 200, 255, 50, 50, 50, 255]) };
+  const half = scaleImage(image, 0.5);
+  assert.deepEqual([half.width, half.height], [2, 1]);
+  assert.deepEqual([...half.data], [50, 50, 50, 255, 125, 125, 125, 255]);
+  assert.equal(scaleImage(image, 1), image);
+  assert.equal(scaleImage(image, 2), image);
+});
+
+test("quantizes color channels and keeps alpha", () => {
+  const image = { width: 1, height: 1, data: new Uint8Array([0, 130, 255, 77]) };
+  assert.deepEqual([...quantizeImage(image, 6).data], [2, 130, 254, 77]);
+  assert.equal(quantizeImage(image, 8), image);
 });

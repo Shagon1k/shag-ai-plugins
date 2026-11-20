@@ -6,12 +6,40 @@ audience: ai
 
 Rules set the floor; they cannot make an interface memorable. This lens asks whether the
 interface has an intentional direction that fits the product, and proposes how to make it
-more its own. It draws on the direction-and-restraint thinking of Anthropic's
-`frontend-design` skill.
+more its own.
 
-Everything this lens produces is a `suggestion` or a `signature` idea: an opinion, labelled as
-one. It never produces a defect. If a stylistic choice breaks a rule, such as contrast or
-legibility, file that under the rule's lens instead.
+Everything this lens produces is an opinion, labelled as one, and never a defect:
+
+- A proposed change is a `suggestion`; a product-specific idea is a `signature`.
+- A judgement that something already fits, such as a restrained direction that suits a
+  utility, goes into `product.direction`, or into `strengths` when a fix must not break it,
+  worded as an opinion wherever it appears ("in our view…").
+- A change you would propose is recorded as a suggestion before the reply mentions it; the
+  reply proposes nothing the record lacks.
+- The `verdict` reports task success and defects only; no taste judgement goes there.
+
+If a stylistic choice breaks a rule, such as contrast or legibility, file that under the
+rule's lens instead.
+
+## What this lens takes from `frontend-design`
+
+Anthropic's `frontend-design` skill guides building new interfaces with an intentional,
+non-templated aesthetic. An audit judges an existing interface instead, so each idea is turned
+from an instruction to build into a question to ask:
+
+| Borrowed from `frontend-design` | Applied in this audit |
+| --- | --- |
+| Start from purpose, audience, and tone before choosing a look | Phase 1 product understanding; section 2 checks the direction against it |
+| Commit to one clear aesthetic direction and execute it with intent | Section 1: name the direction you see; failing to name one is the first observation |
+| Typography, color, motion, spatial composition, and background detail are the levers | The dimensions written into `product.direction` and compared in section 2 |
+| Avoid generic, templated aesthetics that ignore the subject | Section 3: template defaults, flagged only where they do no work for this content |
+| Spend motion and boldness on a few high-impact moments | Section 4 expression zones, section 5 restraint, VI-13 for motion |
+| Ask what someone will remember | Section 5: name the one memorable thing; signature ideas create it from the domain |
+| Match the effort of the execution to the vision | The `cost` of signature ideas and the restraint check |
+
+Not borrowed: the push for novelty everywhere, and bans on specific fonts or palettes. An
+existing product's brand, design system, and convention zones outrank novelty, and a plain
+system font can be the right choice for a utility.
 
 ## 1. Name the direction
 
@@ -49,8 +77,7 @@ the content. Look for:
 - Meta strings joined with middle dots, and an arrow appended to every button label.
 - The three-features row with an icon, a title, and two lines each.
 
-Report a tell as one `suggestion` that names where it appears, why it reads as a default
-here, and a concrete alternative grounded in this product.
+Report a tell as one `suggestion` with a concrete alternative grounded in this product.
 
 ## 4. Separate convention zones from expression zones
 
@@ -73,13 +100,11 @@ A distinctive interface usually spends its boldness in one place and keeps the r
 
 ## 6. Write suggestions
 
-Each `suggestion` with `lens: "taste"`:
-
-- `observation`: what you see, with location, specific to this product.
-- `impact`: the expected benefit, such as clearer identity, a more memorable moment, or less
-  noise.
-- `recommendation`: the concrete change — the element, the treatment, the token or value —
-  and why it fits this product.
+Record each as a `suggestion` with `lens: "taste"` ([audit-record.md](audit-record.md)): the
+`observation` names where it appears and why it reads as it does here, the `impact` states the
+expected benefit (clearer identity, a more memorable moment, less noise), and the
+`recommendation` names the element, the treatment, and the token or value, and why it fits
+this product. Sketch it as [report.md](report.md) describes.
 
 Keep the strongest three to seven. Do not pad the list with variations of one idea.
 

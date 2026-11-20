@@ -5,16 +5,18 @@ audience: ai
 # Evidence modes
 
 The mode decides what you can verify and how precise annotations are. Record the mode in
-`audit.json` and the basis of every finding.
+`audit.json` (per surface when inputs differ) and the basis of every finding. This file is the
+only definition of mode limits; the tools named here are documented in
+[capture.md](capture.md).
 
 ## Choose
 
 | Mode | Use when | Annotation rects | Finding basis |
 | --- | --- | --- | --- |
 | `live` | A running app, preview, or URL that a browser tool can open | Exact: DOM rects | `measured`, `observed` |
-| `design` | A design file reachable through a design-tool integration or a detailed export | Exact: node bounds | `design-node` |
-| `screenshot` | Only image files | Estimated, marked approximate | `visual-estimate` |
-| `source` | Front-end code without a way to render it | None, or estimated from a render you could not verify | `source` |
+| `design` | A design file reachable through a design-tool integration, or exported frames with their node tree | Exact: node bounds | `design-node` |
+| `screenshot` | Only image files, or design frames exported without a node tree | Estimated, marked approximate | `visual-estimate` |
+| `source` | Front-end code without a way to render it | None | `source` |
 
 Prefer the most precise mode available. If the user gives screenshots but the app is
 reachable and they agree, audit it live and use the screenshots as references. Combine modes
@@ -41,54 +43,100 @@ lens or check `unverifiable` with the reason.
 | Interface copy | yes | yes | yes | yes |
 | Motion and timing | yes | partial: prototype motion | no | partial: from code |
 
-## Mode notes
+Write each `partial` limit, and any `no` that matters for a surface, into the lens note of
+the surfaces it affects. The report and summary list each mode's `no` rows from this table and
+the unverifiable lenses under "Limits of this audit".
 
-### Live
+## Live
 
-- Set the viewport explicitly for each surface. Record device pixel ratio; screenshots are
-  usually captured at DPR × CSS pixels, and annotation rects must be scaled to match.
-- Probe rects are document coordinates in CSS pixels. Use them directly with full-page
-  screenshots; subtract the scroll offset for viewport screenshots.
-- Prefer a fresh session per persona so earlier state does not hide first-time problems.
+1. Open the surface in the environment's browser tool, or plan it for `capture.mjs`. Set the
+   viewport explicitly and record the device pixel ratio.
+2. Reach the state honestly: through the UI, test data, or documented dev tooling. Record how
+   you reached it when it is not obvious.
+3. Save a viewport screenshot as `evidence/<surface>.png`; add a full-page capture only for
+   overview. Viewport screenshots carry above-the-fold judgments.
+4. Run the page probes on the same state and save `evidence/<surface>.probes.json`. Probe
+   first-visit state and again after dismissing consent banners.
+5. Run axe-core when it can be injected; save `evidence/<surface>.axe.json`.
+6. On the pages of primary tasks, record a focus walk right after a fresh load.
+7. Prefer a fresh session per persona so earlier state does not hide first-time problems.
 
-### Design
+Probe rects are document coordinates in CSS pixels: use them directly with full-page
+screenshots and subtract the scroll offset for viewport screenshots.
 
-1. Read the file through the environment's design-tool integration when one is available;
-   otherwise ask for exports of the frames in scope at a known scale.
-2. For each frame in scope, collect a rendered image (the screenshot), its node tree with
-   bounds, fills, and text styles, and the file's variables or styles.
-3. Annotation rects are node bounds relative to the frame. Set `scale` to the export scale and
-   `offset` to the frame's origin when bounds are absolute on the canvas. Use the node ID as
-   `location.node`.
-4. Contrast comes from the fills of a text node and the nearest opaque fill behind it.
-   Compute it with the same ratio as the probes; translucent fills need blending.
-5. The variables and styles are the design system. Nodes with raw values instead of
-   variables, or near-duplicates of existing styles, are consistency leads (VI-07).
-6. Check what the design does not show: missing states (empty, loading, error, long content),
-   missing viewports, and interactions that only exist as a static frame. Record them as
-   `unverifiable` or as findings about the design's coverage, not as defects of a product
-   you have not seen.
+Fallbacks: without a browser tool, use `capture.mjs`. When no browser starts (`capture.mjs`
+exits 3), the run is an environment failure: record it in `limitations` and switch the
+affected surfaces to `source` mode when code is available, or ask the user for screenshots.
+When a content security policy blocks injected scripts, see [capture.md](capture.md).
 
-A design does not prove behavior. Interaction findings are about the design's intent and
-must say so.
+## Design
 
-### Screenshot
+1. Read the frames in scope through the environment's design-tool integration when one is
+   available; otherwise ask for exports of the frames at a known scale together with their
+   node tree (for example the design tool's API response for those frames).
+2. For each frame, save the rendered image as `evidence/<surface>.png` and the node tree as
+   `evidence/<surface>.nodes.json`, and note the export scale.
+3. Run `scripts/design-nodes.mjs` on the node tree. Confirm each lead on the image: contrast
+   failures from fills, small controls from node bounds, and fills with raw values instead
+   of variables or styles (VI-07 leads). Read the file's variables and styles as the design
+   system; near-duplicates of existing styles are consistency leads too. Judge target size on
+   the drawn bounds: put each small target's `statement` (the size against 24 × 24 px and the
+   spacing-exception verdict) into the finding's observation, and make the built hit area the
+   acceptance check instead of leaving the finding open.
+4. Annotate with the frame-relative rects the script prints, `scale` set to the export scale,
+   and the node ID as `location.node`.
+5. Check what the design does not show: missing states (empty, loading, error, long
+   content), missing viewports, and interactions that exist only as a static frame. Record
+   them as `unverifiable` or as findings about the design's coverage, not as defects of a
+   product you have not seen.
+
+A design does not prove behavior. Interaction findings are about the design's intent and must
+say so.
+
+Fallbacks: frames exported without a node tree (only images) are audited in screenshot mode;
+set those surfaces' `mode` to `screenshot`. A node tree without frame images still supports
+design mode: save the tree as the surface's evidence, give rects and node IDs in each
+finding's `location` and `measurement` instead of an annotation, and render sketches from the
+node data or record a `sketches` exception. A text node without a fill or type style gives an
+`unknown` contrast lead, because its 3:1 or 4.5:1 threshold is unknown; estimate it with
+`sample-contrast.mjs` on a frame image if one exists, else report it as a gap in the design.
+
+## Screenshot
 
 1. Ask once, in one grouped question, for the context that changes the audit: the viewport
    and device pixel ratio, the task each screen belongs to, the order of screens, and which
    states exist. Proceed with stated assumptions if the user cannot answer.
-2. Treat each image as one surface. A sequence of images can support a flow walkthrough of
-   the steps shown; anything between them is `unverifiable`.
-3. Estimate rects from the image and mark every annotation `approximate`.
-4. Estimate text contrast with `scripts/sample-contrast.mjs`, drawing the rect tightly around
+2. Copy each image into `evidence/` as `<surface>.png`. Each image is one surface. A sequence
+   of images can support a flow walkthrough of the steps shown; anything between them is
+   `unverifiable`.
+3. Estimate text contrast with `scripts/sample-contrast.mjs`, drawing the rect tightly around
    the text. The result is a `visual-estimate`: thin text and anti-aliasing can make it read
    about 0.3 higher than the true ratio, so treat values within 0.5 of a threshold as
    uncertain and recommend a measured check.
-5. Semantics, keyboard, focus, names, and live behavior stay `unverifiable`.
+4. Estimate rects from the image and mark every annotation `approximate`.
+5. Semantics, keyboard, focus, names, and live behavior stay `unverifiable`; the keyboard
+   depth check is `unverifiable` too.
 
-### Source
+Fallbacks: `sample-contrast.mjs` reads PNG only. Convert a JPEG or WebP screenshot: write
+`evidence/<surface>.view.html` containing `<body style="margin:0"><img src="<image>">`, open
+it at the image's size and device pixel ratio 1 (a browser tool, or a `capture.mjs` plan with
+`viewport`, `navigate`, `screenshot`), and save `evidence/<surface>.png`. When no browser is
+available, mark contrast `unverifiable`.
+Annotations embed PNG, JPEG, WebP, and GIF directly.
 
-- Read the markup, styles, and tokens of the screens in scope. Check semantics, labels,
-  state handling, copy, and token contrast.
-- Without a render, `visual` is `unverifiable` for layout and hierarchy. Do not describe how
-  the page looks unless you rendered it.
+## Source
+
+1. Read the markup, styles, and tokens of the screens in scope, and the route definitions.
+2. Save the excerpts you judge as `evidence/<surface>.source.txt`, with file paths and line
+   numbers, and cite them in findings with basis `source`.
+3. Check semantics, labels, state handling across code paths, copy, and contrast between
+   token values.
+4. Without a render, `visual` is `unverifiable` for layout and hierarchy, and the
+   small-viewport state is `unverifiable`. Do not describe how the page looks unless you
+   rendered it.
+5. Record the keyboard depth check as `done` only for what the markup shows (native controls,
+   tab order, key handlers), and say in its note that no browser exercised it.
+
+A source audit takes no screenshots and has no annotations; skip phase 5 annotations for its
+findings. Sketch a proposed change by rendering the edited markup in a copy under `sketches/`
+when a browser is available; otherwise record a `sketches` exception with the reason.
