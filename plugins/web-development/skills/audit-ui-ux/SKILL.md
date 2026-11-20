@@ -49,7 +49,9 @@ directory or by absolute path. Each reference above names the scripts its phase 
 
 ## Rules for every phase
 
-- **Find, don't fix.** Recommendations describe the change; they never apply it.
+- **Find, don't fix.** Recommendations describe the change; they never apply it. Even when
+  the request says to fix what you find, edit nothing in the product: the user has not seen
+  the findings yet, so report them and let the user decide what to change.
 - **Do no harm in live mode.** Use test accounts and test data. Ask before submitting real
   orders, payments, messages, deletions, or anything that reaches other people or production
   data. Never enter real credentials you were not given for this audit.
@@ -79,8 +81,9 @@ directory or by absolute path. Each reference above names the scripts its phase 
    workspace if it is the product's source; otherwise ask whether the source is available
    and where. Do not search unrelated directories for it.
 4. Read project design sources when they exist: `DESIGN.md`, design tokens, a component
-   library, brand guidelines. Findings must fit the established system; a deviation from it
-   is a consistency finding.
+   library, brand guidelines. When there are none, infer the system from the product itself:
+   the tokens and the values, components, and words it repeats. Findings must fit that
+   system; a deviation from it is a consistency finding.
 5. Discover the surfaces. Read `sitemap.xml`, the navigation and footer links of the entry
    page (same origin, about two levels deep), and the route definitions when code is
    available. Note locales, and list pages behind authentication separately; never guess
@@ -224,7 +227,8 @@ every error.
    Images are Markdown image lines (`![…](path)`), never plain links.
 3. End with the next-step question that closes `summary.md`, word for word, and do not take
    any of those steps yourself. Never skip it. When the user asked you to fix things, say
-   plainly that the audit only finds problems before the question. See
+   plainly that the audit only finds problems before the question. That earlier request does
+   not answer the question: ask it and wait. See
    [follow-ups.md](references/follow-ups.md).
 
 Do not commit, publish, or send the report anywhere unless the user asks. Mention that

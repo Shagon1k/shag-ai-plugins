@@ -39,7 +39,7 @@ lens or check `unverifiable` with the reason.
 | Text contrast | yes, computed | yes, from fills | partial: sampled pixels, no gradients or transparency | partial: from tokens, not from overlaps |
 | Target size | yes, measured | yes, from node size | partial: estimated | partial: from styles |
 | Layout, overflow, responsive behavior | yes | partial: only drawn viewports | partial: only supplied viewports | no |
-| Visual hierarchy and consistency | yes | yes | yes | no |
+| Visual hierarchy and consistency | yes | yes | yes | partial: consistency and type from styles; no rendered hierarchy |
 | Interface copy | yes | yes | yes | yes |
 | Motion and timing | yes | partial: prototype motion | no | partial: from code |
 
@@ -131,9 +131,13 @@ Annotations embed PNG, JPEG, WebP, and GIF directly.
    numbers, and cite them in findings with basis `source`.
 3. Check semantics, labels, state handling across code paths, copy, and contrast between
    token values.
-4. Without a render, `visual` is `unverifiable` for layout and hierarchy, and the
-   small-viewport state is `unverifiable`. Do not describe how the page looks unless you
-   rendered it.
+4. Check the `visual` lens on what the styles state: whether one component or role is styled
+   one way everywhere; whether spacing, type sizes, radii, and colors follow a scale (the
+   tokens, or the values the code repeats, with one-off values as the deviations); body text
+   size; line-length limits; clipping without an ellipsis; and the relative size and weight
+   of the key elements. Mark it `checked` with a note that rendered layout and hierarchy were
+   not seen. The small-viewport state is `unverifiable`. Do not describe how the page looks
+   beyond what the styles state.
 5. Record the keyboard depth check as `done` only for what the markup shows (native controls,
    tab order, key handlers), and say in its note that no browser exercised it.
 

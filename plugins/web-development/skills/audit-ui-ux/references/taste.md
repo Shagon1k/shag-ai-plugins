@@ -77,7 +77,8 @@ the content. Look for:
 - Meta strings joined with middle dots, and an arrow appended to every button label.
 - The three-features row with an icon, a title, and two lines each.
 
-Report a tell as one `suggestion` with a concrete alternative grounded in this product.
+Report each tell that does no work as its own `suggestion`, with a concrete alternative
+grounded in this product. One change per suggestion: never fold several tells into one.
 
 ## 4. Separate convention zones from expression zones
 
@@ -106,7 +107,9 @@ expected benefit (clearer identity, a more memorable moment, less noise), and th
 `recommendation` names the element, the treatment, and the token or value, and why it fits
 this product. Sketch it as [report.md](report.md) describes.
 
-Keep the strongest three to seven. Do not pad the list with variations of one idea.
+Keep the strongest three to seven. Do not pad the list with variations of one idea. When the
+lens yields fewer than three, say why in the `taste` lens note, for example a utility that
+already follows its conventions with nothing templated to remove.
 
 ## Guardrails
 
