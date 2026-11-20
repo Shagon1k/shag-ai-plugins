@@ -45,7 +45,10 @@ Each cases file contains:
 ```bash
 npm run eval:skill -- evals/<plugin>/<skill>/cases.json
 npm run eval:skill -- evals/<plugin>/<skill>/cases.json --case <id>
+npm run eval:skill -- evals/<plugin>/<skill>/cases.json --case <id> --keep <dir>
 ```
+
+`--keep <dir>` copies each case's workspace to `<dir>/<case-id>` for inspection after the run.
 
 The shared runner must preserve this separation:
 

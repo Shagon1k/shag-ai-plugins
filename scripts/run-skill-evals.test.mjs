@@ -23,7 +23,10 @@ test("parses a cases path and repeatable case filters", () => {
     casesPath: "evals/example/cases.json",
     selected: ["a", "b"],
     list: false,
+    keep: undefined,
   });
+  assert.equal(parseArguments(["evals/example/cases.json", "--keep", "out"]).keep, "out");
+  assert.throws(() => parseArguments(["evals/example/cases.json", "--keep"]), /--keep requires/);
   assert.equal(parseArguments(["evals/example/cases.json", "--list"]).list, true);
   assert.throws(() => parseArguments([]), /Usage/);
 });

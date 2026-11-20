@@ -16,6 +16,7 @@ export function parseArguments(args) {
   let casesPath;
   const selected = [];
   let list = false;
+  let keep;
 
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
@@ -26,6 +27,10 @@ export function parseArguments(args) {
       index += 1;
     } else if (argument === "--list") {
       list = true;
+    } else if (argument === "--keep") {
+      keep = args[index + 1];
+      if (!keep) throw new Error("--keep requires a directory");
+      index += 1;
     } else if (argument.startsWith("-")) {
       throw new Error(`Unknown argument: ${argument}`);
     } else if (casesPath) {
@@ -37,10 +42,10 @@ export function parseArguments(args) {
 
   if (!casesPath) {
     throw new Error(
-      "Usage: run-skill-evals.mjs <path/to/cases.json> [--list] [--case <id> ...]",
+      "Usage: run-skill-evals.mjs <path/to/cases.json> [--list] [--case <id> ...] [--keep <dir>]",
     );
   }
-  return { casesPath, selected, list };
+  return { casesPath, selected, list, keep };
 }
 
 export function loadEvalConfig(casesPath, cwd = process.cwd()) {
@@ -325,7 +330,7 @@ function formatGrade(grade) {
 }
 
 export function main(args = process.argv.slice(2)) {
-  const { casesPath, selected, list } = parseArguments(args);
+  const { casesPath, selected, list, keep } = parseArguments(args);
   const config = loadEvalConfig(casesPath);
 
   if (list) {
@@ -356,6 +361,12 @@ export function main(args = process.argv.slice(2)) {
       } catch (error) {
         failures += 1;
         console.error(error.message);
+      }
+      // --keep: copy the case workspace out before the temporary root is removed.
+      if (keep) {
+        const kept = path.resolve(keep, evalCase.id);
+        fs.cpSync(path.join(tempRoot, evalCase.id), kept, { recursive: true });
+        console.log(`Workspace kept: ${kept}`);
       }
     }
   } finally {
