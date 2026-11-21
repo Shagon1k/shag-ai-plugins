@@ -6,9 +6,10 @@ audience: ai
 
 A signature idea is a product-specific interface move that could only belong to this product,
 because it comes from the product's own subject rather than from generic UI patterns. It is an
-opinion, never a defect. Every audit that keeps the `taste` lens proposes one to three; when
-none fits, record a `signatures` exception with the reason (see
-[audit-record.md](audit-record.md)).
+opinion, never a defect. Every audit that keeps the `taste` lens proposes two to five by
+default, about one per distinct expression zone the scope offers, or the number the user
+asked for (`audit.json` `taste.signatures`). When fewer fit, record a `signatures` exception
+with the reason (see [audit-record.md](audit-record.md)).
 
 This file teaches the method only. It contains no example idea on purpose: an example from one
 domain gets copied into the next audit. Every idea must come from the audited product.
@@ -26,8 +27,9 @@ domain gets copied into the next audit. Every idea must come from the audited pr
    expression zones of [taste.md](taste.md). Avoid core navigation, forms, and anything the
    user operates many times a day.
 4. **Generate, then push past the obvious.** The first metaphor that comes to mind is the one
-   everyone would propose. Record it as `obvious`, then find at least one idea that needs
-   real knowledge of the domain or of this product's users, and mark it `non-obvious`. In
+   everyone would propose. Record it as `obvious`, then find ideas that need real knowledge
+   of the domain or of this product's users, and mark them `non-obvious`: at least one, and
+   at least two when you propose three or more. In
    `obviousnessReason`, name that knowledge: the ritual, the material, or the user moment the
    idea depends on, and why someone who only skimmed the product would not propose it.
 5. **Check usability.** The idea must keep the underlying control or message working without
@@ -37,9 +39,11 @@ domain gets copied into the next audit. Every idea must come from the audited pr
    - motion respects `prefers-reduced-motion`;
    - it does not slow a frequent task or add a step.
    An idea that fails these checks is dropped or proposed together with its fix in `risks`.
-6. **Respect tone and restraint.** One to three ideas per product. A metaphor everywhere is a
-   theme park. A restrained product earns a restrained gesture; match the size of the idea
-   (`cost`) to the tone.
+6. **Respect tone and restraint.** Give each idea its own moment and its own domain
+   element: several ideas are options to choose from, not one metaphor spread over every
+   screen, which turns into a theme park. A restrained product earns a restrained gesture;
+   match the size of each idea (`cost`) to the tone, and include at least one `accent` when
+   you propose three or more.
 
 ## Worksheet
 

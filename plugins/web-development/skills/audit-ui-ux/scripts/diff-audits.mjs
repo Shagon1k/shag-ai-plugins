@@ -7,7 +7,8 @@
  * Prints a draft for the new audit.json `previous` block. Each previous defect gets a proposed
  * status: "open" when a new defect looks like the same problem, "not-rechecked" when none of
  * its screens were audited again, and "resolved?" otherwise. The "?" marks a proposal: confirm
- * every status against fresh evidence before writing it.
+ * every status against fresh evidence before writing it. The same comparison merges an
+ * independent second pass: pass the audit directory first and its pass-2 directory second.
  */
 
 import fs from "node:fs";
@@ -65,6 +66,7 @@ export function proposeComparison(previousAudit, previousFindings, currentAudit,
         severity: previous.severity,
         status: best ? "open" : rechecked ? "resolved?" : "not-rechecked",
         now: best?.current.id ?? null,
+        nowSeverity: best?.current.severity ?? null,
         score: best?.score ?? ranked[0]?.score ?? 0,
         screens,
       };

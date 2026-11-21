@@ -50,7 +50,7 @@ function proposed() {
 
 function record(root, { modes, surface, finding, unverifiable }) {
   const lenses = ["flow", "a11y", "visual", "content"];
-  const statuses = Object.fromEntries(lenses.map((lens) => [lens, unverifiable[lens] ? { status: "unverifiable", note: unverifiable[lens] } : { status: "checked" }]));
+  const statuses = Object.fromEntries(lenses.map((lens) => [lens, unverifiable[lens] ? { status: "unverifiable", note: unverifiable[lens] } : lens === "visual" ? { status: "checked", note: "Alignment, type scale, spacing: consistent." } : { status: "checked" }]));
   const audit = {
     version: 2,
     title: `${modes[0]} audit`,
@@ -306,6 +306,12 @@ test("design frames exported without a node tree are audited in screenshot mode"
       sketches: writeSketch(root, proposed()),
     },
   });
+  // The finding has no annotation: the warning blocks the final stage until it is explained.
+  assert.ok(validateAudit(root).errors.some((error) => error.includes("neither fixed nor explained: F-001")));
+  const auditPath = path.join(root, "audit.json");
+  const audit = JSON.parse(fs.readFileSync(auditPath, "utf8"));
+  audit.limitations = ["F-001 has no annotation: the export gives no reliable bounds for the button."];
+  fs.writeFileSync(auditPath, JSON.stringify(audit, null, 2));
   assert.deepEqual(validateAudit(root).errors, []);
   const { summaryPath } = buildAuditOutputs(root);
   const summary = fs.readFileSync(summaryPath, "utf8");

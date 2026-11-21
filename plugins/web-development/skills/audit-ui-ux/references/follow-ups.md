@@ -38,6 +38,17 @@ fixes or audit again.
    of the previous audit needs one. `open`, `partly-resolved`, and `regressed` name the
    current finding in `now`; `resolved` and `not-rechecked` need a `note` with the evidence or
    the reason. A similarity score is never evidence on its own.
+
+   - A current finding stands for a previous one only when it covers that finding's whole
+     acceptance check. When it covers part, such as one link of a finding about several
+     colors, the status is `partly-resolved` and the note names what is no longer seen;
+     when the rest is still there, record it as its own finding.
+   - Several previous findings may share one `now` only when they were the same problem
+     recorded twice; say so in each note.
+   - `not-rechecked` means the check could not run. When a screen of the previous finding
+     is in this audit, run its acceptance check, or the part that is safe here, and record
+     what it shows. Keep `not-rechecked` only when no part could run, and name the finding
+     in `limitations` with what blocked it; the validator warns until you do.
 4. The report opens with "Since the last audit": counts by status, new problems, and the
    table of previous findings.
 
@@ -74,3 +85,37 @@ criterion or merge two findings' targets into one anchor.
 
 Present the rubric as proposed: improve-artifact makes it binding only when the user accepts
 it there. The audit's findings serve as the baseline's known failure modes.
+
+## Independent second pass
+
+Use this when the user wants an exhaustive audit and accepts about twice the cost. One
+reviewer misses things another catches: in trial runs on the same product, one pass found
+between two thirds and nine tenths of the defects the two found together, and they disagreed
+on severity.
+
+1. The second reviewer must start without this session's context: a fresh subagent,
+   another session, or another model. When the environment offers none, say so and skip
+   the pass. Never run it yourself: a reviewer who has seen the first pass's findings
+   re-finds them.
+2. Once phase 3 is done, create `<audit-dir>/pass-2/` with a copy of `audit.json` with every
+   lens `pending` and no `previous` block, an empty `findings.jsonl`, and an empty `evidence/`. Give the second
+   reviewer this skill, that directory, read access to `<audit-dir>/evidence/`, and the same
+   access rules and limits on live actions. It must not read the first pass's
+   `findings.jsonl`. It captures any extra evidence into `pass-2/evidence/` and stops when
+   `validate-audit.mjs <audit-dir>/pass-2 --stage review` exits 0.
+3. Compare the passes:
+
+   ```bash
+   node scripts/diff-audits.mjs <audit-dir> <audit-dir>/pass-2
+   ```
+
+   `open` pairs a first-pass defect with its second-pass match; `newDefects` lists what
+   only the second pass found.
+4. Confirm each defect in `newDefects` against its evidence. Append each confirmed one to
+   `findings.jsonl` with a new ID, citing files as `pass-2/evidence/…`, and drop the rest
+   with the reason in `secondPass.note`. For a matched pair whose severities differ, judge
+   again with the severity table in [audit-record.md](audit-record.md) and keep one
+   severity. Take the second pass's suggestions and signature ideas that are different
+   changes, within the counts in [taste.md](taste.md).
+5. Record `secondPass` in `audit.json` (`dir`, `added`, `note`), then run phase 5 on the
+   merged record.

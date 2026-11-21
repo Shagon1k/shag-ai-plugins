@@ -28,7 +28,7 @@ function surface(id, overrides = {}) {
     viewport: "mobile-390x844",
     area: "checkout",
     evidence: [`evidence/${id}.png`],
-    lenses: Object.fromEntries(LENSES.map((lens) => [lens, { status: "checked" }])),
+    lenses: Object.fromEntries(LENSES.map((lens) => [lens, lens === "visual" ? { status: "checked", note: "Type scale, spacing, alignment: consistent." } : { status: "checked" }])),
     ...overrides,
   };
 }
@@ -286,7 +286,8 @@ test("validates signature ideas and their sketches", () => {
     ...item,
     lenses: { ...item.lenses, taste: { status: "checked" } },
   }));
-  const root = createAudit({ audit: { lenses, surfaces }, findings: [defect(), signature()] });
+  // Counts the user asked for replace the default range.
+  const root = createAudit({ audit: { lenses, surfaces, taste: { suggestions: 0, signatures: 1 } }, findings: [defect(), signature()] });
   fs.mkdirSync(path.join(root, "sketches"), { recursive: true });
   fs.writeFileSync(path.join(root, "sketches/F-003.png"), PNG_1X1);
   assert.deepEqual(validateAudit(root).errors, []);
@@ -310,9 +311,45 @@ test("validates signature ideas and their sketches", () => {
   const unsketched = createAudit({ audit: { lenses, surfaces }, findings: [defect(), signature({ sketches: [] })] });
   assert.ok(validateAudit(unsketched).errors.some((error) => error.includes("F-003: signature idea without a sketch image")));
   const none = createAudit({ audit: { lenses, surfaces }, findings: [defect()] });
-  assert.ok(validateAudit(none).errors.some((error) => error.includes("no signature ideas")));
-  const rulesOnly = createAudit({ audit: { lenses, surfaces, exceptions: [ALONE, { rule: "signatures", reason: "The user asked for a rules-only audit." }] }, findings: [defect()] });
+  const noneErrors = validateAudit(none).errors;
+  assert.ok(noneErrors.some((error) => error.includes("0 signature ideas; propose 2 to 5")));
+  assert.ok(noneErrors.some((error) => error.includes("0 taste suggestions; propose 5 to 12")));
+  const rulesOnly = createAudit({
+    audit: { lenses, surfaces, exceptions: [ALONE, { rule: "signatures", reason: "The user asked for a rules-only audit." }, { rule: "suggestions", reason: "The user asked for a rules-only audit." }] },
+    findings: [defect()],
+  });
   assert.deepEqual(validateAudit(rulesOnly).errors, []);
+});
+
+test("asks for enough taste output and ideas beyond the obvious", () => {
+  const lenses = [...LENSES, "taste"];
+  const surfaces = [surface("S-001"), surface("S-002", { state: "error" })].map((item) => ({ ...item, lenses: { ...item.lenses, taste: { status: "checked" } } }));
+  const idea = (id, overrides = {}) => signature({ id, sketches: [], noSketch: "Fixture idea.", ...overrides });
+  const suggestion = (id) => ({ id, kind: "suggestion", lens: "taste", title: `Idea ${id}`, surfaces: ["S-001"], location: { description: "Hero" }, observation: "Plain.", impact: "Clearer identity.", evidence: { basis: "observed", files: ["evidence/S-001.png"] }, recommendation: "Set the hero headline in the serif.", noSketch: "Fixture idea." });
+  const exceptions = [ALONE, { rule: "sketches", reason: "Fixture without a renderer." }];
+  const ideas = [idea("F-010"), idea("F-011", { obviousness: "obvious" }), idea("F-012", { obviousness: "obvious" })];
+  const tooFewNonObvious = createAudit({ audit: { lenses, surfaces, exceptions }, findings: [defect(), ...ideas, ...["F-020", "F-021", "F-022", "F-023", "F-024"].map(suggestion)] });
+  assert.ok(validateAudit(tooFewNonObvious).errors.some((error) => error.includes("1 of 3 signature ideas are non-obvious")));
+
+  const asked = createAudit({ audit: { lenses, surfaces, exceptions, taste: { suggestions: 8, signatures: 2 } }, findings: [defect(), idea("F-010"), idea("F-011"), ...["F-020", "F-021"].map(suggestion)] });
+  assert.ok(validateAudit(asked).errors.some((error) => error.includes("2 taste suggestions; propose the 8 the user asked for")));
+  const over = createAudit({ audit: { lenses, surfaces, exceptions, taste: { suggestions: 1, signatures: 2 } }, findings: [defect(), idea("F-010"), idea("F-011"), ...["F-020", "F-021"].map(suggestion)] });
+  const result = validateAudit(over);
+  assert.deepEqual(result.errors, []);
+  assert.ok(result.warnings.some((warning) => warning.includes("2 taste suggestions, more than the 1 the user asked for")));
+  const invalid = createAudit({ audit: { lenses, surfaces, exceptions, taste: { suggestions: "many" } }, findings: [defect()] });
+  assert.ok(validateAudit(invalid).errors.some((error) => error.includes("taste.suggestions must be a whole number")));
+});
+
+test("each screen and viewport names its visual checks", () => {
+  const bare = (id, overrides) => surface(id, { lenses: Object.fromEntries(LENSES.map((lens) => [lens, { status: "checked" }])), ...overrides });
+  const root = createAudit({ audit: { surfaces: [bare("S-001"), bare("S-002", { state: "error" })] } });
+  const { warnings, errors } = validateAudit(root);
+  assert.ok(warnings.some((warning) => warning.startsWith("S-001: visual is checked on Checkout (mobile-390x844)")));
+  assert.equal(warnings.filter((warning) => warning.includes("no surface of it has a visual note")).length, 1, "one warning per screen and viewport");
+  assert.ok(errors.some((error) => error.includes("neither fixed nor explained: S-001")));
+  const explained = createAudit({ audit: { surfaces: [bare("S-001"), bare("S-002", { state: "error" })], limitations: ["S-001 visual note lost with the session log."] } });
+  assert.deepEqual(validateAudit(explained).errors, []);
 });
 
 test("validates themes, journeys, and strengths", () => {

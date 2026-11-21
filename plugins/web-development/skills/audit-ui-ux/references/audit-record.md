@@ -148,7 +148,9 @@ Field rules:
 - Task `importance`: `primary` or `secondary`. Task `status`: `walked`, `partial`,
   `blocked`, or `not-walked`; every status but `walked` needs a `note`.
 - Lens `status`: `pending`, `checked`, `not-applicable`, or `unverifiable`. The last two need
-  a `note`. `pending` is allowed only while the audit is in progress.
+  a `note`. `pending` is allowed only while the audit is in progress. A checked `visual`
+  lens carries the ledger note of SKILL.md phase 4 on at least one surface per screen and
+  viewport.
 - `depth`: the benchmark from SKILL.md phase 4. `selection` and `complete` are required
   sentences. `checks` holds exactly one entry per check — `first-use`, `failure-recovery`,
   `keyboard`, `constrained-states` — each with `status` (`done`, `not-applicable`,
@@ -169,12 +171,22 @@ Field rules:
 - `recheck`: re-checked surface lenses. Only a lens that is `checked` and had no findings is
   eligible. `result` is `confirmed` (still no finding there) or `new-findings`, listing
   findings that name that surface and lens.
+- `taste` (optional): counts the user asked for, `{ "suggestions": 10, "signatures": 4 }`.
+  They replace the default ranges of [taste.md](taste.md) and
+  [signature-ideas.md](signature-ideas.md); `0` means the user wants none of that kind. Only
+  `lens: "taste"` suggestions count.
+- `secondPass` (optional): an independent second pass ([follow-ups.md](follow-ups.md)):
+  `dir` (its audit directory inside this one, such as `pass-2`), `added` (the findings it
+  contributed to this record), and `note` (who ran it and how it was merged).
 - `exceptions`: a synthesis or coverage rule that does not apply, never a silent omission.
-  `rule` is `themes`, `journeys`, `strengths`, `signatures`, or `sketches`; `reason` is
-  required; optional `ids` limits the exception to some findings or tasks. A `sketches`
+  `rule` is `themes`, `journeys`, `strengths`, `signatures`, `suggestions`, or `sketches`;
+  `reason` is required; optional `ids` limits the exception to some findings or tasks. A
+  `signatures` or `suggestions` exception also covers proposing fewer than the target. A `sketches`
   exception without `ids` is a capability exception: the environment cannot render HTML.
 - `limitations`: excluded areas, tool and environment failures, and anything else limiting
-  the audit's reach.
+  the audit's reach. A validator warning about a finding or surface that you decide not to
+  fix is explained here, with its ID: "F-020 has no annotation: the problem is the absence
+  of a control, so there is nothing to mark".
 - `verdict` (optional): one or two sentences on task success and defects, written last; it
   opens the report and summary. Taste judgements stay out of it.
 

@@ -136,10 +136,10 @@ Annotations embed PNG, JPEG, WebP, and GIF directly.
    tokens, or the values the code repeats, with one-off values as the deviations); body text
    size; line-length limits; clipping without an ellipsis; and the relative size and weight
    of the key elements. A deviation is a finding, not an excerpt: one finding per pattern,
-   listing every value that breaks it. The lens note names each of these checks with the
-   finding ID it produced or "consistent". Mark it `checked` with a note that rendered
-   layout and hierarchy were not seen. The small-viewport state is `unverifiable`. Do not describe how the page looks
-   beyond what the styles state.
+   listing every value that breaks it. Write the lens note as the ledger SKILL.md phase 4
+   describes, naming the rendered checks "not seen", and mark the lens `checked`. The
+   small-viewport state is `unverifiable`. Do not describe how the page looks beyond what
+   the styles state.
 5. Record the keyboard depth check as `done` only for what the markup shows (native controls,
    tab order, key handlers), and say in its note that no browser exercised it.
 6. The observation is what the code says (`href="#email"`, `max-width: 480px`), never what it

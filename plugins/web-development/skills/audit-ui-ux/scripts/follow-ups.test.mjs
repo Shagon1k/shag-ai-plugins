@@ -60,6 +60,11 @@ test("requires a confirmed status for every previous defect", () => {
   assert.ok(errors.some((error) => error.includes("previous defect F-002 has no status")));
   writeAudit(current, minimal({ previous: { dir: "../old", results: [{ id: "F-001", status: "resolved", note: "Probe shows 7.1:1." }, { id: "F-002", status: "not-rechecked", note: "Payment provider was down." }] } }), []);
   assert.deepEqual(validateAudit(current).errors, []);
+  // Checkout was audited again, so F-001's acceptance check could run.
+  writeAudit(current, minimal({ previous: { dir: "../old", results: [{ id: "F-001", status: "not-rechecked", note: "Skipped." }, { id: "F-002", status: "not-rechecked", note: "Payment provider was down." }] } }), []);
+  const { warnings } = validateAudit(current);
+  assert.ok(warnings.some((warning) => warning.includes("F-001: not-rechecked, but Checkout was audited again")));
+  assert.ok(!warnings.some((warning) => warning.includes("F-002: not-rechecked")), "F-002's screen was not in the previous record");
 });
 
 test("drafts a rubric where every defect lands in exactly one place", () => {

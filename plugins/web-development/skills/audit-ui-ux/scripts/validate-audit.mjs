@@ -7,7 +7,8 @@
  * --allow-pending (= --stage plan) accepts an audit in progress: pending lenses, empty
  * priorities, no re-check, no synthesis or depth record yet. --stage review checks the end of
  * phase 4: closed lenses, evidence, and depth, but not yet the phase 5 outputs.
- * Exits 1 when any error is found. Warnings never fail the run.
+ * Exits 1 when any error is found. Warnings fail only the final stage of a version 2 audit, and
+ * only when they name a finding or surface that is neither fixed nor named in `limitations`.
  * Schema version 2 enforces the depth benchmark, synthesis, sketch coverage, and signature rules;
  * version 1 audits still validate, with a warning that points to the migration.
  */
@@ -30,7 +31,9 @@ export const SCHEMA_VERSIONS = [1, 2];
 export const DEPTH_CHECKS = ["first-use", "failure-recovery", "keyboard", "constrained-states"];
 export const CONSTRAINED_STATES = ["empty", "error", "long-content", "small-viewport"];
 export const DEPTH_STATUSES = ["done", "not-applicable", "unverifiable"];
-export const EXCEPTION_RULES = ["themes", "journeys", "strengths", "signatures", "sketches"];
+export const EXCEPTION_RULES = ["themes", "journeys", "strengths", "signatures", "suggestions", "sketches"];
+// Default counts for the taste lens; audit.json `taste` overrides them when the user asks for a number.
+export const TASTE_DEFAULTS = { suggestions: { min: 5, max: 12 }, signatures: { min: 2, max: 5 } };
 const IMAGE_FILE = /\.(?:png|svg|jpe?g|webp|gif)$/i;
 // Findings whose fix always changes what the user sees: the visual lens and the WCAG criteria
 // about colour, contrast, and focus visibility. Target size (2.5.8) is left out on purpose: a
@@ -76,6 +79,12 @@ export function validateAudit(auditDir, { allowPending = false, stage = allowPen
   allowPending = stage !== "final";
   const errors = [];
   const warnings = [];
+  // Warnings about one finding or surface: phase 5 fixes each or names its ID in limitations.
+  const itemWarnings = [];
+  const warnAbout = (id, message) => {
+    warnings.push(message);
+    if (isText(id)) itemWarnings.push(id);
+  };
   const fileExists = (relative) =>
     isText(relative) &&
     !path.isAbsolute(relative) &&
@@ -172,6 +181,22 @@ export function validateAudit(auditDir, { allowPending = false, stage = allowPen
   }
   if (pending > 0 && !planning) errors.push(`${pending} surface lenses are still pending`);
 
+  // The visual lens note is a ledger: each screen and viewport names its visual checks once.
+  if (v2 && !allowPending && lenses.includes("visual")) {
+    const groups = new Map();
+    for (const surface of surfaces) {
+      if (surface?.lenses?.visual?.status !== "checked") continue;
+      const key = `${surface.screen}|${surface.viewport}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(surface);
+    }
+    for (const group of groups.values()) {
+      if (group.some((surface) => isText(surface.lenses.visual.note))) continue;
+      const [first] = group;
+      warnAbout(first.id, `${first.id}: visual is checked on ${first.screen} (${first.viewport}) but no surface of it has a visual note; name each visual check with the finding it produced or "consistent" (SKILL.md, phase 4)`);
+    }
+  }
+
   // Tasks.
   const tasks = Array.isArray(audit.tasks) ? audit.tasks : [];
   if (tasks.length === 0) errors.push("audit.json: tasks must list at least one task");
@@ -224,7 +249,7 @@ export function validateAudit(auditDir, { allowPending = false, stage = allowPen
       coveredPairs.add(`${surfaceId}|${finding.lens}`);
       const status = surfaces.find((surface) => surface.id === surfaceId)?.lenses?.[finding.lens]?.status;
       if (["not-applicable", "unverifiable"].includes(status)) {
-        warnings.push(`${label}: reported on ${surfaceId}, where lens ${finding.lens} is ${status}`);
+        warnAbout(finding.id, `${label}: reported on ${surfaceId}, where lens ${finding.lens} is ${status}`);
       }
     }
 
@@ -249,7 +274,7 @@ export function validateAudit(auditDir, { allowPending = false, stage = allowPen
     const surfaceImages = findingSurfaces.some((id) => (surfaces.find((surface) => surface.id === id)?.evidence ?? []).some((file) => IMAGE_FILE.test(file)));
     const imageless = evidence.basis === "source" || (evidence.basis === "design-node" && !surfaceImages && !files.some((file) => IMAGE_FILE.test(file)));
     if (finding.kind === "defect" && annotations.length === 0 && !imageless && !allowPending) {
-      warnings.push(`${label}: no annotated image; add one unless the finding has no visual location`);
+      warnAbout(finding.id, `${label}: no annotated image; add one unless the finding has no visual location`);
     }
 
     if (finding.kind === "defect") {
@@ -261,7 +286,7 @@ export function validateAudit(auditDir, { allowPending = false, stage = allowPen
       const principles = Array.isArray(finding.principle) ? finding.principle : [];
       if (principles.length === 0) errors.push(`${label}: principle must cite a guidebook rule or WCAG criterion`);
       for (const principle of principles) {
-        if (!PRINCIPLE_PATTERN.test(principle)) warnings.push(`${label}: unrecognized principle ${JSON.stringify(principle)}`);
+        if (!PRINCIPLE_PATTERN.test(principle)) warnAbout(finding.id, `${label}: unrecognized principle ${JSON.stringify(principle)}`);
       }
       // Severity is judged on a task, so a blocker or major names the tasks it affects.
       const findingTasks = Array.isArray(finding.tasks) ? finding.tasks : [];
@@ -273,7 +298,7 @@ export function validateAudit(auditDir, { allowPending = false, stage = allowPen
       }
     } else if (finding.kind === "suggestion") {
       if (finding.severity !== undefined) errors.push(`${label}: a suggestion must not have a severity`);
-      if (!isText(finding.impact)) warnings.push(`${label}: state the expected benefit in impact`);
+      if (!isText(finding.impact)) warnAbout(finding.id, `${label}: state the expected benefit in impact`);
     } else if (finding.kind === "signature") {
       if (finding.severity !== undefined) errors.push(`${label}: a signature idea must not have a severity`);
       for (const field of ["impact", "risks"]) {
@@ -292,18 +317,38 @@ export function validateAudit(auditDir, { allowPending = false, stage = allowPen
       errors.push(`${label}: effort must be one of ${EFFORTS.join(", ")}`);
     }
     if (isText(finding.recommendation) && GENERIC_RECOMMENDATION.test(finding.recommendation.trim())) {
-      warnings.push(`${label}: recommendation reads like a direction, not a concrete change`);
+      warnAbout(finding.id, `${label}: recommendation reads like a direction, not a concrete change`);
     }
   }
 
-  // Signature ideas: few, and at least one beyond the obvious.
+  // Taste output: enough suggestions and signature ideas for the scope, and ideas beyond the obvious.
+  // audit.json `taste` holds counts the user asked for; they replace the default range.
   const signatures = findings.filter((finding) => finding.kind === "signature");
-  if (signatures.length > 3) enforce(`${signatures.length} signature ideas; keep the strongest one to three`);
-  if (signatures.length > 0 && !signatures.some((finding) => finding.obviousness === "non-obvious")) {
-    enforce("every signature idea is marked obvious; add at least one non-obvious idea");
+  const tasteSuggestions = findings.filter((finding) => finding.kind === "suggestion" && finding.lens === "taste");
+  const requested = audit.taste ?? {};
+  for (const key of ["suggestions", "signatures"]) {
+    if (requested[key] !== undefined && !(Number.isInteger(requested[key]) && requested[key] >= 0)) {
+      errors.push(`audit.json: taste.${key} must be a whole number the user asked for`);
+    }
   }
-  if (!allowPending && lenses.includes("taste") && signatures.length === 0 && !excepted("signatures")) {
-    enforce('audit.json: no signature ideas; propose one to three, or add an exception { "rule": "signatures", "reason": … }');
+  const range = (key) => (Number.isInteger(requested[key]) && requested[key] >= 0 ? { min: requested[key], max: requested[key], asked: true } : TASTE_DEFAULTS[key]);
+  const counts = { suggestions: tasteSuggestions.length, signatures: signatures.length };
+  const nouns = { suggestions: "taste suggestions", signatures: "signature ideas" };
+  if (!allowPending && lenses.includes("taste")) {
+    for (const key of ["suggestions", "signatures"]) {
+      const { min, max, asked } = range(key);
+      const target = asked ? `the ${min} the user asked for` : `${min} to ${max}`;
+      if (counts[key] < min && !excepted(key)) {
+        enforce(`audit.json: ${counts[key]} ${nouns[key]}; propose ${target}, or add an exception { "rule": "${key}", "reason": … } that says why the scope yields fewer`);
+      } else if (counts[key] > max) {
+        warnings.push(`audit.json: ${counts[key]} ${nouns[key]}, more than ${target}; keep the strongest`);
+      }
+    }
+  }
+  const nonObvious = signatures.filter((finding) => finding.obviousness === "non-obvious").length;
+  const neededNonObvious = signatures.length >= 3 ? 2 : signatures.length > 0 ? 1 : 0;
+  if (nonObvious < neededNonObvious) {
+    enforce(`${nonObvious} of ${signatures.length} signature ideas are non-obvious; ${signatures.length >= 3 ? "three or more ideas need at least two" : "add at least one"} non-obvious idea`);
   }
 
   // Priorities.
@@ -389,11 +434,21 @@ export function validateAudit(auditDir, { allowPending = false, stage = allowPen
     const STATUSES = ["resolved", "open", "partly-resolved", "regressed", "not-rechecked"];
     const previousDir = isText(previous.dir) ? path.resolve(auditDir, previous.dir) : "";
     let previousDefects = [];
+    let previousFindings = [];
+    const previousScreens = new Map();
     if (!previousDir || !fs.existsSync(path.join(previousDir, "findings.jsonl"))) {
       errors.push("audit.json: previous.dir must point to the previous audit directory");
     } else {
-      previousDefects = readFindings(previousDir).findings.filter((finding) => finding.kind === "defect").map((finding) => finding.id);
+      previousFindings = readFindings(previousDir).findings.filter((finding) => finding.kind === "defect");
+      previousDefects = previousFindings.map((finding) => finding.id);
+      try {
+        const previousAudit = JSON.parse(fs.readFileSync(path.join(previousDir, "audit.json"), "utf8"));
+        for (const surface of previousAudit.surfaces ?? []) previousScreens.set(surface.id, surface.screen);
+      } catch {
+        // Without the previous audit.json the screens cannot be compared; the status checks still run.
+      }
     }
+    const currentScreens = new Set(surfaces.map((surface) => surface?.screen));
     const results = Array.isArray(previous.results) ? previous.results : [];
     const seen = new Set();
     for (const [index, result] of results.entries()) {
@@ -407,6 +462,12 @@ export function validateAudit(auditDir, { allowPending = false, stage = allowPen
       }
       if (["resolved", "not-rechecked"].includes(result?.status) && !isText(result?.note)) {
         errors.push(`${label}: ${result.status} needs a note with the evidence or the reason`);
+      }
+      // A screen audited again can run the old acceptance check, at least the part that is safe.
+      const screens = (previousFindings.find((finding) => finding.id === result?.id)?.surfaces ?? []).map((id) => previousScreens.get(id)).filter(Boolean);
+      const again = [...new Set(screens.filter((screen) => currentScreens.has(screen)))];
+      if (result?.status === "not-rechecked" && again.length && !allowPending) {
+        warnAbout(result.id, `${label}: not-rechecked, but ${again.join(", ")} ${again.length > 1 ? "were" : "was"} audited again; run the acceptance check or its safe part and record resolved, open, or partly-resolved, or name ${result.id} in limitations with what blocked the check`);
       }
     }
     for (const id of previousDefects) if (!seen.has(id)) errors.push(`audit.json: previous defect ${id} has no status`);
@@ -512,6 +573,29 @@ export function validateAudit(auditDir, { allowPending = false, stage = allowPen
     );
   }
 
+  // Independent second pass (follow-ups.md): its own record, merged into this one.
+  if (audit.secondPass !== undefined) {
+    const pass = audit.secondPass ?? {};
+    const passDir = isText(pass.dir) && !path.isAbsolute(pass.dir) ? path.join(auditDir, pass.dir) : "";
+    if (!passDir || !fs.existsSync(path.join(passDir, "findings.jsonl"))) {
+      errors.push("audit.json: secondPass.dir must point to the second pass's audit directory inside this one");
+    }
+    if (!isText(pass.note)) errors.push("audit.json: secondPass.note must say who ran the pass and how its findings were merged");
+    if (!Array.isArray(pass.added)) errors.push("audit.json: secondPass.added must list the findings the second pass added (empty when none)");
+    for (const id of Array.isArray(pass.added) ? pass.added : []) {
+      if (!findingIds.has(id)) errors.push(`audit.json: secondPass.added names ${id}, which is not a finding of this audit`);
+    }
+  }
+
+  // Phase 5 is done only when each warning about a finding or surface is fixed or explained.
+  if (v2 && stage === "final") {
+    const limitations = (Array.isArray(audit.limitations) ? audit.limitations : []).filter(isText);
+    const open = [...new Set(itemWarnings)].filter((id) => !limitations.some((item) => new RegExp(`\\b${id}\\b`).test(item)));
+    if (open.length) {
+      errors.push(`${open.length} warnings are neither fixed nor explained: ${open.join(", ")}; fix each, or add a limitations entry that names the ID and why the warning does not apply`);
+    }
+  }
+
   const stats = {
     version: audit.version,
     surfaces: surfaces.length,
@@ -521,6 +605,7 @@ export function validateAudit(auditDir, { allowPending = false, stage = allowPen
     findings: findings.length,
     defects: defects.length,
     blockers: blockers.length,
+    tasteSuggestions: tasteSuggestions.length,
     signatures: signatures.length,
     themes: themes.length,
     rechecks: distinctRechecks,

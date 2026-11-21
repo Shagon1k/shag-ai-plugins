@@ -109,9 +109,17 @@ expected benefit (clearer identity, a more memorable moment, less noise), and th
 `recommendation` names the element, the treatment, and the token or value, and why it fits
 this product. Sketch it as [report.md](report.md) describes.
 
-Keep the strongest three to seven. Do not pad the list with variations of one idea. When the
-lens yields fewer than three, say why in the `taste` lens note, for example a utility that
-already follows its conventions with nothing templated to remove.
+How many: by default five to twelve, scaled to the scope. Aim for one per expression zone
+in scope and one per template tell that does no work, then keep the strongest; a few
+screens with one expression moment land near five, a product with a landing page, an app,
+onboarding, and waiting and success moments near ten. When the user asks for a number, record
+it in `audit.json` as `"taste": { "suggestions": <n> }` and propose that many.
+
+Spread them across at least three of the dimensions in `product.direction`: typography,
+color, motion, layout and composition, imagery and background detail, voice. Each one is a
+different change: never pad the list with variations of one idea. When the scope yields
+fewer than the target, record a `suggestions` exception with the reason, for example a
+utility that already follows its conventions with nothing templated to remove.
 
 ## Guardrails
 

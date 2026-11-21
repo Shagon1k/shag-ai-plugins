@@ -25,7 +25,7 @@ Each phase starts only when the previous one is done. Files live in `<audit-dir>
 | 2 Plan | Phase 1 notes | `audit.json` (version 2, every lens `pending`), an empty `findings.jsonl`, `evidence/` | `validate-audit.mjs <audit-dir> --allow-pending` exits 0 |
 | 3 Capture | `audit.json` surfaces | Evidence files for every surface, per its mode | Every surface except `source` ones lists its evidence (source findings cite their excerpts); tool failures are recorded as limitations |
 | 4 Review | Evidence | Findings in `findings.jsonl`, closed lens statuses, the `depth` record, journey counts, strengths, signature ideas | `validate-audit.mjs <audit-dir> --stage review` exits 0: no lens is `pending` and all four depth checks are recorded |
-| 5 Verify | The reviewed record | `recheck`, `themes`, `priorities`, annotations, sketches, `verdict` | After all of these exist, `validate-audit.mjs <audit-dir>` exits 0, and every warning is fixed or its reason for not applying is added to `limitations` |
+| 5 Verify | The reviewed record | `recheck`, `themes`, `priorities`, annotations, sketches, `verdict` | After all of these exist, `validate-audit.mjs <audit-dir>` exits 0: every warning about a finding or surface is fixed, or a `limitations` entry names its ID and why it does not apply |
 | 6 Report | A valid audit | `report.html`, `summary.md`, the session reply | The reply is given and ends with the next-step question |
 
 ## Resource map
@@ -42,7 +42,7 @@ Read a resource when its phase begins; each is the only definition of what it co
 | [taste.md](references/taste.md) | Phase 4 taste lens | Direction, template defaults, restraint; what is borrowed from `frontend-design` |
 | [signature-ideas.md](references/signature-ideas.md) | Phase 4, after the lenses | The method for product-specific ideas |
 | [report.md](references/report.md) | Phase 5 annotations and sketches, phase 6 | Annotations, which findings need a sketch, report and summary, the session reply |
-| [follow-ups.md](references/follow-ups.md) | Phase 1 when a previous audit exists; phase 6 when a rubric is wanted | Re-audits and the improve-artifact rubric |
+| [follow-ups.md](references/follow-ups.md) | Phase 1 when a previous audit exists or a second pass is wanted; phase 6 when a rubric is wanted | Re-audits, the independent second pass, and the improve-artifact rubric |
 
 Scripts live in `scripts/`, need Node.js 22+ and no dependencies, and run from the skill
 directory or by absolute path. Each reference above names the scripts its phase uses.
@@ -115,7 +115,12 @@ directory or by absolute path. Each reference above names the scripts its phase 
 11. Size the scope. Count screens from a list you can show (route files, sitemap entries, or
    navigation links), and state the count with what you counted and left out. When it
    exceeds roughly 8 screens or 40 surfaces, propose a sample or a priority order and wait
-   for agreement. Never silently skim.
+   for agreement. Never silently skim. State how many taste suggestions and signature ideas
+   you plan (the defaults are in [taste.md](references/taste.md)); a number the user gives
+   goes into `audit.json` `taste`.
+12. When the user wants an exhaustive audit, offer an independent second pass
+   ([follow-ups.md](references/follow-ups.md)): it roughly doubles the cost, and in trial runs
+   one pass found between two thirds and nine tenths of the defects two passes found together.
 
 Ask one grouped set of questions only for gaps that block the audit, such as the target URL,
 credentials, or which product area matters. Otherwise state assumptions and proceed.
@@ -170,6 +175,12 @@ While reviewing:
   creating duplicates.
 - Close each surface's lens as soon as you finish it: `checked`, `not-applicable`, or
   `unverifiable`, with a note for the last two.
+- Write the `visual` note as a ledger on one surface per screen and viewport; the screen's
+  other surfaces note only what differs. Name each check with the finding ID it produced or
+  "consistent": component styling, the spacing, type, radius, and color scales, body text
+  size, line length, clipping, the relative size and weight of the key elements, and, when
+  the mode renders the page, alignment, grouping, above-the-fold content, and responsive
+  integrity. A check the mode cannot see is named with "not seen".
 - Separate observation from interpretation. A probe result is a measurement; whether it
   harms the user is your judgment, and both belong in the finding.
 - Treat probe and axe results as leads, not verdicts. Confirm each against the screenshot or
@@ -194,8 +205,9 @@ so in `depth.complete`. Do not widen the selection to finish; list what remains 
 
 **Signature ideas.** After the lenses, propose ideas with
 [signature-ideas.md](references/signature-ideas.md). They are part of every audit that keeps
-the `taste` lens; when none fits (a rules-only audit, or a scope with no expression moment),
-record a `signatures` exception with the reason.
+the `taste` lens; when fewer fit than [taste.md](references/taste.md) asks for (a rules-only
+audit, or a scope with few expression moments), record a `signatures` exception with the
+reason.
 
 Finish the phase with `node scripts/validate-audit.mjs <audit-dir> --stage review` and fix
 every error.
