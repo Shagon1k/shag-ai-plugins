@@ -50,6 +50,12 @@ npm run eval:skill -- evals/<plugin>/<skill>/cases.json --case <id> --keep <dir>
 
 `--keep <dir>` copies each case's workspace to `<dir>/<case-id>` for inspection after the run.
 
+`--candidate claude[:model]` runs the candidate with Claude Code instead of Codex (the default).
+The judge stays Codex, so grades remain comparable across candidates. Claude Code has no
+portable OS sandbox, so the runner isolates it through permissions: no user settings, MCP
+servers, or installed skills; edits and `node` scripts only, and no edits in `read-only` suites.
+Read-only integrity is still checked deterministically after the run.
+
 The shared runner must preserve this separation:
 
 1. Candidate sees the skill, request, and fixture only.
