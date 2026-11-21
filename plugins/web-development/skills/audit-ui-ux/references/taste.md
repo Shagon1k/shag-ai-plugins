@@ -79,6 +79,8 @@ the content. Look for:
 
 Report each tell that does no work as its own `suggestion`, with a concrete alternative
 grounded in this product. One change per suggestion: never fold several tells into one.
+List every tell you found in the `taste` lens note, each with the suggestion ID that records
+it or the reason it does work here; a tell with neither is not finished.
 
 ## 4. Separate convention zones from expression zones
 

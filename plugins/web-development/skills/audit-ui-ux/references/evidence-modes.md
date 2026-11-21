@@ -135,11 +135,19 @@ Annotations embed PNG, JPEG, WebP, and GIF directly.
    one way everywhere; whether spacing, type sizes, radii, and colors follow a scale (the
    tokens, or the values the code repeats, with one-off values as the deviations); body text
    size; line-length limits; clipping without an ellipsis; and the relative size and weight
-   of the key elements. Mark it `checked` with a note that rendered layout and hierarchy were
-   not seen. The small-viewport state is `unverifiable`. Do not describe how the page looks
+   of the key elements. A deviation is a finding, not an excerpt: one finding per pattern,
+   listing every value that breaks it. The lens note names each of these checks with the
+   finding ID it produced or "consistent". Mark it `checked` with a note that rendered
+   layout and hierarchy were not seen. The small-viewport state is `unverifiable`. Do not describe how the page looks
    beyond what the styles state.
 5. Record the keyboard depth check as `done` only for what the markup shows (native controls,
    tab order, key handlers), and say in its note that no browser exercised it.
+6. The observation is what the code says (`href="#email"`, `max-width: 480px`), never what it
+   does at runtime. Runtime behavior, such as where focus lands, what the server stores, or
+   what other pages offer, belongs in `impact`, worded as what the code leads to ("the link
+   targets `#email`, so focus should move there"). A derived value counts every rule that
+   applies (padding, borders, `box-sizing`); when you cannot count them all, quote the
+   declared value instead.
 
 A source audit takes no screenshots and has no annotations; skip phase 5 annotations for its
 findings. Sketch a proposed change by rendering the edited markup in a copy under `sketches/`

@@ -59,5 +59,7 @@ usually draws on the last row.
 
 Record each idea as a `signature` finding ([audit-record.md](audit-record.md)):
 `location.description` names the expression zone it lives in, `observation` the moment today
-and the domain element used, `risks` the usability check. Sketch
+and the domain element used, `risks` the usability check: each risk named first ("the
+progress ring alone does not tell a screen reader the step"), then how the idea handles it.
+A list of safeguards without the risks they answer does not pass the check. Sketch
 it as [report.md](report.md) requires.
