@@ -60,6 +60,11 @@ directory or by absolute path. Each reference above names the scripts its phase 
   [audit-record.md](references/audit-record.md).
 - **Unverified is not passed.** A lens the mode cannot check is `unverifiable`, with the
   reason. Never imply coverage you did not perform.
+- **Claim only what you observed.** Quote values as the source holds them: a toast built from
+  `response.status` shows a status code, not "Error 402". An outcome you could not observe,
+  such as rendered clipping or a server's reply, is a risk worded as one ("can clip"), never
+  a fact or a `done` check. This holds for strengths, notes, and the reply as much as for
+  findings, and the reply adds no fact the record lacks.
 - **Files over memory.** Write the ledger before evaluating, append each finding as you
   confirm it, and build the report from those files.
 - **Rules and taste stay apart.** A violated principle is a `defect`. A preference is a
