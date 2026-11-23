@@ -11,11 +11,14 @@ const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const REPO_ROOT = path.resolve(path.dirname(SCRIPT_PATH), "..");
 const ALLOWED_SANDBOXES = new Set(["read-only", "workspace-write"]);
 const GRADE_SCHEMA_PATH = path.join(REPO_ROOT, "evals/expectation-grade.schema.json");
+const CANDIDATES = new Set(["codex", "claude"]);
 
 export function parseArguments(args) {
   let casesPath;
   const selected = [];
   let list = false;
+  let keep;
+  let candidate = "codex";
 
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
@@ -26,6 +29,14 @@ export function parseArguments(args) {
       index += 1;
     } else if (argument === "--list") {
       list = true;
+    } else if (argument === "--keep") {
+      keep = args[index + 1];
+      if (!keep) throw new Error("--keep requires a directory");
+      index += 1;
+    } else if (argument === "--candidate") {
+      candidate = args[index + 1];
+      if (!candidate) throw new Error("--candidate requires codex or claude[:model]");
+      index += 1;
     } else if (argument.startsWith("-")) {
       throw new Error(`Unknown argument: ${argument}`);
     } else if (casesPath) {
@@ -37,10 +48,14 @@ export function parseArguments(args) {
 
   if (!casesPath) {
     throw new Error(
-      "Usage: run-skill-evals.mjs <path/to/cases.json> [--list] [--case <id> ...]",
+      "Usage: run-skill-evals.mjs <path/to/cases.json> [--list] [--case <id> ...] [--keep <dir>] [--candidate codex|claude[:model]]",
     );
   }
-  return { casesPath, selected, list };
+  const [agent, model] = candidate.split(/:(.*)/s);
+  if (!CANDIDATES.has(agent) || model === "") {
+    throw new Error(`Unknown candidate ${JSON.stringify(candidate)}; use codex or claude[:model]`);
+  }
+  return { casesPath, selected, list, keep, candidate: { agent, model } };
 }
 
 export function loadEvalConfig(casesPath, cwd = process.cwd()) {
@@ -183,25 +198,66 @@ export function buildCodexArguments({ caseRoot, sandbox, prompt, outputSchema })
   ];
 }
 
-function runCodex({ caseRoot, sandbox, prompt, timeoutMs, outputSchema }) {
-  const result = spawnSync(
-    "codex",
-    buildCodexArguments({ caseRoot, sandbox, prompt, outputSchema }),
-    {
-      cwd: caseRoot,
-      encoding: "utf8",
-      maxBuffer: 10 * 1024 * 1024,
-      timeout: timeoutMs,
-    },
-  );
+// Claude Code has no OS sandbox flag that works everywhere, so isolation comes from permissions:
+// no user settings, MCP servers, or installed skills; reads limited to the case and the skill;
+// writes only through edit tools and `node` scripts, and none at all in read-only suites.
+export function buildClaudeArguments({ sandbox, prompt, skillDir, model }) {
+  const access =
+    sandbox === "read-only"
+      ? ["--permission-mode", "dontAsk", "--disallowedTools", "Write", "Edit", "NotebookEdit"]
+      : ["--permission-mode", "acceptEdits", "--allowedTools", "Bash(node:*)"];
+  return [
+    "--print",
+    "--output-format",
+    "text",
+    "--no-session-persistence",
+    "--setting-sources",
+    "",
+    "--strict-mcp-config",
+    "--disable-slash-commands",
+    "--add-dir",
+    skillDir,
+    ...access,
+    ...(model ? ["--model", model] : []),
+    "--",
+    prompt,
+  ];
+}
+
+function runAgent(command, commandArguments, { caseRoot, timeoutMs }) {
+  const result = spawnSync(command, commandArguments, {
+    cwd: caseRoot,
+    encoding: "utf8",
+    maxBuffer: 10 * 1024 * 1024,
+    timeout: timeoutMs,
+  });
 
   if (result.error) throw result.error;
   if (result.status !== 0) {
-    throw new Error(`Codex failed (exit ${result.status}):\n${result.stderr.trim()}`);
+    // Claude Code prints API and usage errors to stdout, so show both streams.
+    const detail = [result.stderr.trim(), result.stdout.trim().slice(-2000)].filter(Boolean);
+    throw new Error(`${command} failed (exit ${result.status}):\n${detail.join("\n")}`);
   }
   const output = result.stdout.trim();
-  if (!output) throw new Error(`Codex produced no output:\n${result.stderr.trim()}`);
+  if (!output) throw new Error(`${command} produced no output:\n${result.stderr.trim()}`);
   return output;
+}
+
+function runCodex({ caseRoot, sandbox, prompt, timeoutMs, outputSchema }) {
+  return runAgent("codex", buildCodexArguments({ caseRoot, sandbox, prompt, outputSchema }), {
+    caseRoot,
+    timeoutMs,
+  });
+}
+
+function runCandidate({ candidate, caseRoot, sandbox, prompt, timeoutMs, skillPath }) {
+  if (candidate.agent === "codex") return runCodex({ caseRoot, sandbox, prompt, timeoutMs });
+  const skillDir = path.dirname(skillPath);
+  return runAgent(
+    "claude",
+    buildClaudeArguments({ sandbox, prompt, skillDir, model: candidate.model }),
+    { caseRoot, timeoutMs },
+  );
 }
 
 function formatOriginalFixtures(files) {
@@ -273,17 +329,19 @@ export function validateGrade(rawGrade, expectations) {
   };
 }
 
-function runCase(config, skillPath, evalCase, tempRoot) {
+function runCase(config, skillPath, evalCase, tempRoot, candidate) {
   const caseRoot = path.join(tempRoot, evalCase.id);
   fs.mkdirSync(caseRoot, { recursive: true });
   materializeCase(caseRoot, evalCase.files);
   const before = snapshotDirectory(caseRoot);
 
-  const candidateOutput = runCodex({
+  const candidateOutput = runCandidate({
+    candidate,
     caseRoot,
     sandbox: config.sandbox,
     prompt: candidatePromptFor(config.skill, skillPath, config.sandbox, evalCase),
     timeoutMs: config.timeoutMs,
+    skillPath,
   });
   const workspaceChanges = diffSnapshots(before, snapshotDirectory(caseRoot));
   if (config.sandbox === "read-only" && workspaceChanges.length > 0) {
@@ -325,7 +383,7 @@ function formatGrade(grade) {
 }
 
 export function main(args = process.argv.slice(2)) {
-  const { casesPath, selected, list } = parseArguments(args);
+  const { casesPath, selected, list, keep, candidate } = parseArguments(args);
   const config = loadEvalConfig(casesPath);
 
   if (list) {
@@ -349,13 +407,19 @@ export function main(args = process.argv.slice(2)) {
     for (const evalCase of chosen) {
       console.log(`\n## ${evalCase.id}`);
       try {
-        const result = runCase(config, skillPath, evalCase, tempRoot);
+        const result = runCase(config, skillPath, evalCase, tempRoot, candidate);
         console.log(result.candidateOutput);
         console.log(`\n${formatGrade(result.grade)}`);
         if (!result.grade.passed) failures += 1;
       } catch (error) {
         failures += 1;
         console.error(error.message);
+      }
+      // --keep: copy the case workspace out before the temporary root is removed.
+      if (keep) {
+        const kept = path.resolve(keep, evalCase.id);
+        fs.cpSync(path.join(tempRoot, evalCase.id), kept, { recursive: true });
+        console.log(`Workspace kept: ${kept}`);
       }
     }
   } finally {

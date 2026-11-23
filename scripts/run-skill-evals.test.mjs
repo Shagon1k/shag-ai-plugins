@@ -6,6 +6,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
+  buildClaudeArguments,
   buildCodexArguments,
   loadEvalConfig,
   parseArguments,
@@ -23,9 +24,44 @@ test("parses a cases path and repeatable case filters", () => {
     casesPath: "evals/example/cases.json",
     selected: ["a", "b"],
     list: false,
+    keep: undefined,
+    candidate: { agent: "codex", model: undefined },
   });
+  assert.equal(parseArguments(["evals/example/cases.json", "--keep", "out"]).keep, "out");
+  assert.throws(() => parseArguments(["evals/example/cases.json", "--keep"]), /--keep requires/);
   assert.equal(parseArguments(["evals/example/cases.json", "--list"]).list, true);
   assert.throws(() => parseArguments([]), /Usage/);
+  assert.deepEqual(parseArguments(["c.json", "--candidate", "claude"]).candidate, {
+    agent: "claude",
+    model: undefined,
+  });
+  assert.deepEqual(parseArguments(["c.json", "--candidate", "claude:opus"]).candidate, {
+    agent: "claude",
+    model: "opus",
+  });
+  assert.throws(() => parseArguments(["c.json", "--candidate", "gemini"]), /Unknown candidate/);
+  assert.throws(() => parseArguments(["c.json", "--candidate", "claude:"]), /Unknown candidate/);
+});
+
+test("builds isolated Claude candidate arguments", () => {
+  const readOnly = buildClaudeArguments({ sandbox: "read-only", prompt: "p", skillDir: "/s" });
+  assert.deepEqual(readOnly.slice(-2), ["--", "p"]);
+  assert.ok(readOnly.includes("--strict-mcp-config"));
+  assert.ok(readOnly.includes("--disable-slash-commands"));
+  assert.equal(readOnly[readOnly.indexOf("--add-dir") + 1], "/s");
+  assert.equal(readOnly[readOnly.indexOf("--permission-mode") + 1], "dontAsk");
+  assert.ok(readOnly.includes("Write"));
+  assert.ok(!readOnly.includes("--model"));
+
+  const write = buildClaudeArguments({
+    sandbox: "workspace-write",
+    prompt: "p",
+    skillDir: "/s",
+    model: "opus",
+  });
+  assert.equal(write[write.indexOf("--permission-mode") + 1], "acceptEdits");
+  assert.equal(write[write.indexOf("--model") + 1], "opus");
+  assert.ok(!write.includes("--disallowedTools"));
 });
 
 test("builds isolated candidate and grader CLI arguments", () => {

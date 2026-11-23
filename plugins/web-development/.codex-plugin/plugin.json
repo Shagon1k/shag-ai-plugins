@@ -1,7 +1,7 @@
 {
   "name": "web-development",
-  "version": "0.3.0",
-  "description": "Reusable workflows for planning, building, reviewing, and maintaining web applications, including optional GitHub work tracking and code style rules.",
+  "version": "0.4.0",
+  "description": "Reusable workflows for planning, building, reviewing, and maintaining web applications, including UI/UX audits, optional GitHub work tracking, and code style rules.",
   "author": {
     "name": "Aliaksei Hurynovich",
     "email": "shagon1k@gmail.com"
@@ -10,14 +10,15 @@
   "interface": {
     "displayName": "Web Development",
     "shortDescription": "Build, plan, and track web applications.",
-    "longDescription": "AI-assisted workflows for web application planning, implementation, quality, maintenance, and optional GitHub work tracking and code style rules across frontend, backend, architecture, design, and delivery.",
+    "longDescription": "AI-assisted workflows for web application planning, implementation, quality, maintenance, UI/UX and accessibility audits, and optional GitHub work tracking and code style rules across frontend, backend, architecture, design, and delivery.",
     "developerName": "Aliaksei Hurynovich",
     "category": "Productivity",
     "capabilities": ["Write"],
     "defaultPrompt": [
       "Plan and structure this web application project with optional GitHub work tracking and code style rules.",
       "Help me build or improve this web application.",
-      "Review this web application and propose the next steps."
+      "Review this web application and propose the next steps.",
+      "Audit the UI/UX and accessibility of this web app's key flows."
     ]
   }
 }
